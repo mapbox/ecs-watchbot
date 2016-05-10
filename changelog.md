@@ -1,3 +1,3 @@
-### 0.0.1 (in progress)
+### 0.0.1
 
 - First sketch of Watchbot on ECS
