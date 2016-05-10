@@ -1,0 +1,11 @@
+{
+  "order": [
+    "watchbot",
+    "messages",
+    "environment",
+    "tasks",
+    "taskStatus",
+    "finishedTask",
+    "notifications"
+  ]
+}

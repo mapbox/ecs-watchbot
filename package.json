@@ -1,0 +1,44 @@
+{
+  "name": "watchbot",
+  "version": "0.0.1",
+  "description": "Build an AWS stack to do your work for you",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/ecs-watchbot.git"
+  },
+  "author": "Mapbox",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mapbox/ecs-watchbot/issues"
+  },
+  "homepage": "https://github.com/mapbox/ecs-watchbot",
+  "engines": {
+    "node": "4.4.2"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "bin/watchbot.js",
+    "test": "nyc tape test/*.test.js",
+    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
+    "pretest": "eslint bin lib test index.js",
+    "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
+  },
+  "bin": {
+    "watchbot-template-builder": "./bin/watchbot-template-builder.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.3.0",
+    "d3-queue": "^2.0.3",
+    "fastlog": "^1.0.0",
+    "inquirer": "^1.0.2",
+    "minimist": "^1.2.0",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "documentation": "^4.0.0-beta2",
+    "eslint": "^2.6.0",
+    "nyc": "^6.4.0",
+    "opener": "^1.4.1",
+    "tape": "^4.5.1"
+  }
+}
