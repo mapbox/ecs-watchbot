@@ -57,6 +57,8 @@ module.exports.mock = function(name, callback) {
       context.sqs.changeMessageVisibility.push(params);
       if (params.ReceiptHandle === 'missing')
         return callback(new Error('Message does not exist or is not available for visibility timeout change'));
+      if (params.ReceiptHandle === 'error')
+        return callback(new Error('Mock SQS error'));
       callback();
     };
 
