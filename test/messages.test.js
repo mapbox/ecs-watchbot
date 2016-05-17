@@ -10,9 +10,9 @@ util.mock('[messages] poll - more than max messages to receive', function(assert
   var context = this;
 
   context.sqs.messages = [
-    { MessageId: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '2', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '3', Body: JSON.stringify({ Subject: 'subject3', Message: 'message3' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } }
+    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
+    { MessageId: '2', ReceiptHandle: '2', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
+    { MessageId: '3', ReceiptHandle: '3', Body: JSON.stringify({ Subject: 'subject3', Message: 'message3' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } }
   ];
 
   messages.poll(2, function(err, envs) {
@@ -81,6 +81,45 @@ util.mock('[messages] poll - no messages to receive', function(assert) {
     assert.deepEqual(envs, [], 'empty envs array returned');
     assert.end();
   });
+});
+
+util.mock('[messages] poll - message still processing', function(assert) {
+  var queueUrl = 'https://fake.us-east-1/sqs/url';
+  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
+  var stackName = 'test';
+  var messages = watchbot.messages(queueUrl, topic, stackName);
+  var context = this;
+  var msg = { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } };
+  context.sqs.messages = [JSON.parse(JSON.stringify(msg))];
+
+  // receive the message once
+  messages.poll(1, function(err) {
+    if (err) return assert.end(err);
+
+    // receive the same message again, with a new handle
+    context.sqs.messages = [JSON.parse(JSON.stringify(msg))];
+    context.sqs.messages[0].ReceiptHandle = '2';
+    messages.poll(1, function(err) {
+      if (err) return assert.end(err);
+
+      // complete the message
+      messages.complete({ reason: 'success', env: { MessageId: '1' }, outcome: 'delete' }, function(err) {
+        if (err) return assert.end(err);
+
+        // complete the message a second time
+        messages.complete({ reason: 'success', env: { MessageId: '1' }, outcome: 'delete' }, function(err) {
+          if (err) return assert.end(err);
+
+          assert.deepEqual(context.sqs.deleteMessage, [
+            { ReceiptHandle: '2' }
+          ], 'deleted the message using most recent handle');
+
+          assert.end();
+        });
+      });
+    });
+  });
+
 });
 
 util.mock('[messages] poll - receiveMessage error', function(assert) {
