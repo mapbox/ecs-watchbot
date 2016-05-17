@@ -140,7 +140,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         { reason: '1', env: { exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify' },
         { reason: '2', env: { exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify' },
         { reason: '3', env: { exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify' },
-        { reason: '4', env: { exit: '4', MessageId: 'exit-4' }, outcome: 'return' },
+        { reason: '4', env: { exit: '4', MessageId: 'exit-4' }, outcome: 'immediate' },
         { reason: 'match', env: { exit: 'match', MessageId: 'exit-match' }, outcome: 'delete' },
         { reason: 'mismatched', env: { exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify' }
       ], 'expected taskStatus reported');
