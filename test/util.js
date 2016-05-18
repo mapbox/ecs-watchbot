@@ -21,7 +21,10 @@ module.exports.mock = function(name, callback) {
       },
       ecs: {
         runTask: [],
-        describeTasks: []
+        describeTasks: [],
+        describeTaskDefinition: [],
+        describeContainerInstances: [],
+        listContainerInstances: []
       },
       logs: []
     };
@@ -166,6 +169,39 @@ module.exports.mock = function(name, callback) {
       }, []);
 
       callback(null, data);
+    };
+    AWS.ECS.prototype.describeTaskDefinition = function(params, callback) {
+      context.ecs.describeTaskDefinition.push(params);
+      callback(null, {
+        taskDefinition: {
+          containerDefinitions: [
+            { cpu: 0, memory: 0 }
+          ]
+        }
+      });
+    };
+    AWS.ECS.prototype.listContainerInstances = function(params, callback) {
+      context.ecs.listContainerInstances.push(params);
+      callback(null, {
+        instances: ['arn:aws:ecs:us-east-1:1234567890:some/fake']
+      });
+    };
+    AWS.ECS.prototype.describeContainerInstances = function(params, callback) {
+      context.ecs.describeContainerInstances.push(params);
+      callback(null, {
+        containerInstances: [
+          {
+            registeredResources: [
+              { name: 'CPU', integerValue: Infinity },
+              { name: 'MEMORY', integerValue: Infinity }
+            ],
+            remainingResources: [
+              { name: 'CPU', integerValue: Infinity },
+              { name: 'MEMORY', integerValue: Infinity }
+            ]
+          }
+        ]
+      });
     };
 
     console.log = function() {
