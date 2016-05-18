@@ -77,10 +77,20 @@ module.exports.mock = function(name, callback) {
       if (params.overrides.containerOverrides[0].environment[0].name === 'error')
         return callback(new Error('Mock ECS error'));
 
+      if (params.overrides.containerOverrides[0].environment[0].name === 'resources')
+        return callback(null, {
+          tasks: [],
+          failures: [{ reason: 'RESOURCE:MEMORY' }]
+        });
+
       var messageId = params.overrides.containerOverrides[0].environment.find(function(item) {
         return item.name === 'MessageId';
       });
       if (messageId && messageId.value === 'ecs-error') return callback(new Error('Mock ECS error'));
+      if (messageId && messageId.value === 'ecs-failure') return callback(null, {
+        tasks: [],
+        failures: [{ reason: 'RESOURCE:MEMORY' }]
+      });
 
       var arn = crypto.createHash('md5').update(JSON.stringify(params)).digest('hex');
       tasks[arn] = params.overrides.containerOverrides[0].environment;

@@ -110,6 +110,26 @@ util.mock('[main] task running error', function(assert) {
   });
 });
 
+util.mock('[main] task running failure (out of resources)', function(assert) {
+  var context = this;
+
+  context.sqs.messages = [
+    { MessageId: 'ecs-failure', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  setTimeout(watchbot.main.end, 1800);
+  watchbot.main(config).on('finish', function() {
+    assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
+    assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
+    assert.equal(context.ecs.runTask.length, 1, '1 ecs.runTask request');
+    assert.deepEqual(context.sns.publish, [], 'does not send failure notification');
+    util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
+      { ReceiptHandle: '1', VisibilityTimeout: 0 }
+    ], 'expected sqs.changeMessageVisibility requests');
+    assert.end();
+  });
+});
+
 util.mock('[main] message completion error after task run failure', function(assert) {
   var context = this;
 

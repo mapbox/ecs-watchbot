@@ -69,6 +69,21 @@ util.mock('[tasks] run - runTask request error', function(assert) {
   });
 });
 
+util.mock('[tasks] run - runTask failure (out of resources)', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var containerName = 'container';
+  var concurrency = 10;
+  var env = { resources: 'true' };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  tasks.run(env, function(err) {
+    if (!err) return assert.end('should have failed');
+    assert.equal(err.code, 'NotRun', 'ecs.runTask failure passed to callback');
+    assert.end();
+  });
+});
+
 util.mock('[tasks] poll - no tasks in progress', function(assert) {
   var context = this;
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
