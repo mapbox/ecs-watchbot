@@ -21,7 +21,10 @@ module.exports.mock = function(name, callback) {
       },
       ecs: {
         runTask: [],
-        describeTasks: []
+        describeTasks: [],
+        describeTaskDefinition: [],
+        describeContainerInstances: [],
+        listContainerInstances: []
       },
       logs: []
     };
@@ -69,6 +72,7 @@ module.exports.mock = function(name, callback) {
     };
 
     var tasks = {};
+    context.ecs.resourceFail = 0;
 
     AWS.ECS = function(config) { context.ecs.config = config; };
     AWS.ECS.prototype.runTask = function(params, callback) {
@@ -77,10 +81,28 @@ module.exports.mock = function(name, callback) {
       if (params.overrides.containerOverrides[0].environment[0].name === 'error')
         return callback(new Error('Mock ECS error'));
 
+      if (params.overrides.containerOverrides[0].environment[0].name === 'failure')
+        return callback(null, { tasks: [], failures: [{ reason: 'unrecognized' }] });
+
+      if (params.overrides.containerOverrides[0].environment[0].name === 'resources') {
+        if (context.ecs.resourceFail === 0) {
+          context.ecs.resourceFail++;
+          return callback(null, { tasks: [], failures: [{ reason: 'RESOURCE:MEMORY' }] });
+        }
+      }
+
       var messageId = params.overrides.containerOverrides[0].environment.find(function(item) {
         return item.name === 'MessageId';
       });
       if (messageId && messageId.value === 'ecs-error') return callback(new Error('Mock ECS error'));
+      if (messageId && messageId.value === 'ecs-failure') {
+        if (context.ecs.resourceFail === 0) {
+          context.ecs.resourceFail++;
+          return callback(null, { tasks: [], failures: [{ reason: 'RESOURCE:MEMORY' }] });
+        }
+      }
+      if (messageId && messageId.value === 'ecs-unrecognized')
+        return callback(null, { tasks: [], failures: [{ reason: 'unrecognized' }] });
 
       var arn = crypto.createHash('md5').update(JSON.stringify(params)).digest('hex');
       tasks[arn] = params.overrides.containerOverrides[0].environment;
@@ -156,6 +178,54 @@ module.exports.mock = function(name, callback) {
       }, []);
 
       callback(null, data);
+    };
+    AWS.ECS.prototype.describeTaskDefinition = function(params, callback) {
+      context.ecs.describeTaskDefinition.push(params);
+      setImmediate(function() {
+        if (context.ecs.failTask) return callback(new Error('Mock ECS error'));
+        callback(null, {
+          taskDefinition: {
+            containerDefinitions: [
+              { cpu: 0, memory: 5 }
+            ]
+          }
+        });
+      });
+    };
+    AWS.ECS.prototype.listContainerInstances = function(params, callback) {
+      context.ecs.listContainerInstances.push(params);
+      setImmediate(function() {
+        if (context.ecs.failInstances) return callback(new Error('Mock ECS error'));
+
+        var instances = context.ecs.instances || ['arn:aws:ecs:us-east-1:1234567890:some/fake'];
+        var startFrom = !params.nextToken ? 0 : instances.indexOf(params.nextToken) + 1;
+        var sent = instances.slice(startFrom, startFrom + 1);
+
+        callback(null, {
+          containerInstanceArns: sent,
+          nextToken: startFrom === instances.length - 1 ? undefined : sent.slice(-1)[0]
+        });
+      });
+    };
+    AWS.ECS.prototype.describeContainerInstances = function(params, callback) {
+      context.ecs.describeContainerInstances.push(params);
+      setImmediate(function() {
+        if (context.ecs.fail) return callback(new Error('Mock ECS error'));
+        callback(null, {
+          containerInstances: [
+            {
+              registeredResources: [
+                { name: 'CPU', integerValue: context.ecs.cpu || 100 },
+                { name: 'MEMORY', integerValue: context.ecs.memory || 100 }
+              ],
+              remainingResources: [
+                { name: 'CPU', integerValue: context.ecs.cpu || 100 },
+                { name: 'MEMORY', integerValue: context.ecs.memory || 100 }
+              ]
+            }
+          ]
+        });
+      });
     };
 
     console.log = function() {

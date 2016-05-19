@@ -69,6 +69,61 @@ util.mock('[tasks] run - runTask request error', function(assert) {
   });
 });
 
+util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var containerName = 'container';
+  var concurrency = 10;
+  var env = { resources: 'true' };
+  var context = this;
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  tasks.run(env, function(err) {
+    if (err) return assert.end(err);
+    assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of memory');
+    util.collectionsEqual(assert, context.ecs.runTask, [
+      {
+        taskDefinition: taskDef,
+        overrides: {
+          containerOverrides: [
+            {
+              name: containerName,
+              environment: [{ name: 'resources', value: 'true' }]
+            }
+          ]
+        }
+      },
+      {
+        taskDefinition: taskDef,
+        overrides: {
+          containerOverrides: [
+            {
+              name: containerName,
+              environment: [{ name: 'resources', value: 'true' }]
+            }
+          ]
+        }
+      }
+    ], 'expected runTask requestss');
+    assert.end();
+  });
+});
+
+util.mock('[tasks] run - runTask failure (unrecognized reason)', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var containerName = 'container';
+  var concurrency = 10;
+  var env = { failure: 'true' };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  tasks.run(env, function(err) {
+    if (!err) return assert.end('should have failed');
+    assert.equal(err.code, 'NotRun', 'ecs.runTask failure passed to callback');
+    assert.end();
+  });
+});
+
 util.mock('[tasks] poll - no tasks in progress', function(assert) {
   var context = this;
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
@@ -140,7 +195,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         { reason: '1', env: { exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify' },
         { reason: '2', env: { exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify' },
         { reason: '3', env: { exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify' },
-        { reason: '4', env: { exit: '4', MessageId: 'exit-4' }, outcome: 'return' },
+        { reason: '4', env: { exit: '4', MessageId: 'exit-4' }, outcome: 'immediate' },
         { reason: 'match', env: { exit: 'match', MessageId: 'exit-match' }, outcome: 'delete' },
         { reason: 'mismatched', env: { exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify' }
       ], 'expected taskStatus reported');
