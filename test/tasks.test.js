@@ -69,12 +69,52 @@ util.mock('[tasks] run - runTask request error', function(assert) {
   });
 });
 
-util.mock('[tasks] run - runTask failure (out of resources)', function(assert) {
+util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
   var containerName = 'container';
   var concurrency = 10;
   var env = { resources: 'true' };
+  var context = this;
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  tasks.run(env, function(err) {
+    if (err) return assert.end(err);
+    assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of memory');
+    util.collectionsEqual(assert, context.ecs.runTask, [
+      {
+        taskDefinition: taskDef,
+        overrides: {
+          containerOverrides: [
+            {
+              name: containerName,
+              environment: [{ name: 'resources', value: 'true' }]
+            }
+          ]
+        }
+      },
+      {
+        taskDefinition: taskDef,
+        overrides: {
+          containerOverrides: [
+            {
+              name: containerName,
+              environment: [{ name: 'resources', value: 'true' }]
+            }
+          ]
+        }
+      }
+    ], 'expected runTask requestss');
+    assert.end();
+  });
+});
+
+util.mock('[tasks] run - runTask failure (unrecognized reason)', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var containerName = 'container';
+  var concurrency = 10;
+  var env = { failure: 'true' };
 
   var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
   tasks.run(env, function(err) {

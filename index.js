@@ -8,5 +8,6 @@ module.exports = {
   notifications: require('./lib/notifications'),
   messages: require('./lib/messages'),
   tasks: require('./lib/tasks'),
-  template: require('./lib/template')
+  template: require('./lib/template'),
+  resources: require('./lib/resources')
 };

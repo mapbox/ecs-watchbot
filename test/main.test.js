@@ -110,11 +110,29 @@ util.mock('[main] task running error', function(assert) {
   });
 });
 
-util.mock('[main] task running failure (out of resources)', function(assert) {
+util.mock('[main] task running failure (out of memory)', function(assert) {
   var context = this;
 
   context.sqs.messages = [
     { MessageId: 'ecs-failure', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  setTimeout(watchbot.main.end, 1800);
+  watchbot.main(config).on('finish', function() {
+    assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
+    assert.equal(context.sqs.receiveMessage.length, 1, 'one sqs.receiveMessage requests');
+    assert.equal(context.ecs.runTask.length, 2, '2 ecs.runTask requests');
+    assert.deepEqual(context.sns.publish, [], 'does not send failure notification');
+    assert.deepEqual(context.sqs.changeMessageVisibility, [], 'no sqs.changeMessageVisibility requests');
+    assert.end();
+  });
+});
+
+util.mock('[main] task running failure (unrecognized reason)', function(assert) {
+  var context = this;
+
+  context.sqs.messages = [
+    { MessageId: 'ecs-unrecognized', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
   setTimeout(watchbot.main.end, 1800);
@@ -285,6 +303,35 @@ util.mock('[main] LogLevel', function(assert){
       return /\[debug\]/.test(log);
     }), 'logs debug messages');
     delete config.LogLevel;
+    assert.end();
+  });
+});
+
+util.mock('[main] resource polling error', function(assert) {
+  var context = this;
+  context.ecs.fail = true;
+  setTimeout(watchbot.main.end, 1800);
+  watchbot.main(config).on('finish', function() {
+    assert.ok(context.logs.find(function(log) {
+      return /Error polling cluster resources: Mock ECS error/.test(log);
+    }), 'resource polling error logged');
+    assert.end();
+  });
+});
+
+util.mock('[main] insufficient resources available', function(assert) {
+  var context = this;
+
+  context.sqs.messages = [
+    { MessageId: 'finish-0', ReceiptHandle: '0', Body: JSON.stringify({ Subject: 'subject0', Message: 'message0' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  // No memory left to run new tasks
+  context.ecs.memory = 1;
+  setTimeout(watchbot.main.end, 1800);
+  watchbot.main(config).on('finish', function() {
+    assert.deepEqual(context.sqs.receiveMessage, [], 'prevented from getting SQS messages');
+    assert.deepEqual(context.ecs.runTask, [], 'did not run any tasks');
     assert.end();
   });
 });
