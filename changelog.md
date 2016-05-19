@@ -1,3 +1,8 @@
+### 0.0.3
+
+- watcher pays attention to cluster resource reservation, avoids polling the queue when the cluster is fully utilized, and retries runTask requests if a request fails due to lack of memory.
+- template sets up watcher permissions such that updates to the worker's task definition will not lead to permissions failures in the midst of a deploy
+
 ### 0.0.2
 
 - watcher logs include message subject and body
