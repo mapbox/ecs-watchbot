@@ -23,4 +23,4 @@ COPY ./bin ./bin
 VOLUME /mnt/log
 
 # Run the watcher
-CMD ["/bin/sh", "-c", "npm start >> /mnt/log/application.log"]
+CMD ["/bin/sh", "-c", "npm start"]
