@@ -3,7 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 var args = require('minimist')(process.argv.slice(2), {
-  boolean: ['h', 'help', 'v', 'verbose'],
+  boolean: ['h', 'help', 'v', 'verbose', 'u', 'user', 'w', 'webhooks', 'k', 'webhook-key', 'mount-data', 'm'],
   string: ['e', 'env', 'd', 'description']
 });
 var inquirer = require('inquirer');
@@ -16,6 +16,10 @@ function help() {
   console.log('Options:');
   console.log(' --env, -e           environment variables to set (e.g. --env HOST=my-host)');
   console.log(' --description, -d   the template description');
+  console.log(' --user, -u          create a user & keypair with permission to queue work');
+  console.log(' --webhooks, -w      create an HTTPS endpoint to POST work to the queue');
+  console.log(' --webhook-key, -k   create an api key for the webhook endpoint');
+  console.log(' --mount-data, -m    mount host\'s /mnt/data into containers');
   console.log(' --verbose, -v       also print the template to stdout');
   console.log(' --help, -h          show this message');
   console.log('');
@@ -39,10 +43,11 @@ try {
   return help();
 }
 
-var description = args.description || args.d;
 var verbose = args.verbose || args.v;
 
-var env = (args.env || args.e || []).map(function(pair) {
+var env = (args.env || args.e || []);
+if (!Array.isArray(env)) env = [env];
+env.map(function(pair) {
   return {
     name: pair.split('=')[0],
     value: pair.split('=')[1]
@@ -52,10 +57,14 @@ var env = (args.env || args.e || []).map(function(pair) {
 var includeAnyResources = {
   type: 'confirm',
   name: 'includeAnyResources',
-  message: 'Would you like any template parameters or resources provided as environment variables?'
+  message: 'Would you like any template parameters or resources provided to the worker as environment variables?'
 };
 
-var empty = watchbot.template();
+var empty = watchbot.template({
+  provideUser: args.u || args.user,
+  useWebhooks: args.w || args.webhooks,
+  useWebhookKey: args.k || args['webhook-key']
+});
 
 var resources = Object.keys(empty.Parameters).reduce(function(obj, key) {
   var desc = empty.Parameters[key].Description;
@@ -104,13 +113,20 @@ function output(answers) {
     return env;
   }, {});
 
-  var template = watchbot.template(env);
-  if (description) template.Description = description;
-  template = JSON.stringify(watchbot.template(env), null, 4);
+  var template = watchbot.template({
+    description: args.d || args.description,
+    provideUser: args.u || args.user,
+    useWebhooks: args.w || args.webhooks,
+    useWebhookKey: args.k || args['webhook-key'],
+    mountData: args.m || args['mount-data'],
+    taskEnv: env
+  });
+
+  template = JSON.stringify(template, null, 4);
   if (verbose) console.log(template);
+
   templateFile.write(template);
-  templateFile.end();
   templateFile.on('finish', function() {
     if (!verbose) console.log('Template written to %s\n', templateFilePath);
-  });
+  }).end();
 }
