@@ -1,3 +1,8 @@
+### 0.0.4
+
+- logs are sent to syslog instead of to a file assumed to be mounted from the host machine
+- new template builder arguments to only include certain resources (e.g. webhooks) if you ask for them
+
 ### 0.0.3
 
 - watcher pays attention to cluster resource reservation, avoids polling the queue when the cluster is fully utilized, and retries runTask requests if a request fails due to lack of memory.
