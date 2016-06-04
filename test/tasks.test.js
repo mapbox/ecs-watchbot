@@ -19,6 +19,7 @@ util.mock('[tasks] run - below concurrency', function(assert) {
     }, 'ecs client initialized properly');
     util.collectionsEqual(assert, context.ecs.runTask, [
       {
+        startedBy: 'watchbot',
         taskDefinition: taskDef,
         overrides: {
           containerOverrides: [
@@ -83,6 +84,7 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
     assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of memory');
     util.collectionsEqual(assert, context.ecs.runTask, [
       {
+        startedBy: 'watchbot',
         taskDefinition: taskDef,
         overrides: {
           containerOverrides: [
@@ -94,6 +96,7 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
         }
       },
       {
+        startedBy: 'watchbot',
         taskDefinition: taskDef,
         overrides: {
           containerOverrides: [
@@ -178,14 +181,14 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
       util.collectionsEqual(assert, context.ecs.describeTasks, [
         {
           tasks: [
-            '4be4e6798df7a860384f274440a8a32b',
-            'e3260204933f29071e8d1d219fb99f5a',
-            '8279ca35d26491d2841c8d3dd1229f6c',
-            'abbb2a1eb4ca9122045f1771b82e2d58',
-            '773d9c509f493013e64ffe6b1686438a',
-            'e312e779fb04311ae54f528720a8e9af',
-            'f2619234bc3b2c43a02680de5e54ebf7',
-            '2d4e163ba4aeffcadb30a8b92c3a4442'
+            '51132ba12780cd8e8ca20f2b370014a7',
+            '3b173b3134d614ddacb14a1cbd5c404f',
+            'e084e0cd00585de1ab8ed22f9572b81a',
+            '3168cb93242f95b0e63aaca9605b9681',
+            '21650064140c25de55653663f6cb3be1',
+            '056e67721ac63a57e291dac9d5302787',
+            '66f3dbb2f4f36c060a47d23bab3ddf7e',
+            '03089b80274750892c1528c2d317f5a8'
           ]
         }
       ], 'expected ecs.describeTasks request');
