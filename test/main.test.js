@@ -60,6 +60,7 @@ util.mock('[main] run a task', function(assert) {
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
     assert.deepEqual(context.ecs.runTask, [
       {
+        startedBy: 'watchbot',
         taskDefinition: config.TaskDefinition,
         overrides: {
           containerOverrides: [
@@ -218,9 +219,9 @@ util.mock('[main] no free tasks', function(assert) {
     util.collectionsEqual(assert, context.ecs.describeTasks, [
       {
         tasks: [
-          'd346348f8c6606b943897ec992db9e7c',
-          '4289315728bf67090940c910cdd32147',
-          '4d576d256a4f9957fa71218c609d44ea'
+          '77079d4d43561bd592a0911de3f719aa',
+          '4f08beb48fd99bf69ae05634c433e620',
+          '7d8d78d5f5e0bf088bf0df1f69a41f1d'
         ]
       }
     ], 'expected ecs.describeTasks requests');
