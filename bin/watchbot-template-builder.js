@@ -47,7 +47,7 @@ var verbose = args.verbose || args.v;
 
 var env = (args.env || args.e || []);
 if (!Array.isArray(env)) env = [env];
-env.map(function(pair) {
+env = env.map(function(pair) {
   return {
     name: pair.split('=')[0],
     value: pair.split('=')[1]
@@ -80,7 +80,7 @@ resources = Object.keys(empty.Resources).reduce(function(obj, key) {
 
 resources = Object.keys(empty.Outputs).reduce(function(obj, key) {
   var desc = empty.Outputs[key].Description;
-  obj['[output] ' + key + ': ' + desc] = { name: key, value: { Ref: key } };
+  obj['[output] ' + key + ': ' + desc] = { name: key, value: empty.Outputs[key].Value };
   return obj;
 }, resources);
 
