@@ -194,13 +194,13 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
       ], 'expected ecs.describeTasks request');
 
       util.collectionsEqual(assert, taskStatus, [
-        { reason: '0', env: { exit: '0', MessageId: 'exit-0' }, outcome: 'delete' },
-        { reason: '1', env: { exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify' },
-        { reason: '2', env: { exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify' },
-        { reason: '3', env: { exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify' },
-        { reason: '4', env: { exit: '4', MessageId: 'exit-4' }, outcome: 'immediate' },
-        { reason: 'match', env: { exit: 'match', MessageId: 'exit-match' }, outcome: 'delete' },
-        { reason: 'mismatched', env: { exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify' }
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '51132ba12780cd8e8ca20f2b370014a7' }, reason: '0', env: { exit: '0', MessageId: 'exit-0' }, outcome: 'delete' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '3b173b3134d614ddacb14a1cbd5c404f' }, reason: '1', env: { exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'e084e0cd00585de1ab8ed22f9572b81a' }, reason: '2', env: { exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '3168cb93242f95b0e63aaca9605b9681' }, reason: '3', env: { exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '21650064140c25de55653663f6cb3be1' }, reason: '4', env: { exit: '4', MessageId: 'exit-4' }, outcome: 'immediate' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '66f3dbb2f4f36c060a47d23bab3ddf7e' }, reason: 'match', env: { exit: 'match', MessageId: 'exit-match' }, outcome: 'delete' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '056e67721ac63a57e291dac9d5302787' }, reason: 'mismatched', env: { exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify' }
       ], 'expected taskStatus reported');
 
       assert.equal(taskStatus.free, 9, 'correctly reports free workers');
