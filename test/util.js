@@ -138,7 +138,7 @@ module.exports.mock = function(name, callback) {
         if (exitCode && exitCode.value === 'mismatch') {
           status.push({
             clusterArn: 'cluster-arn',
-            instanceArn: 'instance-arn',
+            containerInstanceArn: 'instance-arn',
             taskArn: arn,
             lastStatus: 'STOPPED',
             stoppedReason: 'mismatched',
@@ -150,7 +150,7 @@ module.exports.mock = function(name, callback) {
         } else if (exitCode && exitCode.value === 'match') {
           status.push({
             clusterArn: 'cluster-arn',
-            instanceArn: 'instance-arn',
+            containerInstanceArn: 'instance-arn',
             taskArn: arn,
             lastStatus: 'STOPPED',
             stoppedReason: 'match',
@@ -160,7 +160,7 @@ module.exports.mock = function(name, callback) {
         } else if (exitCode && exitCode.value !== 'pending') {
           status.push({
             clusterArn: 'cluster-arn',
-            instanceArn: 'instance-arn',
+            containerInstanceArn: 'instance-arn',
             taskArn: arn,
             lastStatus: 'STOPPED',
             stoppedReason: exitCode.value,
@@ -172,7 +172,7 @@ module.exports.mock = function(name, callback) {
           var exit = messageId.value.match(/^finish-(\d)$/)[1];
           status.push({
             clusterArn: 'cluster-arn',
-            instanceArn: 'instance-arn',
+            containerInstanceArn: 'instance-arn',
             taskArn: arn,
             lastStatus: 'STOPPED',
             stoppedReason: exit,
