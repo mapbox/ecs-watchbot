@@ -1,3 +1,8 @@
+### 0.0.5
+
+- silences `[status]` log messages unless logLevel is set to `debug`
+- improved message body in notifications sent when task fail
+
 ### 0.0.4
 
 - logs are sent to syslog instead of to a file assumed to be mounted from the host machine
