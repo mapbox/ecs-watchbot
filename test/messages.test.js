@@ -161,6 +161,11 @@ util.mock('[messages] complete - no backoff', function(assert) {
     // Then generate fake finishedTask objects for each message
     var finishedTasks = [
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'success',
         env: {
           MessageId: '1',
@@ -173,6 +178,11 @@ util.mock('[messages] complete - no backoff', function(assert) {
         outcome: 'delete'
       },
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'fail',
         env: {
           MessageId: '2',
@@ -185,6 +195,11 @@ util.mock('[messages] complete - no backoff', function(assert) {
         outcome: 'delete & notify'
       },
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'noop',
         env: {
           MessageId: '3',
@@ -197,6 +212,11 @@ util.mock('[messages] complete - no backoff', function(assert) {
         outcome: 'return'
       },
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'retry',
         env: {
           MessageId: '4',
@@ -235,8 +255,14 @@ util.mock('[messages] complete - no backoff', function(assert) {
         { ReceiptHandle: '4', VisibilityTimeout: 0 }
       ], 'expected messages returned to queue');
       util.collectionsEqual(assert, context.sns.publish, [
-        { Subject: '[watchbot] failed job', Message: 'At ${date}, job 2 failed on ' + stackName },
-        { Subject: '[watchbot] failed job', Message: 'At ${date}, job 4 failed on ' + stackName }
+        {
+          Subject: stackName + ' failed processing message 2',
+          Message: 'At ${date}, processing message 2 failed on ' + stackName + '\n\nTask outcome: delete & notify\n\nTask stopped reason: fail\n\nMessage information:\nMessageId: 2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: task-arn\n'
+        },
+        {
+          Subject: stackName + ' failed processing message 4',
+          Message: 'At ${date}, processing message 4 failed on ' + stackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: retry\n\nMessage information:\nMessageId: 4\nSubject: subject4\nMessage: message4\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: task-arn\n'
+        }
       ], 'expected notifications sent');
       assert.end();
     });
@@ -264,6 +290,11 @@ util.mock('[messages] complete - with backoff', function(assert) {
     // Then generate fake finishedTask objects for each message
     var finishedTasks = [
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'noop',
         env: {
           MessageId: '3',
@@ -276,6 +307,11 @@ util.mock('[messages] complete - with backoff', function(assert) {
         outcome: 'return'
       },
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'retry',
         env: {
           MessageId: '4',
@@ -326,6 +362,11 @@ util.mock('[messages] complete - message not found in sqs', function(assert) {
     // Then generate fake finishedTask objects for each message
     var finishedTasks = [
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'noop',
         env: {
           MessageId: '1',
@@ -338,6 +379,11 @@ util.mock('[messages] complete - message not found in sqs', function(assert) {
         outcome: 'return'
       },
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'success',
         env: {
           MessageId: '2',
@@ -389,6 +435,11 @@ util.mock('[messages] complete - message cannot backoff anymore', function(asser
     // Then generate fake finishedTask objects for each message
     var finishedTasks = [
       {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
         reason: 'noop',
         env: {
           MessageId: '1',
@@ -412,6 +463,110 @@ util.mock('[messages] complete - message cannot backoff anymore', function(asser
 
       // make assertions
       util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [], 'message allowed to timeout');
+      assert.end();
+    });
+  });
+});
+
+util.mock('[messages] complete - stack name is long', function(assert) {
+  var queueUrl = 'https://fake.us-east-1/sqs/url';
+  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
+  var stackName = 'test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-';
+  var messages = watchbot.messages(queueUrl, topic, stackName, true);
+  var context = this;
+
+  context.sqs.messages = [
+    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  // first poll in order to get the messages in flight
+  messages.poll(4, function(err) {
+    if (err) return assert.end(err);
+
+    // Then generate fake finishedTask objects for each message
+    var finishedTasks = [
+      {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
+        reason: 'failed',
+        env: {
+          MessageId: '1',
+          Subject: 'subject1',
+          Message: 'message1',
+          SentTimestamp: '10',
+          ApproximateFirstReceiveTimestamp: '20',
+          ApproximateReceiveCount: '1'
+        },
+        outcome: 'return & notify'
+      }
+    ];
+
+    // complete each finishedTask
+    var queue = d3.queue();
+    finishedTasks.forEach(function(finishedTask) {
+      queue.defer(messages.complete, finishedTask);
+    });
+    queue.awaitAll(function(err) {
+      if (err) return assert.end(err);
+
+      // make assertions
+      assert.equal(context.sns.publish.length, 1, 'one notification sent', 'subject was shortened');
+      assert.equal(context.sns.publish[0].Subject, stackName + ' failed task');
+      assert.end();
+    });
+  });
+});
+
+util.mock('[messages] complete - stack name is way too long', function(assert) {
+  var queueUrl = 'https://fake.us-east-1/sqs/url';
+  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
+  var stackName = 'test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-';
+  var messages = watchbot.messages(queueUrl, topic, stackName, true);
+  var context = this;
+
+  context.sqs.messages = [
+    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  // first poll in order to get the messages in flight
+  messages.poll(4, function(err) {
+    if (err) return assert.end(err);
+
+    // Then generate fake finishedTask objects for each message
+    var finishedTasks = [
+      {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
+        reason: 'failed',
+        env: {
+          MessageId: '1',
+          Subject: 'subject1',
+          Message: 'message1',
+          SentTimestamp: '10',
+          ApproximateFirstReceiveTimestamp: '20',
+          ApproximateReceiveCount: '1'
+        },
+        outcome: 'return & notify'
+      }
+    ];
+
+    // complete each finishedTask
+    var queue = d3.queue();
+    finishedTasks.forEach(function(finishedTask) {
+      queue.defer(messages.complete, finishedTask);
+    });
+    queue.awaitAll(function(err) {
+      if (err) return assert.end(err);
+
+      // make assertions
+      assert.equal(context.sns.publish.length, 1, 'one notification sent', 'subject was shortened');
+      assert.equal(context.sns.publish[0].Subject, 'Watchbot task failure: 1');
       assert.end();
     });
   });
