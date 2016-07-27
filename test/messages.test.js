@@ -257,11 +257,11 @@ util.mock('[messages] complete - no backoff', function(assert) {
       util.collectionsEqual(assert, context.sns.publish, [
         {
           Subject: stackName + ' failed processing message 2',
-          Message: 'At ${date}, processing message 2 failed on ' + stackName + '\n\nReported reason: fail\n\nMessage information:\nMessageId: 2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: task-arn\n'
+          Message: 'At ${date}, processing message 2 failed on ' + stackName + '\n\nTask outcome: delete & notify\n\nTask stopped reason: fail\n\nMessage information:\nMessageId: 2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: task-arn\n'
         },
         {
           Subject: stackName + ' failed processing message 4',
-          Message: 'At ${date}, processing message 4 failed on ' + stackName + '\n\nReported reason: retry\n\nMessage information:\nMessageId: 4\nSubject: subject4\nMessage: message4\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: task-arn\n'
+          Message: 'At ${date}, processing message 4 failed on ' + stackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: retry\n\nMessage information:\nMessageId: 4\nSubject: subject4\nMessage: message4\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: task-arn\n'
         }
       ], 'expected notifications sent');
       assert.end();
