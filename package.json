@@ -1,6 +1,6 @@
 {
   "name": "watchbot",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Build an AWS stack to do your work for you",
   "repository": {
     "type": "git",
