@@ -24,7 +24,8 @@
     "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
   },
   "bin": {
-    "watchbot-template-builder": "./bin/watchbot-template-builder.js"
+    "watchbot-template-builder": "./bin/watchbot-template-builder.js",
+    "watchbot-log": "./bin/watchbot-log.js"
   },
   "dependencies": {
     "aws-sdk": "^2.3.0",

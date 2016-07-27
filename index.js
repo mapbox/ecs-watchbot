@@ -9,5 +9,6 @@ module.exports = {
   messages: require('./lib/messages'),
   tasks: require('./lib/tasks'),
   template: require('./lib/template'),
-  resources: require('./lib/resources')
+  resources: require('./lib/resources'),
+  log: require('./lib/logs')
 };
