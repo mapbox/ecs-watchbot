@@ -128,20 +128,38 @@ The default template will ask you to provide the following parameters:
 
 - **WatchbotMessageRetentionPeriod**: The maximum number of seconds a message can remain in the queue. The default value is the max allowed by SQS, 14 days.
 
-## Logging and mount points
+## Logging
 
-Watchbot will define your container with the following mount points:
+Each Watchbot stack will write all its logs to a single CloudWatch LogGroup. The name of this LogGroup is provided as a CloudFormation stack output called `WatchbotLogGroup`. The [awscli](http://docs.aws.amazon.com/cli/latest/reference/logs/index.html) or [cwlogs](https://github.com/mapbox/cwlogs) are a couple of tools that can be used to view log events in a LogGroup.
 
-- `/mnt/log` at runtime provides write access to `/var/log` on the EC2s in your cluster.
-- `/mnt/data` at runtime provides write access to `/mnt/data` on the EC2s in your cluster. Consider using [ec2mnt](https://github.com/mapbox/ec2mnt) as an easy way to configure this as a mount point for your EC2's ephemeral drives.
+If your host EC2s **are not** built from [ECS-optimized AMIs](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html), make sure that the `awslogs` driver is enabled on the ecs-agent by setting the following agent configuration:
 
-Watchbot's watcher container will append its own log messages to `/mnt/log/application.log`, that is,  `/var/log/application.log` on the host EC2.
+```
+ECS_AVAILABLE_LOGGING_DRIVERS=["json-file","awslogs"]
+```
 
-These mount points are configurable through Watchbot's template. If you need to adjust the mount points, you'll need to adjust:
+See [the AWS documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html) for more information.
 
-  ```
-  .Resources.WatchbotTask.Volumes
-  .Resources.WatchbotTask.Properties.ContainerDefinitions[0].MountPoints
-  .Resources.WatchbotWatcher.Volumes
-  .Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].MountPoints
-  ```
+In order to help isolate and aggregate logs from any single message, watchbot provides a logging helper that will prefix each line with the ID of the message being processed.
+
+```js
+var watchbot = require('watchbot');
+
+// watchbot.log() works just like console.log()
+var breakfast = 'eggs and beans';
+watchbot.log('This is something that I want logged: ', breakfast);
+// [Thu, 28 Jul 2016 00:12:37 GMT] [worker] [e2c045cc-5606-4950-964b-20877900bccb] This is something that I want logged: eggs and beans
+```
+
+There is also a CLI tool to accomplish the same task:
+
+```bash
+# Perform this global installation in your Dockerfile
+$ npm install -g watchbot
+
+# Log a single line instead of using `echo`
+$ watchbot-log "This is something that I want logged: eggs and beans"
+
+# Pipe another command's stdio into watchbot-log
+$ echo "This is something that I want logged: eggs and beans" | watchbot-log
+```

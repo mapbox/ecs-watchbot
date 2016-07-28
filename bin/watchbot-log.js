@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+/**
+ * watchbot-log "something that you want logged"
+ *   - or -
+ * echo "somehing that you want logged" | watchbot-log
+ */
+
 var watchbot = require('..');
 var args = process.argv.slice(2);
 
