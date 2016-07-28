@@ -47,3 +47,24 @@ test('[logs] via CLI: adds prefixes to stdin', function(assert) {
   logging.stdin.write('ham and eggs');
   logging.stdin.end();
 });
+
+test('[logs] via CLI: adds prefixes to stdin, splits multiline', function(assert) {
+  process.env.MessageId = 'testing';
+
+  var logging = exec(logger, function(err, stdout) {
+    if (err) return assert.end(err);
+
+    stdout = stdout.trim().split('\n');
+    assert.equal(stdout.length, 3, 'split into 3 lines');
+
+    assert.ok(/\[worker\] \[testing\] ham and eggs/.test(stdout[0]), 'printed expected first line');
+    assert.ok(/\[worker\] \[testing\] bacon lettuce and tomato/.test(stdout[1]), 'printed expected second line');
+    assert.ok(/\[worker\] \[testing\] roast beef and cheddar/.test(stdout[2]), 'printed expected third line');
+    delete process.env.MessageId;
+    assert.end();
+  });
+
+  logging.stdin.write('ham and eggs\nbacon lettuce and tomato\n');
+  logging.stdin.write('roast beef and cheddar');
+  logging.stdin.end();
+});

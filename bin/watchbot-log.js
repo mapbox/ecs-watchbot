@@ -8,5 +8,7 @@ if (args[0]) {
 }
 
 process.stdin.on('data', function(d) {
-  watchbot.log(d.toString().trim());
+  d.toString().trim().split('\n').forEach(function(line) {
+    watchbot.log(line);
+  });
 });
