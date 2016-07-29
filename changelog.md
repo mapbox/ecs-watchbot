@@ -1,3 +1,10 @@
+### 0.0.6
+
+- container logs are sent from Docker to CloudWatch Logs instead of syslog
+- a watchbot stack creates its own CloudWatch LogGroup and sends all container logs to it
+- on task failure, reads recent container logs from CloudWatch and includes them in notifications
+- adds helper functions to run as part of the worker which help generate homogeneous, searchable log output
+
 ### 0.0.5
 
 - silences `[status]` log messages unless logLevel is set to `debug`
