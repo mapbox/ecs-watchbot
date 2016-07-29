@@ -24,10 +24,13 @@
     "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
   },
   "bin": {
-    "watchbot-template-builder": "./bin/watchbot-template-builder.js"
+    "watchbot-template-builder": "./bin/watchbot-template-builder.js",
+    "watchbot-log": "./bin/watchbot-log.js"
   },
   "dependencies": {
     "aws-sdk": "^2.3.0",
+    "binary-split": "^1.0.2",
+    "cwlogs": "^1.0.2",
     "d3-queue": "^2.0.3",
     "fastlog": "^1.0.0",
     "inquirer": "^1.0.2",
@@ -39,6 +42,7 @@
     "eslint": "^2.6.0",
     "nyc": "^6.4.0",
     "opener": "^1.4.1",
+    "sinon": "^1.17.5",
     "tape": "^4.5.1"
   }
 }
