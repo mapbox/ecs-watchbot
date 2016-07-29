@@ -77,7 +77,7 @@ test('[logs] fetch a ton of logs', function(assert) {
   var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
   var messageId = 'message-id';
 
-  var logs = '';
+  var logs = '\n\n\n';
   for (var i = 0; i < 70; i++) logs += crypto.randomBytes(512).toString('hex') + '\n';
 
   sinon.stub(cwlogs, 'readable', function(options) {
@@ -101,9 +101,8 @@ test('[logs] fetch a ton of logs', function(assert) {
     if (err) return assert.end(err);
 
     assert.ok(data.length < 50 * 1024, 'output limited to 50kb');
-
-    var lastFound = data.split('\n').slice(-1)[0];
-    var lastExpected = logs.split('\n').slice(-1)[0];
+    var lastFound = data.split('\n').slice(-2)[0];
+    var lastExpected = logs.split('\n').slice(-2)[0];
     assert.equal(lastFound, lastExpected, 'returned most recent log');
 
     cwlogs.readable.restore();

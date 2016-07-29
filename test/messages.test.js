@@ -640,7 +640,7 @@ util.mock('[messages] complete - notification contains log snippet', function(as
       assert.equal(context.sns.publish.length, 1, 'one notification sent');
 
       var notification = context.sns.publish[0].Message;
-      var expected = new RegExp('Recent logs:\n' + logs);
+      var expected = new RegExp('Recent logs:\n' + logs.trim());
       assert.ok(expected.test(notification), 'log snippet included in notification');
       cwlogs.readable.restore();
       assert.end();

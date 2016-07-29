@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.3.0",
+    "binary-split": "^1.0.2",
     "cwlogs": "^1.0.2",
     "d3-queue": "^2.0.3",
     "fastlog": "^1.0.0",
