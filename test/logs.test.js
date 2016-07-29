@@ -3,6 +3,10 @@ var test = require('tape');
 var util = require('util');
 var exec = require('child_process').exec;
 var path = require('path');
+var sinon = require('sinon');
+var cwlogs = require('cwlogs');
+var stream = require('stream');
+var crypto = require('crypto');
 
 var log = console.log.bind(console);
 var logger = path.resolve(__dirname, '..', 'bin', 'watchbot-log.js');
@@ -67,4 +71,42 @@ test('[logs] via CLI: adds prefixes to stdin, splits multiline', function(assert
   logging.stdin.write('ham and eggs\nbacon lettuce and tomato\n');
   logging.stdin.write('roast beef and cheddar');
   logging.stdin.end();
+});
+
+test('[logs] fetch a ton of logs', function(assert) {
+  var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
+  var messageId = 'message-id';
+
+  var logs = '';
+  for (var i = 0; i < 70; i++) logs += crypto.randomBytes(512).toString('hex') + '\n';
+
+  sinon.stub(cwlogs, 'readable', function(options) {
+    assert.deepEqual(options, {
+      region: 'eu-west-1',
+      group: 'some-log-group',
+      pattern: 'message-id',
+      messages: true
+    }, 'creates cwlog reader with expected options');
+
+    var readable = new stream.Readable();
+    readable._read = function() {
+      readable.push(logs);
+      readable.push(null);
+    };
+
+    return readable;
+  });
+
+  watchbot.fetch(logGroupArn, messageId, function(err, data) {
+    if (err) return assert.end(err);
+
+    assert.ok(data.length < 50 * 1024, 'output limited to 50kb');
+
+    var lastFound = data.split('\n').slice(-1)[0];
+    var lastExpected = logs.split('\n').slice(-1)[0];
+    assert.equal(lastFound, lastExpected, 'returned most recent log');
+
+    cwlogs.readable.restore();
+    assert.end();
+  });
 });

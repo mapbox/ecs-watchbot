@@ -10,5 +10,6 @@ module.exports = {
   tasks: require('./lib/tasks'),
   template: require('./lib/template'),
   resources: require('./lib/resources'),
-  log: require('./lib/logs')
+  log: require('./lib/logs').log,
+  fetch: require('./lib/logs').fetch
 };

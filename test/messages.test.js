@@ -1,6 +1,9 @@
 var util = require('./util');
 var watchbot = require('..');
 var d3 = require('d3-queue');
+var cwlogs = require('cwlogs');
+var stream = require('stream');
+var sinon = require('sinon');
 
 util.mock('[messages] poll - more than max messages to receive', function(assert) {
   var queueUrl = 'https://fake.us-east-1/sqs/url';
@@ -565,8 +568,142 @@ util.mock('[messages] complete - stack name is way too long', function(assert) {
       if (err) return assert.end(err);
 
       // make assertions
-      assert.equal(context.sns.publish.length, 1, 'one notification sent', 'subject was shortened');
-      assert.equal(context.sns.publish[0].Subject, 'Watchbot task failure: 1');
+      assert.equal(context.sns.publish.length, 1, 'one notification sent');
+      assert.equal(context.sns.publish[0].Subject, 'Watchbot task failure: 1', 'subject was shortened');
+      assert.end();
+    });
+  });
+});
+
+util.mock('[messages] complete - notification contains log snippet', function(assert) {
+  var queueUrl = 'https://fake.us-east-1/sqs/url';
+  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
+  var stackName = 'test';
+  var context = this;
+  var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
+  var logs = 'oh snap it broke!\n';
+
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, logGroupArn);
+
+  context.sqs.messages = [
+    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  // mock the command to read logs underlaying watchbot.fetch
+  sinon.stub(cwlogs, 'readable', function(options) {
+    assert.equal(options.group, 'some-log-group', 'created cwlogs client with expected log group');
+    assert.equal(options.region, 'eu-west-1', 'created cwlogs client with expected region');
+
+    var readable = new stream.Readable();
+    readable._read = function() {
+      readable.push(logs);
+      readable.push(null);
+    };
+
+    return readable;
+  });
+
+  // first poll in order to get the messages in flight
+  messages.poll(4, function(err) {
+    if (err) return assert.end(err);
+
+    // Then generate fake finishedTask objects for each message
+    var finishedTasks = [
+      {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
+        reason: 'failed',
+        env: {
+          MessageId: '1',
+          Subject: 'subject1',
+          Message: 'message1',
+          SentTimestamp: '10',
+          ApproximateFirstReceiveTimestamp: '20',
+          ApproximateReceiveCount: '1'
+        },
+        outcome: 'return & notify'
+      }
+    ];
+
+    // complete each finishedTask
+    var queue = d3.queue();
+    finishedTasks.forEach(function(finishedTask) {
+      queue.defer(messages.complete, finishedTask);
+    });
+    queue.awaitAll(function(err) {
+      if (err) return assert.end(err);
+
+      // make assertions
+      assert.equal(context.sns.publish.length, 1, 'one notification sent');
+
+      var notification = context.sns.publish[0].Message;
+      var expected = new RegExp('Recent logs:\n' + logs);
+      assert.ok(expected.test(notification), 'log snippet included in notification');
+      cwlogs.readable.restore();
+      assert.end();
+    });
+  });
+});
+
+util.mock('[messages] complete - failure to read CloudWatch logs', function(assert) {
+  var queueUrl = 'https://fake.us-east-1/sqs/url';
+  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
+  var stackName = 'test';
+  var context = this;
+  var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
+
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, logGroupArn);
+
+  context.sqs.messages = [
+    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  // mock the command to read logs underlaying watchbot.fetch
+  sinon.stub(cwlogs, 'readable', function() {
+    var readable = new stream.Readable();
+    readable._read = function() {
+      readable.emit('error', new Error('oh snap!'));
+    };
+
+    return readable;
+  });
+
+  // first poll in order to get the messages in flight
+  messages.poll(4, function(err) {
+    if (err) return assert.end(err);
+
+    // Then generate fake finishedTask objects for each message
+    var finishedTasks = [
+      {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
+        reason: 'failed',
+        env: {
+          MessageId: '1',
+          Subject: 'subject1',
+          Message: 'message1',
+          SentTimestamp: '10',
+          ApproximateFirstReceiveTimestamp: '20',
+          ApproximateReceiveCount: '1'
+        },
+        outcome: 'return & notify'
+      }
+    ];
+
+    // complete each finishedTask
+    var queue = d3.queue();
+    finishedTasks.forEach(function(finishedTask) {
+      queue.defer(messages.complete, finishedTask);
+    });
+    queue.awaitAll(function(err) {
+      assert.equal(err.message, 'oh snap!', 'cwlogs error passed through to callback');
+      cwlogs.readable.restore();
       assert.end();
     });
   });
