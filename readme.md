@@ -140,7 +140,7 @@ ECS_AVAILABLE_LOGGING_DRIVERS=["json-file","awslogs"]
 
 See [the AWS documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html) for more information.
 
-In order to help isolate and aggregate logs from any single message, watchbot provides a logging helper that will prefix each line with the ID of the message being processed.
+In order to help isolate and aggregate logs from any single message, watchbot provides a logging helper that will prefix each line with the ID of the message being processed. Use these utilities in your worker scripts to make sure that your logs are consistent and easy to search.
 
 ```js
 var watchbot = require('watchbot');
