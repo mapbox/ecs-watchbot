@@ -59,7 +59,7 @@ util.mock('[resources] available', function(assert) {
     if (err) assert.end(err);
 
     assert.deepEqual(resources.status, {
-      instances: [ 'arn:aws:ecs:us-east-1:1234567890:some/fake' ],
+      instances: ['arn:aws:ecs:us-east-1:1234567890:some/fake'],
       registered: { cpu: 100, memory: 100 },
       available: { cpu: 100, memory: 100 },
       required: { cpu: 0, memory: 5 }

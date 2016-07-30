@@ -24,18 +24,15 @@
     "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
   },
   "bin": {
-    "watchbot-template-builder": "./bin/watchbot-template-builder.js",
     "watchbot-log": "./bin/watchbot-log.js"
   },
   "dependencies": {
     "aws-sdk": "^2.4.11",
     "binary-split": "^1.0.2",
-    "cloudfriend": "mapbox/cloudfriend",
+    "cloudfriend": "https://github.com/mapbox/cloudfriend/tarball/master",
     "cwlogs": "^1.0.2",
     "d3-queue": "^2.0.3",
     "fastlog": "^1.0.0",
-    "inquirer": "^1.0.2",
-    "minimist": "^1.2.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
