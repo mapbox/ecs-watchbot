@@ -35,11 +35,11 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
 
-  assert.ok(watch.refs.logGroup, 'logGroup ref');
-  assert.ok(watch.refs.topic, 'topic ref');
-  assert.notOk(watch.refs.accessKeyId, 'accessKeyId ref');
-  assert.notOk(watch.refs.secretAccessKey, 'secretAccessKey ref');
-  assert.notOk(watch.refs.webhookKey, 'webhookKey ref');
+  assert.ok(watch.ref.logGroup, 'logGroup ref');
+  assert.ok(watch.ref.topic, 'topic ref');
+  assert.notOk(watch.ref.accessKeyId, 'accessKeyId ref');
+  assert.notOk(watch.ref.secretAccessKey, 'secretAccessKey ref');
+  assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
 
   assert.end();
 });
@@ -92,11 +92,11 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
 
-  assert.ok(watch.refs.logGroup, 'logGroup ref');
-  assert.ok(watch.refs.topic, 'topic ref');
-  assert.ok(watch.refs.accessKeyId, 'accessKeyId ref');
-  assert.ok(watch.refs.secretAccessKey, 'secretAccessKey ref');
-  assert.notOk(watch.refs.webhookKey, 'webhookKey ref');
+  assert.ok(watch.ref.logGroup, 'logGroup ref');
+  assert.ok(watch.ref.topic, 'topic ref');
+  assert.ok(watch.ref.accessKeyId, 'accessKeyId ref');
+  assert.ok(watch.ref.secretAccessKey, 'secretAccessKey ref');
+  assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
 
   assert.end();
 });
@@ -150,11 +150,11 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
 
-  assert.ok(watch.refs.logGroup, 'logGroup ref');
-  assert.ok(watch.refs.topic, 'topic ref');
-  assert.ok(watch.refs.accessKeyId, 'accessKeyId ref');
-  assert.ok(watch.refs.secretAccessKey, 'secretAccessKey ref');
-  assert.ok(watch.refs.webhookKey, 'webhookKey ref');
+  assert.ok(watch.ref.logGroup, 'logGroup ref');
+  assert.ok(watch.ref.topic, 'topic ref');
+  assert.ok(watch.ref.accessKeyId, 'accessKeyId ref');
+  assert.ok(watch.ref.secretAccessKey, 'secretAccessKey ref');
+  assert.ok(watch.ref.webhookKey, 'webhookKey ref');
 
   assert.end();
 });
@@ -208,11 +208,11 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
 
-  assert.ok(watch.refs.logGroup, 'logGroup ref');
-  assert.ok(watch.refs.topic, 'topic ref');
-  assert.ok(watch.refs.accessKeyId, 'accessKeyId ref');
-  assert.ok(watch.refs.secretAccessKey, 'secretAccessKey ref');
-  assert.ok(watch.refs.webhookKey, 'webhookKey ref');
+  assert.ok(watch.ref.logGroup, 'logGroup ref');
+  assert.ok(watch.ref.topic, 'topic ref');
+  assert.ok(watch.ref.accessKeyId, 'accessKeyId ref');
+  assert.ok(watch.ref.secretAccessKey, 'secretAccessKey ref');
+  assert.ok(watch.ref.webhookKey, 'webhookKey ref');
 
   assert.end();
 });
