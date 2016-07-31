@@ -37,7 +37,6 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
 
   assert.ok(watch.refs.logGroup, 'logGroup ref');
   assert.ok(watch.refs.topic, 'topic ref');
-  assert.ok(watch.refs.workerPolicy, 'workerPolicy ref');
   assert.notOk(watch.refs.accessKeyId, 'accessKeyId ref');
   assert.notOk(watch.refs.secretAccessKey, 'secretAccessKey ref');
   assert.notOk(watch.refs.webhookKey, 'webhookKey ref');
@@ -95,7 +94,6 @@ test('[template] webhooks but no key, no references', function(assert) {
 
   assert.ok(watch.refs.logGroup, 'logGroup ref');
   assert.ok(watch.refs.topic, 'topic ref');
-  assert.ok(watch.refs.workerPolicy, 'workerPolicy ref');
   assert.ok(watch.refs.accessKeyId, 'accessKeyId ref');
   assert.ok(watch.refs.secretAccessKey, 'secretAccessKey ref');
   assert.notOk(watch.refs.webhookKey, 'webhookKey ref');
@@ -154,7 +152,6 @@ test('[template] include all resources, no references', function(assert) {
 
   assert.ok(watch.refs.logGroup, 'logGroup ref');
   assert.ok(watch.refs.topic, 'topic ref');
-  assert.ok(watch.refs.workerPolicy, 'workerPolicy ref');
   assert.ok(watch.refs.accessKeyId, 'accessKeyId ref');
   assert.ok(watch.refs.secretAccessKey, 'secretAccessKey ref');
   assert.ok(watch.refs.webhookKey, 'webhookKey ref');
@@ -213,7 +210,6 @@ test('[template] include all resources, all references', function(assert) {
 
   assert.ok(watch.refs.logGroup, 'logGroup ref');
   assert.ok(watch.refs.topic, 'topic ref');
-  assert.ok(watch.refs.workerPolicy, 'workerPolicy ref');
   assert.ok(watch.refs.accessKeyId, 'accessKeyId ref');
   assert.ok(watch.refs.secretAccessKey, 'secretAccessKey ref');
   assert.ok(watch.refs.webhookKey, 'webhookKey ref');
