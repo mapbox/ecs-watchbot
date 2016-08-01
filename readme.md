@@ -19,7 +19,7 @@ A library to help run a highly-scalable AWS service that performs data processin
 - a cluster that Watchbot will run on
 - [an IAM role](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) that the [EC2s in the cluster can assume](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html)
 - a docker image representing your task, housed in [an ECR repository](http://docs.aws.amazon.com/AmazonECR/latest/userguide/Repositories.html) and tagged with a git sha or a git tag
-- a CloudFormation template defining any configuration Parameters and other resources that your service needs in order to function
+- a CloudFormation template defining any configuration Parameters, permissions, and other resources that your service needs in order to perform its processing.
 
 ## What Watchbot provides:
 
@@ -31,7 +31,7 @@ A library to help run a highly-scalable AWS service that performs data processin
 
 ## Task runtime environment
 
-In addition to any environment variables pre-configured for your task in the template, Watchbot will provide each task with a set of environment variables representing the details of the message which it should process:
+In addition to any environment variables pre-configured for your task via `watchbot.template()` (see below), Watchbot will provide each task with a set of environment variables representing the details of the message which it should process:
 
 Name | Description
 --- | ---
@@ -62,11 +62,111 @@ other | failure | message is returned to the queue and a notification is sent
 
 ## Building a Watchbot template
 
-... coming soon ...
+Watchbot provides two important methods to help you build a CloudFormation template:
 
-## Watchbot's parameters
+- **watchbot.template(options)** creates CloudFormation JSON objects for the various Resources that Watchbot needs in order to do its job.
+- **watchbot.merge(...templates)** takes multiple CloudFormation templates and merges them together into a single JSON template.
 
-... coming soon ...
+With those two tools in hand, creating a Watchbot stack will generally involve:
+- determine the appropriate `options` to provide to `watchbot.template` for your situation. See the table below for more details on the various required options, optional ones, and default values.
+- write a CloudFormation template that defines the configuration parameters, stack outputs, permissions required by your worker containers, and any additional resources that are required in order to process jobs.
+- write a script which merges the two templates, adding Watchbot's resources to your template.
+- use [cfn-config](https://github.com/mapbox/cfn-config) to deploy the template by referencing the script that you've written.
+
+Here's an example of a minimal script defining a Watchbot stack that can be deployed using cfn-config:
+
+```js
+var watchbot = require('watchbot');
+
+// Build your own template
+var myTemplate = {
+  Parameters: {
+    GitSha: { Type: 'String' },
+    Cluster: { Type: 'String' },
+    ClusterRole: { Type: 'String' },
+    AlarmEmail: { Type: 'String' },
+  },
+  Resources: {
+    MyWorkerPolicy: {
+      Type: 'AWS::IAM::Policy',
+      Description: 'The IAM policy required by your worker',
+      Properties: {
+        Roles: [{ Ref: 'Cluster' }],
+        PolicyName: 'my-worker-policy',
+        PolicyDocument: {
+          Statement: [{ Effect: 'Allow', Action: ['s3:*'], Resource: 'arn:aws:s3:::my-bucket' }]
+        }
+      }
+    }
+  }
+};
+
+// Generate watchbot resources. You can use references to Parameters and
+// resources from your own template.
+var watcher = watchbot.template({
+  cluster: { Ref: 'Cluster' },
+  clusterRole: { Ref: 'ClusterRole' },
+  watchbotVersion: 'v0.0.7',
+  service: 'my-repo-name',
+  serviceVersion: { Ref: 'GitSha' },
+  env: { BucketName: 'my-bucket' },
+  workers: 5,
+  reservation: { memory: 512 },
+  notificationEmail: { Ref: 'AlarmEmail' },
+});
+
+module.exports = watchbot.merge(myTemplate, watcher);
+```
+
+### watchbot.template options
+
+Use the following configuration options to adjust the resources that Watchbot will provide.
+
+Name | Default | Description
+--- | --- | ---
+cluster | | the ARN for an ECS cluster
+clusterRole | | the name of the cluster's IAM role
+watchbotVersion | | the version of watchbot to use
+service | | the name of the worker service
+serviceVersion | | the version of the worker service to use
+env | {} | environment variables to set on worker containers
+notificationEmail | | the email address to receive failure notifications
+prefix | Watchbot | a prefix for logical resource names
+user | false | create an IAM user with permission to publish
+webhook | false | create an HTTPS endpoint to accept jobs
+webbhookKey | false | require an access token on the webhook endpoint
+watchers | 1 | number of watcher containers
+workers | 1 | number of concurrent worker containers per watcher
+backoff | true | retry jobs with exponential backoff
+mounts | '' | defines container mount points from host EC2s
+reservation | {} | specify desired memory/cpu reservations for worker containers
+messageTimeout | 600 | max seconds it takes to process a job
+messageRetention | 1209600 | max seconds a message can remain in SQS
+alarmThreshold | 40 | number of jobs in SQS to trigger alarm
+alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
+
+### watchbot.template references
+
+After building Watchbot resources using `watchbot.template()`, you may wish to reference some of those resources. The object returned from `watchbot.template()` provides references to a few of its resources through a `.ref` property:
+
+Name | Description
+--- | ---
+.ref.logGroup | the CloudWatch LogGroup where watcher and worker container's logs are written
+.ref.topic | the SNS topic that you can publish messages to in order to have them processed by Watchbot
+.ref.webhookEnpoint | [conditional] if requested, the URL for the webhook endpoint
+.ref.webhookKey | [conditional] if requested, the access token for making webhook requests
+.ref.accessKeyId | [conditional] if requested, an AccessKeyId with permission to publish to Watchbot's SNS topic
+.ref.secretAccessKey | [conditional] if requested, a SecretAccessKey with permission to publish to Watchbot's SNS topic
+
+These properties each return CloudFormation references (i.e. `{"Ref": "..."}` objects) that can be used in your template. In the above example, if I wanted my stack to output the SNS topic built by Watchbot, I could:
+
+```js
+var outputs = {
+  Outputs: { SnsTopic: { Value: watcher.ref.topic } }
+};
+
+module.exports.watchbot.merge(myTemplate, watcher, outputs);
+```
 
 ## Logging
 
