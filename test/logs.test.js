@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 var watchbot = require('..');
 var test = require('tape');
 var util = require('util');
@@ -77,7 +79,7 @@ test('[logs] fetch a ton of logs', function(assert) {
   var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
   var messageId = 'message-id';
 
-  var logs = '\n\n\n';
+  var logs = '';
   for (var i = 0; i < 70; i++) logs += crypto.randomBytes(512).toString('hex') + '\n';
 
   sinon.stub(cwlogs, 'readable', function(options) {

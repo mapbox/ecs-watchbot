@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 var AWS = require('aws-sdk');
 var tape = require('tape');
 var crypto = require('crypto');

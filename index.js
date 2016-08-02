@@ -1,3 +1,5 @@
+var cf = require('cloudfriend');
+
 /**
  * Watchbot's JavaScript API
  *
@@ -11,5 +13,20 @@ module.exports = {
   template: require('./lib/template'),
   resources: require('./lib/resources'),
   log: require('./lib/logs').log,
-  fetch: require('./lib/logs').fetch
+  fetch: require('./lib/logs').fetch,
+
+  /**
+   * Merges CloudFormation templates together.
+   *
+   * @static
+   * @memberof watchbot
+   * @name merge
+   * @param {...object} template - a CloudFormation template to merge with
+   * @returns {object} a CloudFormation template including all the Metadata,
+   * Parameters, Mappings, Conditions, Resources, and Outputs from the input
+   * templates
+   * @throws errors when there is overlap in logical resource names between
+   * templates
+   */
+  merge: cf.merge
 };
