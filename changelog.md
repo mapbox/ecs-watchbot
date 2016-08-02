@@ -1,3 +1,7 @@
+### 0.0.7
+
+- overhauls template building process, providing scripts that expose Watchbot's resources as JavaScript objects
+
 ### 0.0.6
 
 - container logs are sent from Docker to CloudWatch Logs instead of syslog
