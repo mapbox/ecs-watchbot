@@ -1,13 +1,19 @@
 var test = require('tape');
 var watchbot = require('..');
 var cf = require('cloudfriend');
+var fs = require('fs');
+var path = require('path');
+var os = require('os');
+var crypto = require('crypto');
+
+var pkg = require(path.resolve(__dirname, '..', 'package.json'));
+var version = pkg.version;
 
 test('[template] bare-bones, all defaults, no references', function(assert) {
   var watch = watchbot.template({
     notificationEmail: 'devnull@mapbox.com',
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
     clusterRole: 'cluster-Role',
-    watchbotVersion: 'v0.0.7',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
   });
@@ -32,6 +38,9 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotWatcherPolicy, 'watcher policy');
   assert.ok(watch.Resources.WatchbotWorker, 'worker');
   assert.ok(watch.Resources.WatchbotWatcher, 'watcher');
+  var image = watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Image;
+  var tag = image['Fn::Join'][1].slice(-2).join(''); // phew
+  assert.ok((new RegExp('ecs-watchbot:v' + version + '$')).test(tag), 'defaults to correct watchbotVersion');
   assert.ok(watch.Resources.WatchbotService, 'service');
 
   assert.ok(watch.ref.logGroup, 'logGroup ref');
@@ -216,4 +225,44 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.ref.webhookKey, 'webhookKey ref');
 
   assert.end();
+});
+
+test('[template] resources are valid', function(assert) {
+  var watch = watchbot.template({
+    prefix: 'test',
+    user: true,
+    webhook: true,
+    webhookKey: true,
+    notificationEmail: 'devnull@mapbox.com',
+    cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+    clusterRole: 'cluster-Role',
+    watchbotVersion: 'v0.0.7',
+    service: 'my-service',
+    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
+    command: ['bash'],
+    env: { SomeKey: 'SomeValue', AnotherKey: 'AnotherValue' },
+    watchers: 2,
+    workers: 2,
+    backoff: false,
+    mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+    reservation: {
+      memory: 512,
+      cpu: 4096
+    },
+    messageTimeout: 300,
+    messageRetention: 3000,
+    alarmThreshold: 10,
+    alarmPeriods: 6
+  });
+
+  var tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex') + '.json');
+  fs.writeFileSync(tmp, JSON.stringify({ Resources: watch.Resources }));
+
+  cf.validate(tmp).then(function() {
+    assert.pass('valid');
+    assert.end();
+  }).catch(function(err) {
+    assert.ifError(err, 'invalid');
+    assert.end();
+  });
 });

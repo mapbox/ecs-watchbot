@@ -126,11 +126,11 @@ Name | Default | Description
 --- | --- | ---
 cluster | | the ARN for an ECS cluster
 clusterRole | | the name of the cluster's IAM role
-watchbotVersion | | the version of watchbot to use
 service | | the name of the worker service
 serviceVersion | | the version of the worker service to use
 env | {} | environment variables to set on worker containers
 command | undefined | overrides a Dockerfile's `CMD`
+watchbotVersion | installed version | the version of watchbot to use
 notificationEmail | | the email address to receive failure notifications
 prefix | Watchbot | a prefix for logical resource names
 user | false | create an IAM user with permission to publish
