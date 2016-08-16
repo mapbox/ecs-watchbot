@@ -16,7 +16,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
     clusterRole: 'cluster-Role',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
-    logAggregationFunction: "arn:aws:lambda:us-east-1:123456789000:function:log-fake-test"
+    logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test'
   });
 
   assert.notOk(watch.Resources.WatchbotUser, 'user');
