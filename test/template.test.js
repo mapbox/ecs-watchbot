@@ -30,6 +30,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.notOk(watch.Resources.WatchbotWebhookKey, 'key');
   assert.ok(watch.Resources.WatchbotNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.WatchbotLogGroup, 'log group');
+  assert.notOk(watch.Resources.WatchbotLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.WatchbotQueue, 'queue');
   assert.ok(watch.Resources.WatchbotTopic, 'topic');
   assert.ok(watch.Resources.WatchbotQueuePolicy, 'queue policy');
@@ -42,7 +43,6 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   var tag = image['Fn::Join'][1].slice(-2).join(''); // phew
   assert.ok((new RegExp('ecs-watchbot:v' + version + '$')).test(tag), 'defaults to correct watchbotVersion');
   assert.ok(watch.Resources.WatchbotService, 'service');
-
   assert.ok(watch.ref.logGroup, 'logGroup ref');
   assert.ok(watch.ref.topic, 'topic ref');
   assert.notOk(watch.ref.accessKeyId, 'accessKeyId ref');
@@ -90,6 +90,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.notOk(watch.Resources.testWebhookKey, 'key');
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
+  assert.notOk(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
@@ -127,6 +128,7 @@ test('[template] include all resources, no references', function(assert) {
     workers: 2,
     backoff: false,
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+    logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
       memory: 512,
       cpu: 4096
@@ -149,6 +151,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testWebhookKey, 'key');
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
+  assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
@@ -186,6 +189,7 @@ test('[template] include all resources, all references', function(assert) {
     workers: cf.ref('NumWorkers'),
     backoff: cf.ref('UseBackoff'),
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+    logAggregationFunction: cf.ref('LogAggregationFunction'),
     reservation: {
       memory: cf.ref('MemoryReservation'),
       cpu: cf.ref('CpuReservation')
@@ -208,6 +212,7 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testWebhookKey, 'key');
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
+  assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');

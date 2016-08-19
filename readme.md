@@ -139,6 +139,7 @@ webbhookKey | false | require an access token on the webhook endpoint
 watchers | 1 | number of watcher containers
 workers | 1 | number of concurrent worker containers per watcher
 backoff | true | retry jobs with exponential backoff
+logAggregationFunction | | the ARN of the log collection Lambda function
 mounts | '' | defines container mount points from host EC2s
 reservation | {} | specify desired memory/cpu reservations for worker containers
 messageTimeout | 600 | max seconds it takes to process a job
