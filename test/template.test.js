@@ -15,7 +15,8 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
     clusterRole: 'cluster-Role',
     service: 'my-service',
-    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
+    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
+    logAggregationFunction: "arn:aws:lambda:us-east-1:123456789000:function:log-fake-test"
   });
 
   assert.notOk(watch.Resources.WatchbotUser, 'user');
@@ -42,7 +43,6 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   var tag = image['Fn::Join'][1].slice(-2).join(''); // phew
   assert.ok((new RegExp('ecs-watchbot:v' + version + '$')).test(tag), 'defaults to correct watchbotVersion');
   assert.ok(watch.Resources.WatchbotService, 'service');
-
   assert.ok(watch.ref.logGroup, 'logGroup ref');
   assert.ok(watch.ref.topic, 'topic ref');
   assert.notOk(watch.ref.accessKeyId, 'accessKeyId ref');
@@ -90,6 +90,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.notOk(watch.Resources.testWebhookKey, 'key');
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
+  assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
@@ -149,6 +150,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testWebhookKey, 'key');
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
+  assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
@@ -208,6 +210,7 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testWebhookKey, 'key');
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
+  assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
