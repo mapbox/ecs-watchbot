@@ -30,6 +30,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.notOk(watch.Resources.WatchbotWebhookKey, 'key');
   assert.ok(watch.Resources.WatchbotNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.WatchbotLogGroup, 'log group');
+  assert.notOk(watch.Resources.WatchbotLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.WatchbotQueue, 'queue');
   assert.ok(watch.Resources.WatchbotTopic, 'topic');
   assert.ok(watch.Resources.WatchbotQueuePolicy, 'queue policy');
