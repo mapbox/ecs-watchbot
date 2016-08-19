@@ -15,8 +15,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
     clusterRole: 'cluster-Role',
     service: 'my-service',
-    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
-    logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test'
+    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
   });
 
   assert.notOk(watch.Resources.WatchbotUser, 'user');
@@ -90,7 +89,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.notOk(watch.Resources.testWebhookKey, 'key');
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
-  assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
+  assert.notOk(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
@@ -128,6 +127,7 @@ test('[template] include all resources, no references', function(assert) {
     workers: 2,
     backoff: false,
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+    logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
       memory: 512,
       cpu: 4096
@@ -188,6 +188,7 @@ test('[template] include all resources, all references', function(assert) {
     workers: cf.ref('NumWorkers'),
     backoff: cf.ref('UseBackoff'),
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+    logAggregationFunction: cf.ref('LogAggregationFunction'),
     reservation: {
       memory: cf.ref('MemoryReservation'),
       cpu: cf.ref('CpuReservation')
