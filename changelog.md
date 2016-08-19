@@ -1,3 +1,9 @@
+### 0.0.8
+
+- adds `logAggregationFunction` argument to watchbot.template
+- allow caller to set container CMD
+- template validation, cleanups, default watchbot version
+
 ### 0.0.7
 
 - overhauls template building process, providing scripts that expose Watchbot's resources as JavaScript objects
