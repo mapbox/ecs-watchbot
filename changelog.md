@@ -1,3 +1,7 @@
+### 0.0.9
+
+- fixes a template generation bug for callers that do not use mount points
+
 ### 0.0.8
 
 - adds `logAggregationFunction` argument to watchbot.template
