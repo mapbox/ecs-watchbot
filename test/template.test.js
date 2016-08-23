@@ -38,6 +38,8 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotWorkerPolicy, 'worker policy');
   assert.ok(watch.Resources.WatchbotWatcherPolicy, 'watcher policy');
   assert.ok(watch.Resources.WatchbotWorker, 'worker');
+  assert.notOk(watch.Resources.WatchbotWorker.Properties.Volumes, 'no mounts, no volumes');
+  assert.notOk(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].MountPoints, 'no mounts, no mount points');
   assert.ok(watch.Resources.WatchbotWatcher, 'watcher');
   var image = watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Image;
   var tag = image['Fn::Join'][1].slice(-2).join(''); // phew
