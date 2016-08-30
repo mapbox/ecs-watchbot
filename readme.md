@@ -164,6 +164,8 @@ Name | Description
 --- | ---
 .ref.logGroup | the CloudWatch LogGroup where watcher and worker container's logs are written
 .ref.topic | the SNS topic that you can publish messages to in order to have them processed by Watchbot
+.ref.queueUrl | the URL of the SQS Queue Watchbot built
+.ref.queueArn | the ARN of the SQS Queue Watchbot built
 .ref.webhookEnpoint | [conditional] if requested, the URL for the webhook endpoint
 .ref.webhookKey | [conditional] if requested, the access token for making webhook requests
 .ref.accessKeyId | [conditional] if requested, an AccessKeyId with permission to publish to Watchbot's SNS topic
