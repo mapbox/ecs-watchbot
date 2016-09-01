@@ -91,7 +91,7 @@ var myTemplate = {
       Type: 'AWS::IAM::Policy',
       Description: 'The IAM policy required by your worker',
       Properties: {
-        Roles: [{ Ref: 'Cluster' }],
+        Roles: [{ Ref: 'ClusterRole' }],
         PolicyName: 'my-worker-policy',
         PolicyDocument: {
           Statement: [{ Effect: 'Allow', Action: ['s3:*'], Resource: 'arn:aws:s3:::my-bucket' }]
