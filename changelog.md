@@ -1,3 +1,11 @@
+### Next
+
+- fixes a bug where `options.command` would break the watcher
+- adds `.ref.queueUrl` and `.ref.queueArn` references to object returned by `watchbot.template()`
+- automatically provide workers with permission to publish to watchbot's SNS topic
+- **Breaking** changes the name of the SQS queue, making it a bit easier to find in the console
+- **Breaking** switch to TaskRole instead of grafting permissions onto a predefined role
+
 ### 0.0.9
 
 - fixes a template generation bug for callers that do not use mount points
