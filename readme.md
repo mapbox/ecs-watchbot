@@ -17,9 +17,8 @@ A library to help run a highly-scalable AWS service that performs data processin
 ## What you provide:
 
 - a cluster that Watchbot will run on
-- [an IAM role](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) that the [EC2s in the cluster can assume](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html)
 - a docker image representing your task, housed in [an ECR repository](http://docs.aws.amazon.com/AmazonECR/latest/userguide/Repositories.html) and tagged with a git sha or a git tag
-- a CloudFormation template defining any configuration Parameters, permissions, and other resources that your service needs in order to perform its processing.
+- a CloudFormation template defining any configuration Parameters, Resources, and Outputs that your service needs in order to perform its processing.
 
 ## What Watchbot provides:
 
@@ -28,6 +27,14 @@ A library to help run a highly-scalable AWS service that performs data processin
 - [an ECS TaskDefinition](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_defintions.html) for your task, using the image you provide
 - watcher container(s) that runs on your cluster and polls the queue, runs your task for each message, removes messages from the queue as tasks complete, and sends notifications if tasks fail or are retried
 - a script to help you include the resources Watchbot needs to run in your template
+
+## Building a Watchbot service
+
+1. Create a Github repository for your code.
+2. Write and test the code that a worker will perform in response to a message.
+3. Write a Dockerfile at the root of your repository which defines the steps required to bootstrap a worker. If you specify a `CMD` instructions, this will be executed when your worker is launched in response to a message. Note that message details will be provided as environment variables to your worker, and that your worker's exit code will determine whether the message is deleted or returned to the queue (see below).
+4. Use the Dockerfile to build an image and store it in an ECR repository. See [ecs-conex](https://github.com/mapbox/ecs-conex) for a CI framework to do this for you whenever you commit to the repository.
+5. Write and deploy your service using a CloudFormation template. See instructions below for more details about building the template.
 
 ## Task runtime environment
 
@@ -73,49 +80,51 @@ With those two tools in hand, creating a Watchbot stack will generally involve:
 - write a script which merges the two templates, adding Watchbot's resources to your template.
 - use [cfn-config](https://github.com/mapbox/cfn-config) to deploy the template by referencing the script that you've written.
 
-Here's an example of a minimal script defining a Watchbot stack that can be deployed using cfn-config:
+As an example, consider a service where the workers are expected to manipulate objects in an S3 bucket. In the CloudFormation template, we wish to create the S3 bucket that our workers will interact with, and then build the Watchbot resources required to perform the task in response to SNS events.
 
 ```js
 var watchbot = require('watchbot');
 
-// Build your own template
+// Build the parameters, resources, and outputs that your service needs
 var myTemplate = {
   Parameters: {
     GitSha: { Type: 'String' },
     Cluster: { Type: 'String' },
-    ClusterRole: { Type: 'String' },
-    AlarmEmail: { Type: 'String' },
+    AlarmEmail: { Type: 'String' }
   },
   Resources: {
-    MyWorkerPolicy: {
-      Type: 'AWS::IAM::Policy',
-      Description: 'The IAM policy required by your worker',
+    MyBucket: {
+      Type: 'AWS::S3::Bucket',
       Properties: {
-        Roles: [{ Ref: 'ClusterRole' }],
-        PolicyName: 'my-worker-policy',
-        PolicyDocument: {
-          Statement: [{ Effect: 'Allow', Action: ['s3:*'], Resource: 'arn:aws:s3:::my-bucket' }]
-        }
+        Name: 'my-bucket'
       }
     }
   }
 };
 
-// Generate watchbot resources. You can use references to Parameters and
-// resources from your own template.
-var watcher = watchbot.template({
+// Generate Watchbot resources. You can use references to parameters and
+// resources that were defined above.
+var watch = watchbot.template({
   cluster: { Ref: 'Cluster' },
-  clusterRole: { Ref: 'ClusterRole' },
-  watchbotVersion: 'v0.0.7',
+  watchbotVersion: 'v0.0.8',
   service: 'my-repo-name',
   serviceVersion: { Ref: 'GitSha' },
   env: { BucketName: 'my-bucket' },
   workers: 5,
   reservation: { memory: 512 },
   notificationEmail: { Ref: 'AlarmEmail' },
+  permissions: [
+    {
+      Effect: 'Allow',
+      Action: ['s3:*'],
+      Resource: {
+        'Fn::Join': ['', ['arn:aws:s3:::', { Ref: 'MyBucket' }]]
+      }
+    }
+  ]
 });
 
-module.exports = watchbot.merge(myTemplate, watcher);
+module.exports = watchbot.merge(myTemplate, watch);
 ```
 
 ### watchbot.template options
@@ -125,9 +134,9 @@ Use the following configuration options to adjust the resources that Watchbot wi
 Name | Default | Description
 --- | --- | ---
 cluster | | the ARN for an ECS cluster
-clusterRole | | the name of the cluster's IAM role
 service | | the name of the worker service
 serviceVersion | | the version of the worker service to use
+permissions | [] | permissions to any AWS resources that the worker will need to perform a task
 env | {} | environment variables to set on worker containers
 command | undefined | overrides a Dockerfile's `CMD`
 watchbotVersion | installed version | the version of watchbot to use
@@ -155,12 +164,14 @@ Name | Description
 --- | ---
 .ref.logGroup | the CloudWatch LogGroup where watcher and worker container's logs are written
 .ref.topic | the SNS topic that you can publish messages to in order to have them processed by Watchbot
+.ref.queueUrl | the URL of the SQS Queue Watchbot built
+.ref.queueArn | the ARN of the SQS Queue Watchbot built
 .ref.webhookEnpoint | [conditional] if requested, the URL for the webhook endpoint
 .ref.webhookKey | [conditional] if requested, the access token for making webhook requests
 .ref.accessKeyId | [conditional] if requested, an AccessKeyId with permission to publish to Watchbot's SNS topic
 .ref.secretAccessKey | [conditional] if requested, a SecretAccessKey with permission to publish to Watchbot's SNS topic
 
-These properties each return CloudFormation references (i.e. `{"Ref": "..."}` objects) that can be used in your template. In the above example, if I wanted my stack to output the SNS topic built by Watchbot, I could:
+These properties each return CloudFormation references (i.e. `{ "Ref": "..." }` objects) that can be used in your template. In the above example, if I wanted my stack to output the SNS topic built by Watchbot, I could:
 
 ```js
 var outputs = {
@@ -182,6 +193,8 @@ ECS_AVAILABLE_LOGGING_DRIVERS=["json-file","awslogs"]
 
 See [the AWS documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html) for more information.
 
+### Formatting log messages
+
 In order to help isolate and aggregate logs from any single message, watchbot provides a logging helper that will prefix each line with the ID of the message being processed. Use these utilities in your worker scripts to make sure that your logs are consistent and easy to search.
 
 ```js
@@ -189,7 +202,7 @@ var watchbot = require('watchbot');
 
 // watchbot.log() works just like console.log()
 var breakfast = 'eggs and beans';
-watchbot.log('This is something that I want logged: ', breakfast);
+watchbot.log('This is something that I want logged: %s', breakfast);
 // [Thu, 28 Jul 2016 00:12:37 GMT] [worker] [e2c045cc-5606-4950-964b-20877900bccb] This is something that I want logged: eggs and beans
 ```
 
@@ -202,6 +215,6 @@ $ npm install -g watchbot
 # Log a single line instead of using `echo`
 $ watchbot-log "This is something that I want logged: eggs and beans"
 
-# Pipe another command's stdio into watchbot-log
+# Pipe another command's output into watchbot-log
 $ echo "This is something that I want logged: eggs and beans" | watchbot-log
 ```

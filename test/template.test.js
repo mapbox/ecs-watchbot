@@ -13,7 +13,6 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   var watch = watchbot.template({
     notificationEmail: 'devnull@mapbox.com',
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
-    clusterRole: 'cluster-Role',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
   });
@@ -35,8 +34,9 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotTopic, 'topic');
   assert.ok(watch.Resources.WatchbotQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.WatchbotQueueSizeAlarm, 'queue alarm');
-  assert.ok(watch.Resources.WatchbotWorkerPolicy, 'worker policy');
-  assert.ok(watch.Resources.WatchbotWatcherPolicy, 'watcher policy');
+  assert.ok(watch.Resources.WatchbotWorkerRole, 'worker role');
+  assert.equal(watch.Resources.WatchbotWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
+  assert.ok(watch.Resources.WatchbotWatcherRole, 'watcher role');
   assert.ok(watch.Resources.WatchbotWorker, 'worker');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.Volumes, 'no mounts, no volumes');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].MountPoints, 'no mounts, no mount points');
@@ -45,8 +45,11 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   var tag = image['Fn::Join'][1].slice(-2).join(''); // phew
   assert.ok((new RegExp('ecs-watchbot:v' + version + '$')).test(tag), 'defaults to correct watchbotVersion');
   assert.ok(watch.Resources.WatchbotService, 'service');
-  assert.ok(watch.ref.logGroup, 'logGroup ref');
-  assert.ok(watch.ref.topic, 'topic ref');
+
+  assert.deepEqual(watch.ref.logGroup, cf.ref('WatchbotLogGroup'), 'logGroup ref');
+  assert.deepEqual(watch.ref.topic, cf.ref('WatchbotTopic'), 'topic ref');
+  assert.deepEqual(watch.ref.queueUrl, cf.ref('WatchbotQueue'), 'queueUrl ref');
+  assert.deepEqual(watch.ref.queueArn, cf.getAtt('WatchbotQueue', 'Arn'), 'queueArn ref');
   assert.notOk(watch.ref.accessKeyId, 'accessKeyId ref');
   assert.notOk(watch.ref.secretAccessKey, 'secretAccessKey ref');
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
@@ -61,7 +64,6 @@ test('[template] webhooks but no key, no references', function(assert) {
     webhook: true,
     notificationEmail: 'devnull@mapbox.com',
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
-    clusterRole: 'cluster-Role',
     watchbotVersion: 'v0.0.7',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
@@ -97,16 +99,19 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
-  assert.ok(watch.Resources.testWorkerPolicy, 'worker policy');
-  assert.ok(watch.Resources.testWatcherPolicy, 'watcher policy');
+  assert.ok(watch.Resources.testWorkerRole, 'worker role');
+  assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
+  assert.ok(watch.Resources.testWatcherRole, 'watcher role');
   assert.ok(watch.Resources.testWorker, 'worker');
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
 
-  assert.ok(watch.ref.logGroup, 'logGroup ref');
-  assert.ok(watch.ref.topic, 'topic ref');
-  assert.ok(watch.ref.accessKeyId, 'accessKeyId ref');
-  assert.ok(watch.ref.secretAccessKey, 'secretAccessKey ref');
+  assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
+  assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
+  assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');
+  assert.deepEqual(watch.ref.queueArn, cf.getAtt('testQueue', 'Arn'), 'queueArn ref');
+  assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
+  assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
 
   assert.end();
@@ -120,12 +125,12 @@ test('[template] include all resources, no references', function(assert) {
     webhookKey: true,
     notificationEmail: 'devnull@mapbox.com',
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
-    clusterRole: 'cluster-Role',
     watchbotVersion: 'v0.0.7',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
     command: ['bash'],
     env: { SomeKey: 'SomeValue', AnotherKey: 'AnotherValue' },
+    permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
     watchers: 2,
     workers: 2,
     backoff: false,
@@ -158,18 +163,22 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
-  assert.ok(watch.Resources.testWorkerPolicy, 'worker policy');
-  assert.ok(watch.Resources.testWatcherPolicy, 'watcher policy');
+  assert.ok(watch.Resources.testWorkerRole, 'worker role');
+  assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
+  assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');
+  assert.ok(watch.Resources.testWatcherRole, 'watcher role');
   assert.ok(watch.Resources.testWorker, 'worker');
   assert.ok(watch.Resources.testWatcher, 'watcher');
-  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Command, ['bash'], 'sets worker command');
+  assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Command, ['bash'], 'sets worker command');
   assert.ok(watch.Resources.testService, 'service');
 
-  assert.ok(watch.ref.logGroup, 'logGroup ref');
-  assert.ok(watch.ref.topic, 'topic ref');
-  assert.ok(watch.ref.accessKeyId, 'accessKeyId ref');
-  assert.ok(watch.ref.secretAccessKey, 'secretAccessKey ref');
-  assert.ok(watch.ref.webhookKey, 'webhookKey ref');
+  assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
+  assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
+  assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');
+  assert.deepEqual(watch.ref.queueArn, cf.getAtt('testQueue', 'Arn'), 'queueArn ref');
+  assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
+  assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
+  assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
 
   assert.end();
 });
@@ -182,11 +191,11 @@ test('[template] include all resources, all references', function(assert) {
     webhookKey: true,
     notificationEmail: cf.ref('AlarmEmail'),
     cluster: cf.ref('Cluster'),
-    clusterRole: cf.ref('ClusterRole'),
     watchbotVersion: cf.ref('WatchbotVersion'),
     service: 'my-service',
     serviceVersion: cf.ref('GitSha'),
     env: { SomeKey: cf.ref('SomeResource'), AnotherKey: cf.ref('SomeParameter') },
+    permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
     watchers: cf.ref('NumWatchers'),
     workers: cf.ref('NumWorkers'),
     backoff: cf.ref('UseBackoff'),
@@ -219,17 +228,21 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
-  assert.ok(watch.Resources.testWorkerPolicy, 'worker policy');
-  assert.ok(watch.Resources.testWatcherPolicy, 'watcher policy');
+  assert.ok(watch.Resources.testWorkerRole, 'worker role');
+  assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
+  assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');
+  assert.ok(watch.Resources.testWatcherRole, 'watcher role');
   assert.ok(watch.Resources.testWorker, 'worker');
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
 
-  assert.ok(watch.ref.logGroup, 'logGroup ref');
-  assert.ok(watch.ref.topic, 'topic ref');
-  assert.ok(watch.ref.accessKeyId, 'accessKeyId ref');
-  assert.ok(watch.ref.secretAccessKey, 'secretAccessKey ref');
-  assert.ok(watch.ref.webhookKey, 'webhookKey ref');
+  assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
+  assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
+  assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');
+  assert.deepEqual(watch.ref.queueArn, cf.getAtt('testQueue', 'Arn'), 'queueArn ref');
+  assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
+  assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
+  assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
 
   assert.end();
 });
@@ -242,12 +255,12 @@ test('[template] resources are valid', function(assert) {
     webhookKey: true,
     notificationEmail: 'devnull@mapbox.com',
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
-    clusterRole: 'cluster-Role',
     watchbotVersion: 'v0.0.7',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
     command: ['bash'],
     env: { SomeKey: 'SomeValue', AnotherKey: 'AnotherValue' },
+    permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
     watchers: 2,
     workers: 2,
     backoff: false,
