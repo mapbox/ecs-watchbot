@@ -13,6 +13,7 @@ module.exports = {
   template: require('./lib/template'),
   resources: require('./lib/resources'),
   log: require('./lib/logs').log,
+  logStream: require('./lib/logs').logStream,
   fetch: require('./lib/logs').fetch,
 
   /**

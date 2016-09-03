@@ -30,6 +30,24 @@ test('[logs] via JS: adds prefixes, formats strings', function(assert) {
   assert.end();
 });
 
+test('[logs] via JS streaming API: adds prefixes, formats strings', function(assert) {
+  process.env.MessageId = 'testing';
+
+  var passes = false;
+
+  console.log = function() {
+    passes = /\[worker\] \[testing\] ham and eggs/.test(util.format.apply(null, arguments));
+  };
+
+  var logstream = watchbot.logStream();
+  logstream.write('ham and eggs');
+  console.log = log;
+
+  assert.ok(passes, 'printed expected message');
+  delete process.env.MessageId;
+  assert.end();
+});
+
 test('[logs] via CLI: adds prefixes to provided argument', function(assert) {
   process.env.MessageId = 'testing';
   exec([logger, '"ham and eggs"'].join(' '), function(err, stdout) {
