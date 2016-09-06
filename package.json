@@ -33,6 +33,7 @@
     "cwlogs": "^1.0.2",
     "d3-queue": "^2.0.3",
     "fastlog": "^1.0.0",
+    "stream-combiner": "^0.2.2",
     "underscore": "^1.8.3"
   },
   "devDependencies": {

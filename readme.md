@@ -204,6 +204,10 @@ var watchbot = require('watchbot');
 var breakfast = 'eggs and beans';
 watchbot.log('This is something that I want logged: %s', breakfast);
 // [Thu, 28 Jul 2016 00:12:37 GMT] [worker] [e2c045cc-5606-4950-964b-20877900bccb] This is something that I want logged: eggs and beans
+
+// watchbot.logStream() creates a writable stream that will log everything with watchbot.log
+var logstream = watchbot.logStream();
+require('child_process').exec('cat ~/.bashrc').stdout.pipe(logstream);
 ```
 
 There is also a CLI tool to accomplish the same task:
