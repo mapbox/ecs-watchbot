@@ -1,8 +1,9 @@
-### Next
+### 0.0.10
 
 - fixes a bug where `options.command` would break the watcher
 - adds `.ref.queueUrl` and `.ref.queueArn` references to object returned by `watchbot.template()`
 - automatically provide workers with permission to publish to watchbot's SNS topic
+- adds `watchbot.logStream`, a node.js writable stream for prefixing logs
 - **Breaking** changes the name of the SQS queue, making it a bit easier to find in the console
 - **Breaking** switch to TaskRole instead of grafting permissions onto a predefined role
 
