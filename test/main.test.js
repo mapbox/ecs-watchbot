@@ -60,7 +60,7 @@ util.mock('[main] run a task', function(assert) {
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
     assert.deepEqual(context.ecs.runTask, [
       {
-        startedBy: 'watchbot',
+        startedBy: config.StackName,
         taskDefinition: config.TaskDefinition,
         overrides: {
           containerOverrides: [
@@ -220,9 +220,9 @@ util.mock('[main] no free tasks', function(assert) {
     util.collectionsEqual(assert, context.ecs.describeTasks, [
       {
         tasks: [
-          '77079d4d43561bd592a0911de3f719aa',
-          '4f08beb48fd99bf69ae05634c433e620',
-          '7d8d78d5f5e0bf088bf0df1f69a41f1d'
+          '3b80fe64b7d8278090a63a16e5908ad9',
+          '530ca7ee1cdf371158f9eeba094ae113',
+          '6599a09f3128ed099d8eafff0b832728'
         ]
       }
     ], 'expected ecs.describeTasks requests');
@@ -256,11 +256,11 @@ util.mock('[main] manage messages for completed tasks', function(assert) {
     util.collectionsEqual(assert, context.sns.publish, [
       {
         Subject: config.StackName + ' failed processing message finish-2',
-        Message: 'At ${date}, processing message finish-2 failed on ' + config.StackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: 2\n\nMessage information:\nMessageId: finish-2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: d20ddb7be4a5f242623d59188d8f5c34\n'
+        Message: 'At ${date}, processing message finish-2 failed on ' + config.StackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: 2\n\nMessage information:\nMessageId: finish-2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: d35c9786804c31f1a16a288ec28a2bdc\n'
       },
       {
         Subject: config.StackName + ' failed processing message finish-3',
-        Message: 'At ${date}, processing message finish-3 failed on ' + config.StackName + '\n\nTask outcome: delete & notify\n\nTask stopped reason: 3\n\nMessage information:\nMessageId: finish-3\nSubject: subject3\nMessage: message3\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: 3b397ad2b4cd1154e7558efc6b16e018\n'
+        Message: 'At ${date}, processing message finish-3 failed on ' + config.StackName + '\n\nTask outcome: delete & notify\n\nTask stopped reason: 3\n\nMessage information:\nMessageId: finish-3\nSubject: subject3\nMessage: message3\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: 496a1bbc7db7ef69c5b024bed0fa66e7\n'
       }
     ], 'expected sns.publish requests');
     config.Concurrency = 3;

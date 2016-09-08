@@ -1,3 +1,7 @@
+### pending
+
+- **Breaking** changes the `startedBy` attribute of worker tasks to the stack's name
+
 ### 0.0.10
 
 - fixes a bug where `options.command` would break the watcher
