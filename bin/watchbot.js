@@ -4,7 +4,6 @@ var fastlog = require('fastlog')('watchbot');
 var _ = require('underscore');
 var sendNotification = require('../lib/notifications')(process.env.NotificationTopic).send;
 var watchbot = require('..');
-var introspection = require('../lib/introspection');
 
 var required = [
   'Cluster',
@@ -14,8 +13,7 @@ var required = [
   'NotificationTopic',
   'StackName',
   'ExponentialBackoff',
-  'LogGroupArn',
-  'WatcherContainerName'
+  'LogGroupArn'
 ];
 
 var missing = _.difference(required, Object.keys(process.env));
@@ -26,14 +24,10 @@ if (missing.length) {
   process.exit(1);
 }
 
-introspection(process.env.WatcherContainerName, process.env.Cluster, function(err, serviceId) {
-  process.env.WatcherServiceId = serviceId;
-
-  /**
-   * The main Watchbot loop. This function runs continuously on one or more containers,
-   * each of which is responsible for polling SQS and spawning tasks to process
-   * messages, while maintaining a predefined task concurrency and reporting any failed
-   * processing tasks.
-   */
-  watchbot.main(process.env);
-});
+/**
+ * The main Watchbot loop. This function runs continuously on one or more containers,
+ * each of which is responsible for polling SQS and spawning tasks to process
+ * messages, while maintaining a predefined task concurrency and reporting any failed
+ * processing tasks.
+ */
+watchbot.main(process.env);
