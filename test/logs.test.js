@@ -30,7 +30,7 @@ test('[logs] via JS: adds prefixes, formats strings', function(assert) {
   assert.end();
 });
 
-test.only('[logs] via JS streaming API: adds prefixes, formats strings', function(assert) {
+test('[logs] via JS streaming API: adds prefixes, formats strings', function(assert) {
   process.env.MessageId = 'testing';
 
   var passes = false;
