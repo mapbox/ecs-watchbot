@@ -1,5 +1,6 @@
 ### pending
 
+- adds `reduce` option to `watchbot.template()` for tracking map-reduce operations
 - **Breaking** changes the `startedBy` attribute of worker tasks to the stack's name
 
 ### 0.0.10
