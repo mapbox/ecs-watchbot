@@ -1,5 +1,7 @@
 var template = require('..').template;
-var progress = require('..').progress;
+var progress = require('../lib/progress');
+var sinon = require('sinon');
+var Dyno = require('dyno');
 
 var resources = template({
   cluster: 'my-cluster',
@@ -11,7 +13,6 @@ var resources = template({
 
 var tape = require('tape');
 var dynamodb = require('dynamodb-test')(tape, 'watchbot-progress', resources.WatchbotProgressTable.Properties);
-var Dyno = require('dyno');
 var queue = require('d3-queue').queue;
 
 process.env.DynamoDbEndpoint = 'http://localhost:4567';
@@ -208,3 +209,94 @@ dynamodb.test('[progress] can read table from env', function(assert) {
 });
 
 dynamodb.close();
+
+tape('[progress] setTotal dynamodb error', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.setTotal('a', 1, function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
+tape('[progress] completePart dynamodb error', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.completePart('a', 1, function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
+tape('[progress] failJob dynamodb error', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.failJob('a', 'oopsie', function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
+tape('[progress] setMetdata dynamodb error', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.setMetadata('a', { eh: 'aye' }, function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
+tape('[progress] status dynamodb error', function(assert) {
+  var get = sinon.stub();
+  get.yields(new Error());
+  progress.Dyno = function() { return { getItem: get }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.status('a', function(err) {
+    assert.equal(get.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
+tape('[progress] status no record', function(assert) {
+  var get = sinon.stub();
+  get.yields(null, {});
+  progress.Dyno = function() { return { getItem: get }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.status('a', function(err, status) {
+    assert.ifError(err, 'success');
+    assert.equal(get.callCount, 1, 'called mock');
+    assert.deepEqual(status, { progress: 0 });
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
