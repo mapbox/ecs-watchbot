@@ -129,18 +129,18 @@ module.exports = watchbot.merge(myTemplate, watch);
 
 ### watchbot.template options
 
-Use the following configuration options to adjust the resources that Watchbot will provide.
+Use the following configuration options to adjust the resources that Watchbot will provide. Bold options must be provided.
 
 Name | Default | Description
 --- | --- | ---
-cluster | | the ARN for an ECS cluster
-service | | the name of the worker service
-serviceVersion | | the version of the worker service to use
+**cluster** | | the ARN for an ECS cluster
+**service** | | the name of the worker service
+**serviceVersion** | | the version of the worker service to use
+**notificationEmail** | | the email address to receive failure notifications
 permissions | [] | permissions to any AWS resources that the worker will need to perform a task
 env | {} | environment variables to set on worker containers
 command | undefined | overrides a Dockerfile's `CMD`
 watchbotVersion | installed version | the version of watchbot to use
-notificationEmail | | the email address to receive failure notifications
 prefix | Watchbot | a prefix for logical resource names
 user | false | create an IAM user with permission to publish
 webhook | false | create an HTTPS endpoint to accept jobs
