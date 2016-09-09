@@ -15,6 +15,7 @@ module.exports = {
   log: require('./lib/logs').log,
   logStream: require('./lib/logs').logStream,
   fetch: require('./lib/logs').fetch,
+  progress: require('./lib/progress'),
 
   /**
    * Merges CloudFormation templates together.

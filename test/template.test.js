@@ -45,6 +45,8 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   var tag = image['Fn::Join'][1].slice(-2).join(''); // phew
   assert.ok((new RegExp('ecs-watchbot:v' + version + '$')).test(tag), 'defaults to correct watchbotVersion');
   assert.ok(watch.Resources.WatchbotService, 'service');
+  assert.notOk(watch.Resources.WatchbotProgressTable, 'progress table');
+  assert.notOk(watch.Resources.WatchbotProgressTablePermission, 'progress table permission');
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('WatchbotLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('WatchbotTopic'), 'topic ref');
@@ -53,6 +55,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.notOk(watch.ref.accessKeyId, 'accessKeyId ref');
   assert.notOk(watch.ref.secretAccessKey, 'secretAccessKey ref');
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
+  assert.notOk(watch.ref.progressTable, 'progressTable ref');
 
   assert.end();
 });
@@ -105,6 +108,8 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testWorker, 'worker');
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
+  assert.notOk(watch.Resources.testProgressTable, 'progress table');
+  assert.notOk(watch.Resources.testProgressTablePermission, 'progress table permission');
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
@@ -113,6 +118,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
+  assert.notOk(watch.ref.progressTable, 'progressTable ref');
 
   assert.end();
 });
@@ -123,6 +129,7 @@ test('[template] include all resources, no references', function(assert) {
     user: true,
     webhook: true,
     webhookKey: true,
+    reduce: true,
     notificationEmail: 'devnull@mapbox.com',
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
     watchbotVersion: 'v0.0.7',
@@ -171,6 +178,9 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Command, ['bash'], 'sets worker command');
   assert.ok(watch.Resources.testService, 'service');
+  assert.ok(watch.Resources.testProgressTable, 'progress table');
+  assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
+  assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
@@ -179,6 +189,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
+  assert.deepEqual(watch.ref.progressTable, cf.ref('testProgressTable'), 'progressTable ref');
 
   assert.end();
 });
@@ -189,6 +200,7 @@ test('[template] include all resources, all references', function(assert) {
     user: true,
     webhook: true,
     webhookKey: true,
+    reduce: true,
     notificationEmail: cf.ref('AlarmEmail'),
     cluster: cf.ref('Cluster'),
     watchbotVersion: cf.ref('WatchbotVersion'),
@@ -235,6 +247,9 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testWorker, 'worker');
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
+  assert.ok(watch.Resources.testProgressTable, 'progress table');
+  assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
+  assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
@@ -243,6 +258,7 @@ test('[template] include all resources, all references', function(assert) {
   assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
+  assert.deepEqual(watch.ref.progressTable, cf.ref('testProgressTable'), 'progressTable ref');
 
   assert.end();
 });
@@ -253,6 +269,7 @@ test('[template] resources are valid', function(assert) {
     user: true,
     webhook: true,
     webhookKey: true,
+    reduce: true,
     notificationEmail: 'devnull@mapbox.com',
     cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
     watchbotVersion: 'v0.0.7',
@@ -265,6 +282,7 @@ test('[template] resources are valid', function(assert) {
     workers: 2,
     backoff: false,
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+    logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
       memory: 512,
       cpu: 4096

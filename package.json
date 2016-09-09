@@ -24,7 +24,8 @@
     "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
   },
   "bin": {
-    "watchbot-log": "./bin/watchbot-log.js"
+    "watchbot-log": "./bin/watchbot-log.js",
+    "watchbot-progress": "./bin/watchbot-progress.js"
   },
   "dependencies": {
     "aws-sdk": "^2.4.11",
@@ -32,12 +33,15 @@
     "cloudfriend": "^1.0.0",
     "cwlogs": "^1.0.2",
     "d3-queue": "^2.0.3",
+    "dyno": "^1.2.0",
     "fastlog": "^1.0.0",
+    "meow": "^3.7.0",
     "stream-combiner": "^0.2.2",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
     "documentation": "^4.0.0-beta2",
+    "dynamodb-test": "^0.2.2",
     "eslint": "^2.6.0",
     "nyc": "^6.4.0",
     "opener": "^1.4.1",
