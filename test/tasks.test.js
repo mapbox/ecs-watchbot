@@ -228,3 +228,33 @@ util.mock('[tasks] poll - describeTasks error', function(assert) {
     });
   });
 });
+
+util.mock('[tasks] poll - more than 100 in flight', function(assert) {
+  var context = this;
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var containerName = 'container';
+  var concurrency = 200;
+  var envs = [];
+  for (var i = 0; i < 115; i++) envs.push({ exit: '0', MessageId: 'exit-0', iAm: i.toString() });
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  var queue = d3.queue();
+
+  envs.forEach(function(env) {
+    queue.defer(tasks.run, env);
+  });
+
+  queue.awaitAll(function(err) {
+    if (err) return assert.end(err);
+
+    tasks.poll(function(err, taskStatus) {
+      if (err) return assert.end(err);
+
+      assert.equal(context.ecs.describeTasks[0].tasks.length, 100, '100 at a time');
+      assert.equal(context.ecs.describeTasks[1].tasks.length, 15, 'gotta catch em all');
+      assert.equal(taskStatus.free, 200, 'correctly reports free workers');
+
+      assert.end();
+    });
+  });
+});
