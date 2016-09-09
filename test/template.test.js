@@ -40,6 +40,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotWorker, 'worker');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.Volumes, 'no mounts, no volumes');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].MountPoints, 'no mounts, no mount points');
+  assert.equal(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Memory, 64, 'default memory reservation');
   assert.ok(watch.Resources.WatchbotWatcher, 'watcher');
   var image = watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Image;
   var tag = image['Fn::Join'][1].slice(-2).join(''); // phew
@@ -106,6 +107,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
   assert.ok(watch.Resources.testWatcherRole, 'watcher role');
   assert.ok(watch.Resources.testWorker, 'worker');
+  assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Memory, 512, 'non-default memory reservation');
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
   assert.notOk(watch.Resources.testProgressTable, 'progress table');
