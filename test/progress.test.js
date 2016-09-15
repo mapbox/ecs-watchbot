@@ -38,6 +38,22 @@ dynamodb.test('[progress] setTotal', function(assert) {
   });
 });
 
+dynamodb.test('[progress] setTotal (no callback)', function(assert) {
+  var client = progress(`arn:aws:dynamodb:local:1234567890:table/${dynamodb.tableName}`);
+  var jobId = 'my-job';
+  client.setTotal(jobId, 10).then(function() {
+    dynamodb.dyno.getItem({ Key: { id: jobId } }, function(err, data) {
+      assert.ifError(err, 'got record');
+      assert.deepEqual(data.Item, {
+        id: jobId,
+        parts: Dyno.createSet([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        total: 10
+      }, 'recorded expected record');
+      assert.end();
+    });
+  });
+});
+
 dynamodb.test('[progress] completePart (incomplete)', function(assert) {
   var client = progress(`arn:aws:dynamodb:local:1234567890:table/${dynamodb.tableName}`);
   var jobId = 'my-job';
@@ -45,6 +61,26 @@ dynamodb.test('[progress] completePart (incomplete)', function(assert) {
     assert.ifError(err, 'setTotal success');
     client.completePart(jobId, 4, function(err, completed) {
       assert.ifError(err, 'completePart success');
+      assert.notOk(completed, 'upload is not complete');
+      dynamodb.dyno.getItem({ Key: { id: jobId } }, function(err, data) {
+        assert.ifError(err, 'got record');
+        assert.deepEqual(data.Item, {
+          id: jobId,
+          parts: Dyno.createSet([1, 2, 3, 5, 6, 7, 8, 9, 10]),
+          total: 10
+        }, 'recorded expected record');
+        assert.end();
+      });
+    });
+  });
+});
+
+dynamodb.test('[progress] completePart (incomplete, no callback)', function(assert) {
+  var client = progress(`arn:aws:dynamodb:local:1234567890:table/${dynamodb.tableName}`);
+  var jobId = 'my-job';
+  client.setTotal(jobId, 10, function(err) {
+    assert.ifError(err, 'setTotal success');
+    client.completePart(jobId, 4).then(function(completed) {
       assert.notOk(completed, 'upload is not complete');
       dynamodb.dyno.getItem({ Key: { id: jobId } }, function(err, data) {
         assert.ifError(err, 'got record');
@@ -112,6 +148,26 @@ dynamodb.test('[progress] failJob', function(assert) {
   });
 });
 
+dynamodb.test('[progress] failJob (no callback)', function(assert) {
+  var client = progress(`arn:aws:dynamodb:local:1234567890:table/${dynamodb.tableName}`);
+  var jobId = 'my-job';
+  client.setTotal(jobId, 10, function(err) {
+    assert.ifError(err, 'setTotal success');
+    client.failJob(jobId, 'The job failed').then(function() {
+      dynamodb.dyno.getItem({ Key: { id: jobId } }, function(err, data) {
+        assert.ifError(err, 'got record');
+        assert.deepEqual(data.Item, {
+          id: jobId,
+          parts: Dyno.createSet([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+          total: 10,
+          error: 'The job failed'
+        }, 'recorded expected record');
+        assert.end();
+      });
+    });
+  });
+});
+
 dynamodb.test('[progress] setMetadata', function(assert) {
   var client = progress(`arn:aws:dynamodb:local:1234567890:table/${dynamodb.tableName}`);
   var jobId = 'my-job';
@@ -119,6 +175,26 @@ dynamodb.test('[progress] setMetadata', function(assert) {
     assert.ifError(err, 'setTotal success');
     client.setMetadata(jobId, { important: 'info' }, function(err) {
       assert.ifError(err, 'setMetadata success');
+      dynamodb.dyno.getItem({ Key: { id: jobId } }, function(err, data) {
+        assert.ifError(err, 'got record');
+        assert.deepEqual(data.Item, {
+          id: jobId,
+          parts: Dyno.createSet([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+          total: 10,
+          metadata: { important: 'info' }
+        }, 'recorded expected record');
+        assert.end();
+      });
+    });
+  });
+});
+
+dynamodb.test('[progress] setMetadata (no callback)', function(assert) {
+  var client = progress(`arn:aws:dynamodb:local:1234567890:table/${dynamodb.tableName}`);
+  var jobId = 'my-job';
+  client.setTotal(jobId, 10, function(err) {
+    assert.ifError(err, 'setTotal success');
+    client.setMetadata(jobId, { important: 'info' }).then(function() {
       dynamodb.dyno.getItem({ Key: { id: jobId } }, function(err, data) {
         assert.ifError(err, 'got record');
         assert.deepEqual(data.Item, {
@@ -142,6 +218,21 @@ dynamodb.test('[progress] status (incomplete)', function(assert) {
       assert.ifError(err, 'completePart success');
       client.status(jobId, function(err, status) {
         assert.ifError(err, 'status success');
+        assert.deepEqual(status, { progress: 0.1 }, 'expected progress');
+        assert.end();
+      });
+    });
+  });
+});
+
+dynamodb.test('[progress] status (incomplete, no callback)', function(assert) {
+  var client = progress(`arn:aws:dynamodb:local:1234567890:table/${dynamodb.tableName}`);
+  var jobId = 'my-job';
+  client.setTotal(jobId, 10, function(err) {
+    assert.ifError(err, 'setTotal success');
+    client.completePart(jobId, 4, function(err) {
+      assert.ifError(err, 'completePart success');
+      client.status(jobId).then(function(status) {
         assert.deepEqual(status, { progress: 0.1 }, 'expected progress');
         assert.end();
       });
@@ -225,6 +316,21 @@ tape('[progress] setTotal dynamodb error', function(assert) {
   });
 });
 
+tape('[progress] setTotal dynamodb error (no callback)', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.setTotal('a', 1).catch(function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
 tape('[progress] completePart dynamodb error', function(assert) {
   var update = sinon.stub();
   update.yields(new Error());
@@ -233,6 +339,21 @@ tape('[progress] completePart dynamodb error', function(assert) {
 
   var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
   client.completePart('a', 1, function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
+tape('[progress] completePart dynamodb error (no callback)', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.completePart('a', 1).catch(function(err) {
     assert.equal(update.callCount, 1, 'called mock');
     assert.ok(err, 'passes through error from dynamodb');
     progress.Dyno = Dyno;
@@ -255,6 +376,21 @@ tape('[progress] failJob dynamodb error', function(assert) {
   });
 });
 
+tape('[progress] failJob dynamodb error (no callback)', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.failJob('a', 'oopsie').catch(function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
 tape('[progress] setMetdata dynamodb error', function(assert) {
   var update = sinon.stub();
   update.yields(new Error());
@@ -270,6 +406,21 @@ tape('[progress] setMetdata dynamodb error', function(assert) {
   });
 });
 
+tape('[progress] setMetdata dynamodb error (no callback)', function(assert) {
+  var update = sinon.stub();
+  update.yields(new Error());
+  progress.Dyno = function() { return { updateItem: update }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.setMetadata('a', { eh: 'aye' }).catch(function(err) {
+    assert.equal(update.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
 tape('[progress] status dynamodb error', function(assert) {
   var get = sinon.stub();
   get.yields(new Error());
@@ -278,6 +429,21 @@ tape('[progress] status dynamodb error', function(assert) {
 
   var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
   client.status('a', function(err) {
+    assert.equal(get.callCount, 1, 'called mock');
+    assert.ok(err, 'passes through error from dynamodb');
+    progress.Dyno = Dyno;
+    assert.end();
+  });
+});
+
+tape('[progress] status dynamodb error (no callback)', function(assert) {
+  var get = sinon.stub();
+  get.yields(new Error());
+  progress.Dyno = function() { return { getItem: get }; };
+  progress.Dyno.createSet = Dyno.createSet;
+
+  var client = progress('arn:aws:dynamodb:local:1234567890:table/fake');
+  client.status('a').catch(function(err) {
     assert.equal(get.callCount, 1, 'called mock');
     assert.ok(err, 'passes through error from dynamodb');
     progress.Dyno = Dyno;

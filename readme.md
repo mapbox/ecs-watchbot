@@ -231,6 +231,8 @@ By setting the `Reduce` parameter to true, Watchbot will be capable of helping t
 progress of distributed map-reduce operations. This is useful if your stack performs
 a bunch of individual jobs that need to be "rolled up" into a final output of some sort.
 
+See the included `reduce-examples.md` for some basic worker recipes.
+
 ### Messaging patterns
 
 Generally, a reduce-enabled Watchbot stack should be built in order to process three types
@@ -307,8 +309,8 @@ A JavaScript module is also available as a mechanism for progress reporting.
 var progress = require('watchbot').progress();
 ```
 
-- **progress.setTotal(jobId, total, callback)**: Set the total number of parts for a particular map-reduce operation.
-- **progress.completePart(jobId, part, callback)**: Mark a single part as complete. The response will be a boolean value indicating whether or not the operation is completed.
-- **progress.setMetadata(jobId, metadata, callback)**: Associate arbitrary metadata with a particular map-reduce operation.
-- **progress.status(jobId, callback)**: Read the status of a particular map-reduce operation.
-- **progress.failJob(jobId, reason, callback)**: Mark an operation as a failure, providing a description of what went wrong.
+- **progress.setTotal(jobId, total, [callback])**: Set the total number of parts for a particular map-reduce operation.
+- **progress.completePart(jobId, part, [callback])**: Mark a single part as complete. The response will be a boolean value indicating whether or not the operation is completed.
+- **progress.setMetadata(jobId, metadata, [callback])**: Associate arbitrary metadata with a particular map-reduce operation.
+- **progress.status(jobId, [callback])**: Read the status of a particular map-reduce operation.
+- **progress.failJob(jobId, reason, [callback])**: Mark an operation as a failure, providing a description of what went wrong.
