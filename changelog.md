@@ -1,8 +1,9 @@
-### pending
+### 0.0.11
 
 - fixes a bug that could produce an invalid template if no memory reservation is specified. New default memory is 64MB
 - fixes a bug that limited a watcher to maintaining at most 100 concurrent workers
 - adds `reduce` option to `watchbot.template()` for tracking map-reduce operations
+- adds example recipes for workers using `reduce` mode
 - **Breaking** changes the `startedBy` attribute of worker tasks to the stack's name
 
 ### 0.0.10
