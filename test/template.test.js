@@ -252,6 +252,8 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testProgressTable, 'progress table');
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') });
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[7], { Name: 'ExponentialBackoff', Value: cf.ref('UseBackoff') });
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
