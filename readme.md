@@ -156,6 +156,7 @@ messageTimeout | 600 | max seconds it takes to process a job
 messageRetention | 1209600 | max seconds a message can remain in SQS
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm
 alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
+debugLogs | false | enable verbose watcher logging
 
 ### watchbot.template references
 

@@ -1,3 +1,10 @@
+### 0.0.12
+
+- allow `workers` and `backoff` to be a ref
+- adds `options.debugLogs` to enable verbose logging
+- adds log stream prefix to organize worker/watcher logs better
+- fix for worker role in reduce mode
+
 ### 0.0.11
 
 - fixes a bug that could produce an invalid template if no memory reservation is specified. New default memory is 64MB
