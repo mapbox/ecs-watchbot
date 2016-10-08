@@ -48,6 +48,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotService, 'service');
   assert.notOk(watch.Resources.WatchbotProgressTable, 'progress table');
   assert.notOk(watch.Resources.WatchbotProgressTablePermission, 'progress table permission');
+  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'info' }], 'log level env var');
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('WatchbotLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('WatchbotTopic'), 'topic ref');
@@ -152,7 +153,8 @@ test('[template] include all resources, no references', function(assert) {
     messageTimeout: 300,
     messageRetention: 3000,
     alarmThreshold: 10,
-    alarmPeriods: 6
+    alarmPeriods: 6,
+    debugLogs: true
   });
 
   assert.ok(watch.Resources.testUser, 'user');
@@ -183,6 +185,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testProgressTable, 'progress table');
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'debug' }], 'log level env var');
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
