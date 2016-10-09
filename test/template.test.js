@@ -50,6 +50,8 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.notOk(watch.Resources.WatchbotProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'info' }], 'log level env var');
 
+  assert.deepEqual(/^\d+\.\d+\.\d+$/.test(watch.Metadata.EcsWatchbotVersion), true, 'ecs-watchbot version metadata');
+
   assert.deepEqual(watch.ref.logGroup, cf.ref('WatchbotLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('WatchbotTopic'), 'topic ref');
   assert.deepEqual(watch.ref.queueUrl, cf.ref('WatchbotQueue'), 'queueUrl ref');
