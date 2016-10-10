@@ -1,3 +1,7 @@
+### 0.0.14
+
+- Fix potential race condition when creating `LogForwarding`
+
 ### 0.0.13
 
 - Adds EcsWatchbotVersion to template Metadata
