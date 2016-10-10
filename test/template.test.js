@@ -313,3 +313,27 @@ test('[template] resources are valid', function(assert) {
     assert.end();
   });
 });
+
+test('[template] multi-watchbot merge', function(assert) {
+  var one = watchbot.template({
+    prefix: 'one',
+    notificationEmail: 'devnull@mapbox.com',
+    cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+    service: 'my-service',
+    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
+  });
+
+  var two = watchbot.template({
+    prefix: 'two',
+    notificationEmail: 'devnull@mapbox.com',
+    cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+    service: 'my-service',
+    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
+  });
+
+  assert.doesNotThrow(function() {
+    watchbot.merge(one, two);
+  }, 'can build multiple watchbots in a single template');
+
+  assert.end();
+});
