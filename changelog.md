@@ -1,3 +1,7 @@
+### 0.0.13
+
+- Adds EcsWatchbotVersion to template Metadata
+
 ### 0.0.12
 
 - allow `workers` and `backoff` to be a ref
