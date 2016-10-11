@@ -1,3 +1,7 @@
+### 1.0.0
+
+- **Breaking** requires KMS key under the CF export `cloudformation-kms-production` to grant worker tasks permission to decrypt secure environment variables. See README and https://github.com/mapbox/cloudformation-kms, https://github.com/mapbox/decrypt-kms-env.
+
 ### 0.0.14
 
 - Fix potential race condition when creating `LogForwarding`
