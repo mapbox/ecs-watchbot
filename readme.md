@@ -106,7 +106,6 @@ var myTemplate = {
 // resources that were defined above.
 var watch = watchbot.template({
   cluster: { Ref: 'Cluster' },
-  watchbotVersion: 'v0.0.8',
   service: 'my-repo-name',
   serviceVersion: { Ref: 'GitSha' },
   env: { BucketName: 'my-bucket' },
