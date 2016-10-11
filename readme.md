@@ -20,7 +20,7 @@ A library to help run a highly-scalable AWS service that performs data processin
 - a docker image representing your task, housed in [an ECR repository](http://docs.aws.amazon.com/AmazonECR/latest/userguide/Repositories.html) and tagged with a git sha or a git tag
 - a CloudFormation template defining any configuration Parameters, Resources, and Outputs that your service needs in order to perform its processing.
 
-**:lightbulb: Other prerequisites:**
+**:bulb: Other prerequisites:**
 
 - `cloudformation-kms-production` deployed according to the instructions in [cloudformation-kms](https://github.com/mapbox/cloudformation-kms). Makes encryption of sensitive environment variables that need to be passed to ECS simple using [cfn-config](https://github.com/mapbox/cfn-config).
 
