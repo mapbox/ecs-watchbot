@@ -20,6 +20,10 @@ A library to help run a highly-scalable AWS service that performs data processin
 - a docker image representing your task, housed in [an ECR repository](http://docs.aws.amazon.com/AmazonECR/latest/userguide/Repositories.html) and tagged with a git sha or a git tag
 - a CloudFormation template defining any configuration Parameters, Resources, and Outputs that your service needs in order to perform its processing.
 
+**:bulb: Other prerequisites:**
+
+- `cloudformation-kms-production` deployed according to the instructions in [cloudformation-kms](https://github.com/mapbox/cloudformation-kms). Makes encryption of sensitive environment variables that need to be passed to ECS simple using [cfn-config](https://github.com/mapbox/cfn-config).
+
 ## What Watchbot provides:
 
 - a queue for you to send messages to in order to trigger your tasks to run
@@ -55,6 +59,14 @@ Name | Description
 --- | ---
 WorkTopic | the ARN of the SNS topic that provides messages to SQS
 LogGroup | the name of the CloudWatch LogGroup where logs are sent
+
+**:lock: Encrypting & decrypting environment variables**
+
+The recommended flow for deploying `watchbot` stacks is to use `cfn-config` which provides a `--kms` option for automatically encrypting CloudFormation parameters marked with `[secure]`. To decrypt at runtime, install [decrypt-kms-env](https://github.com/mapbox/decrypt-kms-env) as a dependency in your Dockerfile and invoke it in your `CMD`. Example:
+
+```Dockerfile
+RUN eval $(./node_modules/.bin/decrypt-kms-env) && npm start
+```
 
 ## Task completion
 
