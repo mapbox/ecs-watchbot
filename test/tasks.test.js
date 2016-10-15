@@ -75,7 +75,7 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
   var containerName = 'container';
   var concurrency = 10;
-  var env = { resources: 'true' };
+  var env = { resourceMemory: 'true' };
   var context = this;
 
   var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
@@ -90,7 +90,7 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
           containerOverrides: [
             {
               name: containerName,
-              environment: [{ name: 'resources', value: 'true' }]
+              environment: [{ name: 'resourceMemory', value: 'true' }]
             }
           ]
         }
@@ -102,7 +102,49 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
           containerOverrides: [
             {
               name: containerName,
-              environment: [{ name: 'resources', value: 'true' }]
+              environment: [{ name: 'resourceMemory', value: 'true' }]
+            }
+          ]
+        }
+      }
+    ], 'expected runTask requestss');
+    assert.end();
+  });
+});
+
+util.mock('[tasks] run - runTask failure (out of cpu)', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var containerName = 'container';
+  var concurrency = 10;
+  var env = { resourceCpu: 'true' };
+  var context = this;
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  tasks.run(env, function(err) {
+    if (err) return assert.end(err);
+    assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of cpu');
+    util.collectionsEqual(assert, context.ecs.runTask, [
+      {
+        startedBy: 'watchbot',
+        taskDefinition: taskDef,
+        overrides: {
+          containerOverrides: [
+            {
+              name: containerName,
+              environment: [{ name: 'resourceCpu', value: 'true' }]
+            }
+          ]
+        }
+      },
+      {
+        startedBy: 'watchbot',
+        taskDefinition: taskDef,
+        overrides: {
+          containerOverrides: [
+            {
+              name: containerName,
+              environment: [{ name: 'resourceCpu', value: 'true' }]
             }
           ]
         }

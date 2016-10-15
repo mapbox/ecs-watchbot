@@ -86,10 +86,17 @@ module.exports.mock = function(name, callback) {
       if (params.overrides.containerOverrides[0].environment[0].name === 'failure')
         return callback(null, { tasks: [], failures: [{ reason: 'unrecognized' }] });
 
-      if (params.overrides.containerOverrides[0].environment[0].name === 'resources') {
+      if (params.overrides.containerOverrides[0].environment[0].name === 'resourceMemory') {
         if (context.ecs.resourceFail === 0) {
           context.ecs.resourceFail++;
           return callback(null, { tasks: [], failures: [{ reason: 'RESOURCE:MEMORY' }] });
+        }
+      }
+
+      if (params.overrides.containerOverrides[0].environment[0].name === 'resourceCpu') {
+        if (context.ecs.resourceFail === 0) {
+          context.ecs.resourceFail++;
+          return callback(null, { tasks: [], failures: [{ reason: 'RESOURCE:CPU' }] });
         }
       }
 
