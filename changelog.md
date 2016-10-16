@@ -1,3 +1,7 @@
+### 1.0.1
+
+- Fix bug where watchbot would not retry running a task if it encountered a RESOURCE:CPU contrainst error.
+
 ### 1.0.0
 
 - **Breaking** requires KMS key under the CF export `cloudformation-kms-production` to grant worker tasks permission to decrypt secure environment variables. See README and https://github.com/mapbox/cloudformation-kms, https://github.com/mapbox/decrypt-kms-env.
