@@ -1,3 +1,7 @@
+### 1.0.2
+
+- Adds support for ap-* regions by adding regional mapping for worker/watcher images assuming ecs-conex is doing your image packaging.
+
 ### 1.0.1
 
 - Fix bug where watchbot would not retry running a task if it encountered a RESOURCE:CPU contrainst error.
