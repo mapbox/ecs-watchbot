@@ -18,7 +18,7 @@ util.mock('[main] message polling error', function(assert) {
     { MessageId: 'error', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -39,7 +39,7 @@ util.mock('[main] message polling error', function(assert) {
 util.mock('[main] nothing to do', function(assert) {
   var context = this;
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -54,7 +54,7 @@ util.mock('[main] run a task', function(assert) {
     { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 1, 'one ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -90,7 +90,7 @@ util.mock('[main] task running error', function(assert) {
     { MessageId: 'ecs-error', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -119,7 +119,7 @@ util.mock('[main] task running failure (out of memory)', function(assert) {
     { MessageId: 'ecs-failure', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 1, 'one sqs.receiveMessage requests');
@@ -137,7 +137,7 @@ util.mock('[main] task running failure (unrecognized reason)', function(assert) 
     { MessageId: 'ecs-unrecognized', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -157,7 +157,7 @@ util.mock('[main] message completion error after task run failure', function(ass
     { MessageId: 'ecs-error', ReceiptHandle: 'error', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -185,7 +185,7 @@ util.mock('[main] task polling error', function(assert) {
     { MessageId: 'task-failure', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 1, 'one ecs.describeTasks requests');
     assert.equal(context.sqs.receiveMessage.length, 1, 'one sqs.receiveMessage requests');
@@ -213,7 +213,7 @@ util.mock('[main] no free tasks', function(assert) {
     { MessageId: '4', ReceiptHandle: '4', Body: JSON.stringify({ Subject: 'subject4', Message: 'message4' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.sqs.receiveMessage.length, 1, 'one sqs.receiveMessage requests');
     assert.equal(context.ecs.runTask.length, 3, 'three ecs.runTask requests');
@@ -240,7 +240,7 @@ util.mock('[main] manage messages for completed tasks', function(assert) {
     { MessageId: 'finish-4', ReceiptHandle: '4', Body: JSON.stringify({ Subject: 'subject4', Message: 'message4' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
   config.Concurrency = 4;
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 1, 'one ecs.describeTasks request');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -275,7 +275,7 @@ util.mock('[main] message completion error', function(assert) {
     { MessageId: 'finish-0', ReceiptHandle: 'error', Body: JSON.stringify({ Subject: 'subject0', Message: 'message0' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 1, 'one ecs.describeTasks request');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
@@ -299,7 +299,7 @@ util.mock('[main] message completion error', function(assert) {
 util.mock('[main] LogLevel', function(assert){
   config.LogLevel = 'debug';
   var context = this;
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.ok(context.logs.find(function(log) {
       return /\[debug\]/.test(log);
@@ -312,7 +312,7 @@ util.mock('[main] LogLevel', function(assert){
 util.mock('[main] resource polling error', function(assert) {
   var context = this;
   context.ecs.fail = true;
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.ok(context.logs.find(function(log) {
       return /Error polling cluster resources: Mock ECS error/.test(log);
@@ -330,7 +330,7 @@ util.mock('[main] insufficient resources available', function(assert) {
 
   // No memory left to run new tasks
   context.ecs.memory = 1;
-  setTimeout(watchbot.main.end, 1800);
+  setTimeout(watchbot.main.end, 2500);
   watchbot.main(config).on('finish', function() {
     assert.deepEqual(context.sqs.receiveMessage, [], 'prevented from getting SQS messages');
     assert.deepEqual(context.ecs.runTask, [], 'did not run any tasks');
