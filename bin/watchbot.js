@@ -13,6 +13,7 @@ var required = [
   'NotificationTopic',
   'StackName',
   'ExponentialBackoff',
+  'NotifyAfterRetries',
   'LogGroupArn'
 ];
 
