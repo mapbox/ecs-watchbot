@@ -47,6 +47,20 @@ util.mock('[resources] listInstances pagination', function(assert) {
   }, 1000);
 });
 
+util.mock('[resources] update error: no instances', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var context = this;
+
+  context.ecs.instances = [];
+
+  watchbot.resources(cluster, taskDef)
+    .on('error', function(err) {
+      assert.equal(err, 'No instances found in the cluster', 'expected error emitted');
+      assert.end();
+    });
+});
+
 util.mock('[resources] available', function(assert) {
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
