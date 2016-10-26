@@ -157,6 +157,8 @@ user | false | create an IAM user with permission to publish
 webhook | false | create an HTTPS endpoint to accept jobs
 webbhookKey | false | require an access token on the webhook endpoint
 reduce | false | enable reduce-mode (see below)
+readCapacityUnits | 30 | approximate reads per second to progress table in reduce-mode
+writeCapacityUnits | 30 | approximate writes per second to progress table in reduce-mode
 watchers | 1 | number of watcher containers
 workers | 1 | number of concurrent worker containers per watcher
 backoff | true | retry jobs with exponential backoff
