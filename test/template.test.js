@@ -34,6 +34,8 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotTopic, 'topic');
   assert.ok(watch.Resources.WatchbotQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.WatchbotQueueSizeAlarm, 'queue alarm');
+  assert.ok(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
+  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 0 }], 'notify after retry default value');
   assert.ok(watch.Resources.WatchbotWorkerRole, 'worker role');
   assert.equal(watch.Resources.WatchbotWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
   assert.ok(watch.Resources.WatchbotWatcherRole, 'watcher role');
@@ -86,7 +88,8 @@ test('[template] webhooks but no key, no references', function(assert) {
     messageTimeout: 300,
     messageRetention: 3000,
     alarmThreshold: 10,
-    alarmPeriods: 6
+    alarmPeriods: 6,
+    notifyAfterRetries: 2
   });
 
   assert.ok(watch.Resources.testUser, 'user');
@@ -106,6 +109,8 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
+  assert.ok(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 2 }], 'notify after retry default value');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
   assert.ok(watch.Resources.testWatcherRole, 'watcher role');
@@ -115,7 +120,6 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testService, 'service');
   assert.notOk(watch.Resources.testProgressTable, 'progress table');
   assert.notOk(watch.Resources.testProgressTablePermission, 'progress table permission');
-
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
   assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');
@@ -176,6 +180,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
+
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
   assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');

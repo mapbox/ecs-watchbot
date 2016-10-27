@@ -192,14 +192,15 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
   var containerName = 'container';
   var concurrency = 10;
   var envs = [
-    { exit: '0', MessageId: 'exit-0' },
-    { exit: '1', MessageId: 'exit-1' },
-    { exit: '2', MessageId: 'exit-2' },
-    { exit: '3', MessageId: 'exit-3' },
-    { exit: '4', MessageId: 'exit-4' },
-    { exit: 'mismatch', MessageId: 'exit-mismatch' },
-    { exit: 'match', MessageId: 'exit-match' },
-    { exit: 'pending', MessageId: 'pending' }
+    { exit: '0', MessageId: 'exit-0', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: '1', MessageId: 'exit-1', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: '2', MessageId: 'exit-2', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: '3', MessageId: 'exit-3', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: '4', MessageId: 'exit-4', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: 'mismatch', MessageId: 'exit-mismatch', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: 'match', MessageId: 'exit-match', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: 'pending', MessageId: 'pending', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
+    { exit: '999', MessageId: 'exit-999-retry', ApproximateReceiveCount: 3, NotifyAfterRetries: 3 }
   ];
   var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
   var queue = d3.queue();
@@ -223,27 +224,32 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
       util.collectionsEqual(assert, context.ecs.describeTasks, [
         {
           tasks: [
-            '51132ba12780cd8e8ca20f2b370014a7',
-            '3b173b3134d614ddacb14a1cbd5c404f',
-            'e084e0cd00585de1ab8ed22f9572b81a',
-            '3168cb93242f95b0e63aaca9605b9681',
-            '21650064140c25de55653663f6cb3be1',
-            '056e67721ac63a57e291dac9d5302787',
-            '66f3dbb2f4f36c060a47d23bab3ddf7e',
-            '03089b80274750892c1528c2d317f5a8'
+            '6af469055df92c00ec48413701bc597d',
+            'de147c077f2e2a250cc36fd278eb273f',
+            '19d6305fad7d8c4270f6471435b9f7b9',
+            'da9731cd84877400f43ff61f0ab5fc16',
+            'a4b92a31a8467969f3116c78f6fddda0',
+            '5a8f3f0ed983ca3d723501255fcc6827',
+            'b2eae332b8c9e32e8d2f63b4c6603ba0',
+            '7972a24206b8e3d7dbaf7e43932b4ff8',
+            'f366f0be48ce37c584ea740a54ecb9fe'
           ]
         }
       ], 'expected ecs.describeTasks request');
 
-      util.collectionsEqual(assert, taskStatus, [
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '51132ba12780cd8e8ca20f2b370014a7' }, reason: '0', env: { exit: '0', MessageId: 'exit-0' }, outcome: 'delete' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '3b173b3134d614ddacb14a1cbd5c404f' }, reason: '1', env: { exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'e084e0cd00585de1ab8ed22f9572b81a' }, reason: '2', env: { exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '3168cb93242f95b0e63aaca9605b9681' }, reason: '3', env: { exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '21650064140c25de55653663f6cb3be1' }, reason: '4', env: { exit: '4', MessageId: 'exit-4' }, outcome: 'immediate' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '66f3dbb2f4f36c060a47d23bab3ddf7e' }, reason: 'match', env: { exit: 'match', MessageId: 'exit-match' }, outcome: 'delete' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '056e67721ac63a57e291dac9d5302787' }, reason: 'mismatched', env: { exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify' }
-      ], 'expected taskStatus reported');
+      var expectedTaskStatus = [
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '6af469055df92c00ec48413701bc597d' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: '0' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'de147c077f2e2a250cc36fd278eb273f' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: '1' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '19d6305fad7d8c4270f6471435b9f7b9' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'da9731cd84877400f43ff61f0ab5fc16' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'a4b92a31a8467969f3116c78f6fddda0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '5a8f3f0ed983ca3d723501255fcc6827' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify', reason: 'mismatched' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'b2eae332b8c9e32e8d2f63b4c6603ba0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match' },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'f366f0be48ce37c584ea740a54ecb9fe' }, env: { ApproximateReceiveCount: 3, NotifyAfterRetries: 3, exit: '999', MessageId: 'exit-999-retry' }, outcome: 'immediate', reason: '999' }
+      ];
+      expectedTaskStatus.free = 9;
+
+      util.collectionsEqual(assert, taskStatus, expectedTaskStatus, 'expected taskStatus reported');
 
       assert.equal(taskStatus.free, 9, 'correctly reports free workers');
 
