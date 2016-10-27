@@ -237,7 +237,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         }
       ], 'expected ecs.describeTasks request');
 
-      util.collectionsEqual(assert, taskStatus, [
+      var expectedTaskStatus = [
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '6af469055df92c00ec48413701bc597d' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: '0' },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'de147c077f2e2a250cc36fd278eb273f' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: '1' },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '19d6305fad7d8c4270f6471435b9f7b9' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2' },
@@ -245,8 +245,11 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'a4b92a31a8467969f3116c78f6fddda0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4' },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '5a8f3f0ed983ca3d723501255fcc6827' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify', reason: 'mismatched' },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'b2eae332b8c9e32e8d2f63b4c6603ba0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'f366f0be48ce37c584ea740a54ecb9fe' }, env: { ApproximateReceiveCount: 3, MessageId: 'exit-999-retry', NotifyAfterRetries: 3, exit: '999' }, outcome: 'immediate', reason: '999' }
-      ], 'expected taskStatus reported');
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'f366f0be48ce37c584ea740a54ecb9fe' }, env: { ApproximateReceiveCount: 3, NotifyAfterRetries: 3, exit: '999', MessageId: 'exit-999-retry' }, outcome: 'immediate', reason: '999' }
+      ];
+      expectedTaskStatus.free = 9;
+
+      util.collectionsEqual(assert, taskStatus, expectedTaskStatus, 'expected taskStatus reported');
 
       assert.equal(taskStatus.free, 9, 'correctly reports free workers');
 
