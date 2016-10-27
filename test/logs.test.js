@@ -103,6 +103,7 @@ test('[logs] fetch a ton of logs', function(assert) {
 
   var logs = '';
   for (var i = 0; i < 70; i++) logs += crypto.randomBytes(512).toString('hex') + '\n';
+  logs += '\n' + crypto.randomBytes(25 * 1024).toString('hex') + '\n';
 
   sinon.stub(cwlogs, 'readable', function(options) {
     assert.deepEqual(options, {
@@ -127,7 +128,9 @@ test('[logs] fetch a ton of logs', function(assert) {
     assert.ok(data.length < 50 * 1024, 'output limited to 50kb');
     var lastFound = data.split('\n').slice(-2)[0];
     var lastExpected = logs.split('\n').slice(-2)[0];
-    assert.equal(lastFound, lastExpected, 'returned most recent log');
+
+    // returns either whole or truncated log
+    assert.ok(lastFound === lastExpected || lastExpected.includes(lastFound.match(/(.*)...$/)[1]), 'returned most recent log');
 
     cwlogs.readable.restore();
     assert.end();
