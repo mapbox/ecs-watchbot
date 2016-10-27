@@ -53,8 +53,8 @@ util.mock('[resources] availableInstances', function(assert) {
 
   watchbot.resources(cluster, taskDef).on('HasInstances', function() {
     assert.pass('emitted hasInstances event');
-    assert.end();
   });
+  assert.end();
 });
 
 util.mock('[resources] availableInstances error', function(assert) {
