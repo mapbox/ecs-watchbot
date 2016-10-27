@@ -708,7 +708,3 @@ util.mock('[messages] complete - failure to read CloudWatch logs', function(asse
     });
   });
 });
-
-util.mock('[messages] complete - does not retry after notifyAfterRetries is met', function(assert) {
-  // notifyAfterRetries test here
-});
