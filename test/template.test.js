@@ -190,6 +190,8 @@ test('[template] include all resources, no references', function(assert) {
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Command, ['bash'], 'sets worker command');
   assert.ok(watch.Resources.testService, 'service');
   assert.ok(watch.Resources.testProgressTable, 'progress table');
+  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.ReadCapacityUnits, 30);
+  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.WriteCapacityUnits, 30);
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'debug' }], 'log level env var');
@@ -213,6 +215,8 @@ test('[template] include all resources, all references', function(assert) {
     webhook: true,
     webhookKey: true,
     reduce: true,
+    readCapacityUnits: 20,
+    writeCapacityUnits: 20,
     notificationEmail: cf.ref('AlarmEmail'),
     cluster: cf.ref('Cluster'),
     watchbotVersion: cf.ref('WatchbotVersion'),
@@ -260,6 +264,8 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
   assert.ok(watch.Resources.testProgressTable, 'progress table');
+  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.ReadCapacityUnits, 20);
+  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.WriteCapacityUnits, 20);
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') });
