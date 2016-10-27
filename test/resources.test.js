@@ -50,9 +50,8 @@ util.mock('[resources] listInstances pagination', function(assert) {
 util.mock('[resources] availableInstances', function(assert) {
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
-  var context = this;
 
-  var resources = watchbot.resources(cluster, taskDef).on('HasInstances', function() {
+  watchbot.resources(cluster, taskDef).on('HasInstances', function() {
     assert.pass('emitted hasInstances event');
     assert.end();
   });
