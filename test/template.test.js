@@ -35,7 +35,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.WatchbotQueueSizeAlarm, 'queue alarm');
   assert.ok(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
-  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [ { Name: 'NotifyAfterRetries', Value: 0 } ], 'notify after retry default value');
+  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 0 }], 'notify after retry default value');
   assert.ok(watch.Resources.WatchbotWorkerRole, 'worker role');
   assert.equal(watch.Resources.WatchbotWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
   assert.ok(watch.Resources.WatchbotWatcherRole, 'watcher role');
@@ -110,7 +110,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
   assert.ok(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
-  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [ { Name: 'NotifyAfterRetries', Value: 2 } ], 'notify after retry default value');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 2 }], 'notify after retry default value');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
   assert.ok(watch.Resources.testWatcherRole, 'watcher role');

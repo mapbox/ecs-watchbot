@@ -200,7 +200,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
     { exit: 'mismatch', MessageId: 'exit-mismatch', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
     { exit: 'match', MessageId: 'exit-match', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
     { exit: 'pending', MessageId: 'pending', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: '999', MessageId: 'exit-999-retry', ApproximateReceiveCount: 3, NotifyAfterRetries: 3 },
+    { exit: '999', MessageId: 'exit-999-retry', ApproximateReceiveCount: 3, NotifyAfterRetries: 3 }
   ];
   var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
   var queue = d3.queue();
