@@ -47,6 +47,30 @@ util.mock('[resources] listInstances pagination', function(assert) {
   }, 1000);
 });
 
+util.mock('[resources] availableInstances', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+
+  watchbot.resources(cluster, taskDef).on('HasInstances', function() {
+    assert.pass('emitted hasInstances event');
+  });
+  assert.end();
+});
+
+util.mock('[resources] availableInstances error', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var context = this;
+
+  context.ecs.fail = true;
+
+  watchbot.resources(cluster, taskDef)
+    .on('error', function(err) {
+      assert.equal(err.message, 'Mock ECS error', 'expected error emitted');
+      assert.end();
+    });
+});
+
 util.mock('[resources] update error: no instances', function(assert) {
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
@@ -74,25 +98,23 @@ util.mock('[resources] available', function(assert) {
 
     assert.deepEqual(resources.status, {
       instances: ['arn:aws:ecs:us-east-1:1234567890:some/fake'],
+      availableInstances: [
+        {
+          registeredResources: [
+            { integerValue: 100, name: 'CPU' },
+            { integerValue: 100, name: 'MEMORY' }
+          ],
+          remainingResources: [
+            { integerValue: 100, name: 'CPU' },
+            { integerValue: 100, name: 'MEMORY' }
+          ]
+        }
+      ],
       registered: { cpu: 100, memory: 100 },
       available: { cpu: 100, memory: 100 },
       required: { cpu: 0, memory: 5 }
     }, 'collected expected resource info');
 
-    assert.end();
-  });
-});
-
-util.mock('[resources] available error', function(assert) {
-  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
-  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
-  var context = this;
-
-  context.ecs.fail = true;
-
-  watchbot.resources(cluster, taskDef).available(function(err) {
-    if (!err) assert.end('expected function to fail');
-    assert.equal(err.message, 'Mock ECS error', 'expected error message');
     assert.end();
   });
 });

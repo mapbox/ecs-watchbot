@@ -312,13 +312,14 @@ util.mock('[main] LogLevel', function(assert){
 util.mock('[main] resource polling error', function(assert) {
   var context = this;
   context.ecs.fail = true;
-  setTimeout(watchbot.main.end, 1800);
-  watchbot.main(config).on('finish', function() {
+
+  watchbot.main(config);
+  setTimeout(function() {
     assert.ok(context.logs.find(function(log) {
       return /Error polling cluster resources: Mock ECS error/.test(log);
     }), 'resource polling error logged');
     assert.end();
-  });
+  }, 1800);
 });
 
 util.mock('[main] insufficient resources available', function(assert) {
