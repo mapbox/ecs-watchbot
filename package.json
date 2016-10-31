@@ -24,8 +24,7 @@
     "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
   },
   "bin": {
-    "watchbot-log": "./bin/watchbot-log.js",
-    "watchbot-progress": "./bin/watchbot-progress.js"
+    "watchbot-log": "./bin/watchbot-log.js"
   },
   "dependencies": {
     "aws-sdk": "^2.4.11",
