@@ -246,13 +246,6 @@ By setting the `Reduce` parameter to true, Watchbot will be capable of helping t
 progress of distributed map-reduce operations. This is useful if your stack performs
 a bunch of individual jobs that need to be "rolled up" into a final output of some sort.
 
-Watchbot uses the `watchbot-progress` dependency for reporting progress to Watchbot
-as part of the messaging flow below. By enabling reduce-mode, Watchbot will initialize
-a DynamoDB progress table and configure necessary permissions for you.
-
-For examples and documentation on the available progress functions, see the
-[watchbot-progress module](https://github.com/mapbox/watchbot-progress).
-
 ### Messaging patterns
 
 Generally, a reduce-enabled Watchbot stack should be built in order to process three types
@@ -280,3 +273,33 @@ When your code receives these messages, it should:
   should send a single message to Watchbot's SNS topic to trigger the reduce step
 3. Upon receiving the reduce message, your code should take any appropriate roll-up
 action.
+
+### Using watchbot-progress
+
+`watchbot-progress` is a CLI command that is available to use on a reduce-enabled
+stack. This is one mechanism by which you can report progress to Watchbot as part
+ofthe above messaging flow.
+
+For usage examples and and additional documentation, see [watchbot-progress](https://github.com/mapbox/watchbot-progress).
+
+Install Watchbot globally as part of your worker's Dockerfile to gain access to the
+CLI command on your workers at runtime:
+
+```
+RUN npm install -g watchbot
+```
+
+```
+$ watchbot-progress <command> <job-id> [options]
+```
+
+Note that by default, workers in reduce-enabled Watchbot stacks will have the `$ProgressTable`
+environment variable set automatically. For more information on this command, see
+
+#### Reporting progress in JavaScript
+
+A JavaScript module is also available as a mechanism for progress reporting.
+
+```js
+var progress = require('watchbot').progress();
+```
