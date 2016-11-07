@@ -1,3 +1,13 @@
+### 1.0.3
+
+- Adds event emitter to signal when cluster instances have been identified
+- Adds error emitter to signal when there are no cluster instances
+- Adds readCapacityUnits & writeCapacityUnits configurable watchbot.template option params
+- Adds error handling for log line >50kb edge case
+- Exposes notifyAfterRetry concept to retry jobs before sending alarms
+- Adds pagination for describeContainerInstances
+- Adds watchbot-progress dependency
+
 ### 1.0.2
 
 - Adds support for ap-* regions by adding regional mapping for worker/watcher images assuming ecs-conex is doing your image packaging.
