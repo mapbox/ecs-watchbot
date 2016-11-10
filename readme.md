@@ -170,7 +170,7 @@ messageRetention | 1209600 | max seconds a message can remain in SQS
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm
 alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
 debugLogs | false | enable verbose watcher logging
-notifyAfterRetry | 0 | retry on any exit codes other than 0, 3, and 4 before alarm
+notifyAfterRetries | 0 | retry on any exit codes other than 0, 3, and 4 before alarm
 
 ### watchbot.template references
 
