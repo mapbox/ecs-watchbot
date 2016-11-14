@@ -252,6 +252,8 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testNotificationTopic, 'notification topic');
   assert.ok(watch.Resources.testLogGroup, 'log group');
   assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
+  assert.equal(watch.Resources.testLogForwarding.Condition, 'testUseLogForwarding', 'log forwarding function is conditional');
+  assert.deepEqual(watch.Conditions.testUseLogForwarding, cf.notEquals(cf.ref('LogAggregationFunction'), ''), 'log forwarding condition provided');
   assert.ok(watch.Resources.testQueue, 'queue');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
