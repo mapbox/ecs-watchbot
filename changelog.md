@@ -1,3 +1,7 @@
+### 1.0.4
+
+- Allows `options.logAggregationFunction` to reference a potentially empty stack parameter
+
 ### 1.0.3
 
 - Adds event emitter to signal when cluster instances have been identified
