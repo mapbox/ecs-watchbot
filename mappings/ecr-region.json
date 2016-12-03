@@ -19,5 +19,8 @@
     },
     "ap-southeast-2": {
         "Region": "us-west-2"
+    },
+    "us-east-2": {
+        "Region": "us-east-1"
     }
 }
