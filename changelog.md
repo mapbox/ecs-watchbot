@@ -1,3 +1,7 @@
+### 1.1.0
+
+- Adds support for us-east-2 (Ohio)
+
 ### 1.0.4
 
 - Allows `options.logAggregationFunction` to reference a potentially empty stack parameter
