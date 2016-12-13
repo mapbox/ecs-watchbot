@@ -37,6 +37,26 @@ util.mock('[tasks] run - below concurrency', function(assert) {
   });
 });
 
+util.mock('[tasks] run - startedBy truncation', function(assert) {
+  var context = this;
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var containerName = 'container';
+  var concurrency = 10;
+  var env = { key: 'value' };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, '1234567890123456789012345678901234567890');
+  tasks.run(env, function(err) {
+    if (err) return assert.end(err);
+    assert.deepEqual(context.ecs.config, {
+      region: 'us-east-1',
+      params: { cluster: cluster }
+    }, 'ecs client initialized properly');
+    assert.equal(context.ecs.runTask[0].startedBy, '123456789012345678901234567890123456', 'startedBy truncated to 36 characters');
+    assert.end();
+  });
+});
+
 util.mock('[tasks] run - above concurrency', function(assert) {
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
