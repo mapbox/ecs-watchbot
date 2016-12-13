@@ -1,3 +1,7 @@
+### 1.1.1
+
+- Fixes a bug where task launching could fail due to a `startedBy` name longer than 36 characters
+
 ### 1.1.0
 
 - Adds support for us-east-2 (Ohio)
