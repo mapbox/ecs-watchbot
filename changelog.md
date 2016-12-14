@@ -1,3 +1,8 @@
+### 1.2.0
+
+- Adds `.ref.queueName` to the output from `watchbot.template()`
+- Clarifies watcher log messages conveying outcome when tasks finish
+
 ### 1.1.1
 
 - Fixes a bug where task launching could fail due to a `startedBy` name longer than 36 characters
