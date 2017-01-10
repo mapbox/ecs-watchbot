@@ -1,3 +1,7 @@
+### 1.3.0
+
+- adds `options.privileged` parameter to watchbot's template
+
 ### 1.2.0
 
 - Adds `.ref.queueName` to the output from `watchbot.template()`
