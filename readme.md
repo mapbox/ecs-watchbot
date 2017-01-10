@@ -148,7 +148,7 @@ Name | Default | Description
 **service** | | the name of the worker service
 **serviceVersion** | | the version of the worker service to use
 **notificationEmail** | | the email address to receive failure notifications
-permissions | [] | permissions to any AWS resources that the worker will need to perform a task
+permissions | [] | permissions to any AWS resources that the worker will need to perform a task. When porting permissions from an older project, be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
 env | {} | environment variables to set on worker containers
 command | undefined | overrides a Dockerfile's `CMD`
 watchbotVersion | installed version | the version of watchbot to use
