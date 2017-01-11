@@ -258,14 +258,14 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
       ], 'expected ecs.describeTasks request');
 
       var expectedTaskStatus = [
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '6af469055df92c00ec48413701bc597d' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: '0' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'de147c077f2e2a250cc36fd278eb273f' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: '1' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '19d6305fad7d8c4270f6471435b9f7b9' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'da9731cd84877400f43ff61f0ab5fc16' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'a4b92a31a8467969f3116c78f6fddda0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '5a8f3f0ed983ca3d723501255fcc6827' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify', reason: 'mismatched' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'b2eae332b8c9e32e8d2f63b4c6603ba0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match' },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'f366f0be48ce37c584ea740a54ecb9fe' }, env: { ApproximateReceiveCount: 3, NotifyAfterRetries: 3, exit: '999', MessageId: 'exit-999-retry' }, outcome: 'immediate', reason: '999' }
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '6af469055df92c00ec48413701bc597d' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: '0', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'de147c077f2e2a250cc36fd278eb273f' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: '1', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '19d6305fad7d8c4270f6471435b9f7b9' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'da9731cd84877400f43ff61f0ab5fc16' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'a4b92a31a8467969f3116c78f6fddda0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '5a8f3f0ed983ca3d723501255fcc6827' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify', reason: 'mismatched', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'b2eae332b8c9e32e8d2f63b4c6603ba0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'f366f0be48ce37c584ea740a54ecb9fe' }, env: { ApproximateReceiveCount: 3, NotifyAfterRetries: 3, exit: '999', MessageId: 'exit-999-retry' }, outcome: 'immediate', reason: '999', duration: 7973 }
       ];
       expectedTaskStatus.free = 9;
 

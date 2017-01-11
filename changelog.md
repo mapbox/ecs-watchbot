@@ -1,3 +1,7 @@
+### 1.3.1
+
+- adds duration (in seconds) to watcher log output when tasks complete
+
 ### 1.3.0
 
 - adds `options.privileged` parameter to watchbot's template
