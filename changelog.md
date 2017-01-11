@@ -1,6 +1,7 @@
 ### 1.3.1
 
 - adds duration (in seconds) to watcher log output when tasks complete
+- fix bug with `NotifyAfterRetries` where the environment variable was set in the watcher container, not the worker.
 
 ### 1.3.0
 
