@@ -152,7 +152,9 @@ module.exports.mock = function(name, callback) {
             lastStatus: 'STOPPED',
             stoppedReason: 'mismatched',
             overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: 0 }, { exitCode: 1 }]
+            containers: [{ exitCode: 0 }, { exitCode: 1 }],
+            startedAt: 1484155849718,
+            stoppedAt: 1484155857691
           });
 
           delete tasks[arn];
@@ -164,7 +166,9 @@ module.exports.mock = function(name, callback) {
             lastStatus: 'STOPPED',
             stoppedReason: 'match',
             overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: 0 }, { exitCode: 0 }]
+            containers: [{ exitCode: 0 }, { exitCode: 0 }],
+            startedAt: 1484155849718,
+            stoppedAt: 1484155857691
           });
         } else if (exitCode && exitCode.value !== 'pending') {
           status.push({
@@ -174,7 +178,9 @@ module.exports.mock = function(name, callback) {
             lastStatus: 'STOPPED',
             stoppedReason: exitCode.value,
             overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: Number(exitCode.value) }]
+            containers: [{ exitCode: Number(exitCode.value) }],
+            startedAt: 1484155849718,
+            stoppedAt: 1484155857691
           });
           delete tasks[arn];
         } else if (messageId && /^finish/.test(messageId.value)) {
@@ -186,7 +192,9 @@ module.exports.mock = function(name, callback) {
             lastStatus: 'STOPPED',
             stoppedReason: exit,
             overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: Number(exit) }]
+            containers: [{ exitCode: Number(exit) }],
+            startedAt: 1484155849718,
+            stoppedAt: 1484155857691
           });
           delete tasks[arn];
         }
