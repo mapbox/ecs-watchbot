@@ -1,3 +1,7 @@
+### 1.3.2
+
+- fix a bug where `NotifyAfterRetries` was still expected in watcher container environment
+
 ### 1.3.1
 
 - adds duration (in seconds) to watcher log output when tasks complete
