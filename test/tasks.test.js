@@ -212,15 +212,14 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
   var containerName = 'container';
   var concurrency = 10;
   var envs = [
-    { exit: '0', MessageId: 'exit-0', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: '1', MessageId: 'exit-1', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: '2', MessageId: 'exit-2', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: '3', MessageId: 'exit-3', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: '4', MessageId: 'exit-4', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: 'mismatch', MessageId: 'exit-mismatch', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: 'match', MessageId: 'exit-match', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: 'pending', MessageId: 'pending', ApproximateReceiveCount: 1, NotifyAfterRetries: 0 },
-    { exit: '999', MessageId: 'exit-999-retry', ApproximateReceiveCount: 3, NotifyAfterRetries: 3 }
+    { exit: '0', MessageId: 'exit-0', ApproximateReceiveCount: 1 },
+    { exit: '1', MessageId: 'exit-1', ApproximateReceiveCount: 1 },
+    { exit: '2', MessageId: 'exit-2', ApproximateReceiveCount: 1 },
+    { exit: '3', MessageId: 'exit-3', ApproximateReceiveCount: 1 },
+    { exit: '4', MessageId: 'exit-4', ApproximateReceiveCount: 1 },
+    { exit: 'mismatch', MessageId: 'exit-mismatch', ApproximateReceiveCount: 1 },
+    { exit: 'match', MessageId: 'exit-match', ApproximateReceiveCount: 1 },
+    { exit: 'pending', MessageId: 'pending', ApproximateReceiveCount: 1 },
   ];
   var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
   var queue = d3.queue();
@@ -244,28 +243,26 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
       util.collectionsEqual(assert, context.ecs.describeTasks, [
         {
           tasks: [
-            '6af469055df92c00ec48413701bc597d',
-            'de147c077f2e2a250cc36fd278eb273f',
-            '19d6305fad7d8c4270f6471435b9f7b9',
-            'da9731cd84877400f43ff61f0ab5fc16',
-            'a4b92a31a8467969f3116c78f6fddda0',
-            '5a8f3f0ed983ca3d723501255fcc6827',
-            'b2eae332b8c9e32e8d2f63b4c6603ba0',
-            '7972a24206b8e3d7dbaf7e43932b4ff8',
-            'f366f0be48ce37c584ea740a54ecb9fe'
+            'bb8e8e7405617c973ceac2a9076ae19d',
+            '762676041b682bcea049706185d13ac6',
+            'fc36323938489380babaf87c56568d7f',
+            '107e1fc31e0ad9b0e0d2304411596e05',
+            'e7336cab2c12be8aacef9718acb7cdb5',
+            'ea5ebf4778bd7a4b37ed63052ad252fe',
+            '248fbdf3d00d30cce9353e1e6ee9fbd6',
+            '6d8e580ee61b2fcb24bb9317d212a404'
           ]
         }
       ], 'expected ecs.describeTasks request');
 
       var expectedTaskStatus = [
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '6af469055df92c00ec48413701bc597d' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: '0', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'de147c077f2e2a250cc36fd278eb273f' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: '1', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '19d6305fad7d8c4270f6471435b9f7b9' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'da9731cd84877400f43ff61f0ab5fc16' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'a4b92a31a8467969f3116c78f6fddda0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '5a8f3f0ed983ca3d723501255fcc6827' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify', reason: 'mismatched', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'b2eae332b8c9e32e8d2f63b4c6603ba0' }, env: { ApproximateReceiveCount: 1, NotifyAfterRetries: 0, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'f366f0be48ce37c584ea740a54ecb9fe' }, env: { ApproximateReceiveCount: 3, NotifyAfterRetries: 3, exit: '999', MessageId: 'exit-999-retry' }, outcome: 'immediate', reason: '999', duration: 7973 }
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'bb8e8e7405617c973ceac2a9076ae19d' }, env: { ApproximateReceiveCount: 1, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: '0', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '762676041b682bcea049706185d13ac6' }, env: { ApproximateReceiveCount: 1, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: '1', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'fc36323938489380babaf87c56568d7f' }, env: { ApproximateReceiveCount: 1, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '107e1fc31e0ad9b0e0d2304411596e05' }, env: { ApproximateReceiveCount: 1, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'e7336cab2c12be8aacef9718acb7cdb5' }, env: { ApproximateReceiveCount: 1, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'ea5ebf4778bd7a4b37ed63052ad252fe' }, env: { ApproximateReceiveCount: 1, exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify', reason: 'mismatched', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '248fbdf3d00d30cce9353e1e6ee9fbd6' }, env: { ApproximateReceiveCount: 1, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match', duration: 7973 },
       ];
       expectedTaskStatus.free = 9;
 

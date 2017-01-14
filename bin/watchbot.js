@@ -13,7 +13,8 @@ var required = [
   'NotificationTopic',
   'StackName',
   'ExponentialBackoff',
-  'LogGroupArn'
+  'LogGroupArn',
+  'NotifyAfterRetries'
 ];
 
 var missing = _.difference(required, Object.keys(process.env));
