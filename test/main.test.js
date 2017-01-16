@@ -235,35 +235,42 @@ util.mock('[main] manage messages for completed tasks', function(assert) {
 
   context.sqs.messages = [
     { MessageId: 'finish-0', ReceiptHandle: '0', Body: JSON.stringify({ Subject: 'subject0', Message: 'message0' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
-    { MessageId: 'finish-2', ReceiptHandle: '2', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: 'finish-1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: 'finish-2', ReceiptHandle: '2', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 2, ApproximateFirstReceiveTimestamp: 20 } },
     { MessageId: 'finish-3', ReceiptHandle: '3', Body: JSON.stringify({ Subject: 'subject3', Message: 'message3' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
     { MessageId: 'finish-4', ReceiptHandle: '4', Body: JSON.stringify({ Subject: 'subject4', Message: 'message4' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
   ];
-  config.Concurrency = 4;
+
+  var testConfig = Object.assign({}, config, {
+    Concurrency: '5',
+    NotifyAfterRetries: '1'
+  });
+
   setTimeout(watchbot.main.end, 1800);
-  watchbot.main(config).on('finish', function() {
+  watchbot.main(testConfig).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 1, 'one ecs.describeTasks request');
     assert.equal(context.sqs.receiveMessage.length, 2, 'two sqs.receiveMessage requests');
-    assert.equal(context.ecs.runTask.length, 4, 'four ecs.runTask requests');
+    assert.equal(context.ecs.runTask.length, 5, 'five ecs.runTask requests');
     util.collectionsEqual(assert, context.sqs.deleteMessage, [
       { ReceiptHandle: '0' },
       { ReceiptHandle: '3' }
     ], 'expected sqs.deleteMessage requests');
     util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
+      { ReceiptHandle: '1', VisibilityTimeout: 0 },
       { ReceiptHandle: '2', VisibilityTimeout: 0 },
       { ReceiptHandle: '4', VisibilityTimeout: 0 }
     ], 'expected sqs.changeMessageVisibility requests');
     util.collectionsEqual(assert, context.sns.publish, [
       {
         Subject: config.StackName + ' failed processing message finish-2',
-        Message: 'At ${date}, processing message finish-2 failed on ' + config.StackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: 2\n\nMessage information:\nMessageId: finish-2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: d35c9786804c31f1a16a288ec28a2bdc\n'
+        Message: 'At ${date}, processing message finish-2 failed on ' + config.StackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: 2\n\nMessage information:\nMessageId: finish-2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 3\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: 3120b788edc53b003f3ebb8afc557f07\n'
       },
       {
         Subject: config.StackName + ' failed processing message finish-3',
         Message: 'At ${date}, processing message finish-3 failed on ' + config.StackName + '\n\nTask outcome: delete & notify\n\nTask stopped reason: 3\n\nMessage information:\nMessageId: finish-3\nSubject: subject3\nMessage: message3\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: 496a1bbc7db7ef69c5b024bed0fa66e7\n'
       }
-    ], 'expected sns.publish requests');
-    config.Concurrency = 3;
+    ], 'expected sns.publish requests & no notification prior to NotifyAfterRetries');
+
     assert.end();
   });
 });
