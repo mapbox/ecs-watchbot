@@ -219,7 +219,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
     { exit: '4', MessageId: 'exit-4', ApproximateReceiveCount: 1 },
     { exit: 'mismatch', MessageId: 'exit-mismatch', ApproximateReceiveCount: 1 },
     { exit: 'match', MessageId: 'exit-match', ApproximateReceiveCount: 1 },
-    { exit: 'pending', MessageId: 'pending', ApproximateReceiveCount: 1 },
+    { exit: 'pending', MessageId: 'pending', ApproximateReceiveCount: 1 }
   ];
   var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
   var queue = d3.queue();
@@ -262,7 +262,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '107e1fc31e0ad9b0e0d2304411596e05' }, env: { ApproximateReceiveCount: 1, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3', duration: 7973 },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'e7336cab2c12be8aacef9718acb7cdb5' }, env: { ApproximateReceiveCount: 1, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973 },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'ea5ebf4778bd7a4b37ed63052ad252fe' }, env: { ApproximateReceiveCount: 1, exit: 'mismatch', MessageId: 'exit-mismatch' }, outcome: 'return & notify', reason: 'mismatched', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '248fbdf3d00d30cce9353e1e6ee9fbd6' }, env: { ApproximateReceiveCount: 1, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '248fbdf3d00d30cce9353e1e6ee9fbd6' }, env: { ApproximateReceiveCount: 1, exit: 'match', MessageId: 'exit-match' }, outcome: 'delete', reason: 'match', duration: 7973 }
       ];
       expectedTaskStatus.free = 9;
 

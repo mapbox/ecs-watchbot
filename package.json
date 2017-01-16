@@ -18,7 +18,7 @@
   "main": "index.js",
   "scripts": {
     "start": "bin/watchbot.js",
-    "test": "nyc tape test/*.test.js",
+    "test": "nyc tape test/*.test.js | tap-spec",
     "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
     "pretest": "eslint bin lib test index.js",
     "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
