@@ -1,3 +1,7 @@
+### 1.3.3
+
+- reimplement and fix `NotifyAfterRetries` as a watcher environment variable
+
 ### 1.3.2
 
 - fix a bug where `NotifyAfterRetries` was still expected in watcher container environment
