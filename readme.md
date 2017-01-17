@@ -95,7 +95,7 @@ With those two tools in hand, creating a Watchbot stack will generally involve:
 As an example, consider a service where the workers are expected to manipulate objects in an S3 bucket. In the CloudFormation template, we wish to create the S3 bucket that our workers will interact with, and then build the Watchbot resources required to perform the task in response to SNS events.
 
 ```js
-var watchbot = require('watchbot');
+var watchbot = require('@mapbox/watchbot');
 
 // Build the parameters, resources, and outputs that your service needs
 var myTemplate = {
@@ -217,7 +217,7 @@ See [the AWS documentation](http://docs.aws.amazon.com/AmazonECS/latest/develope
 In order to help isolate and aggregate logs from any single message, watchbot provides a logging helper that will prefix each line with the ID of the message being processed. Use these utilities in your worker scripts to make sure that your logs are consistent and easy to search.
 
 ```js
-var watchbot = require('watchbot');
+var watchbot = require('@mapbox/watchbot');
 
 // watchbot.log() works just like console.log()
 var breakfast = 'eggs and beans';
@@ -303,5 +303,5 @@ environment variable set automatically. For more information on this command, se
 A JavaScript module is also available as a mechanism for progress reporting.
 
 ```js
-var progress = require('watchbot').progress();
+var progress = require('@mapbox/watchbot').progress();
 ```

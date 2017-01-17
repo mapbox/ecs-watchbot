@@ -1,3 +1,7 @@
+### 1.3.5
+
+- move to @mapbox/watchbot, use MemoryReservation soft limit for the Watcher task
+
 ### 1.3.4
 
 - update and switch to namespaced package for `@mapbox/watchbot-progress`
