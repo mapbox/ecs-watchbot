@@ -25,9 +25,10 @@
   },
   "bin": {
     "watchbot-log": "./bin/watchbot-log.js",
-    "watchbot-progress": "./node_modules/watchbot-progress/bin/watchbot-progress.js"
+    "watchbot-progress": "./node_modules/@mapbox/watchbot-progress/bin/watchbot-progress.js"
   },
   "dependencies": {
+    "@mapbox/watchbot-progress": "^1.1.0",
     "aws-sdk": "^2.4.11",
     "binary-split": "^1.0.2",
     "cloudfriend": "^1.6.0",
@@ -37,8 +38,7 @@
     "fastlog": "^1.0.0",
     "meow": "^3.7.0",
     "stream-combiner": "^0.2.2",
-    "underscore": "^1.8.3",
-    "watchbot-progress": "^1.0.0"
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
     "documentation": "^4.0.0-beta2",

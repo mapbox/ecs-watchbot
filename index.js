@@ -15,7 +15,7 @@ module.exports = {
   log: require('./lib/logs').log,
   logStream: require('./lib/logs').logStream,
   fetch: require('./lib/logs').fetch,
-  progress: require('watchbot-progress').progress,
+  progress: require('@mapbox/watchbot-progress').progress,
 
   /**
    * Merges CloudFormation templates together.

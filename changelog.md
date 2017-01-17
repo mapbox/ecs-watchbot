@@ -1,3 +1,7 @@
+### 1.3.4
+
+- update and switch to namespaced package for `@mapbox/watchbot-progress`
+
 ### 1.3.3
 
 - reimplement and fix `NotifyAfterRetries` as a watcher environment variable
