@@ -28,7 +28,7 @@
     "watchbot-progress": "./node_modules/@mapbox/watchbot-progress/bin/watchbot-progress.js"
   },
   "dependencies": {
-    "@mapbox/watchbot-progress": "^1.1.0",
+    "@mapbox/watchbot-progress": "^1.1.1",
     "aws-sdk": "^2.4.11",
     "binary-split": "^1.0.2",
     "cloudfriend": "^1.6.0",
