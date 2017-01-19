@@ -1,3 +1,7 @@
+### 1.3.6
+
+- bump watchbot-progress to v1.1.1, handles a bug in checking part status on a completed job
+
 ### 1.3.5
 
 - move to @mapbox/watchbot, use MemoryReservation soft limit for the Watcher task
