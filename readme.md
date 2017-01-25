@@ -165,6 +165,9 @@ backoff | true | retry jobs with exponential backoff
 logAggregationFunction | | the ARN of the log collection Lambda function
 mounts | '' | defines container mount points from host EC2s
 reservation | {} | specify desired memory/cpu reservations for worker containers
+reservation.cpu | | specify a soft CPU limit
+reservation.memory | 64 | specify a hard memory limit
+reservation.softMemory | | specify a soft memory limit
 messageTimeout | 600 | max seconds it takes to process a job
 messageRetention | 1209600 | max seconds a message can remain in SQS
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm

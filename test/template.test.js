@@ -37,6 +37,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
   assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 0 }], 'notify after retry default value');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Privileged, 'privileged is false');
+  assert.equal(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Memory, 64, 'sets default hard memory limit');
   assert.ok(watch.Resources.WatchbotWorkerRole, 'worker role');
   assert.equal(watch.Resources.WatchbotWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
   assert.ok(watch.Resources.WatchbotWatcherRole, 'watcher role');
@@ -159,6 +160,7 @@ test('[template] include all resources, no references', function(assert) {
     logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
       memory: 512,
+      softMemory: 128,
       cpu: 4096
     },
     messageTimeout: 300,
@@ -193,6 +195,9 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testWorker, 'worker');
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Command, ['bash'], 'sets worker command');
+  assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Cpu, 4096, 'reserves cpu');
+  assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Memory, 512, 'sets hard memory limit');
+  assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MemoryReservation, 128, 'sets soft memory limit');
   assert.ok(watch.Resources.testService, 'service');
   assert.ok(watch.Resources.testProgressTable, 'progress table');
   assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.ReadCapacityUnits, 30);
