@@ -1,3 +1,7 @@
+### 1.4.0
+
+- adds `options.reservation.softMemory` which allows the caller to set up a soft memory reservation on worker tasks
+
 ### 1.3.6
 
 - bump watchbot-progress to v1.1.1, handles a bug in checking part status on a completed job
