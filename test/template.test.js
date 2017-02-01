@@ -339,6 +339,80 @@ test('[template] resources are valid', function(assert) {
   });
 });
 
+test('[template] notificationTopic vs notificationEmail', function(assert) {
+  assert.throws(function() {
+    watchbot.template({
+      prefix: 'test',
+      user: true,
+      webhook: true,
+      webhookKey: true,
+      reduce: true,
+      notificationEmail: 'devnull@mapbox.com',
+      notificationTopic: 'arn:aws:sns:us-east-1:123456789000:fake-topic',
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+      watchbotVersion: 'v0.0.7',
+      service: 'my-service',
+      serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
+      command: ['bash'],
+      env: { SomeKey: 'SomeValue', AnotherKey: 'AnotherValue' },
+      permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
+      watchers: 2,
+      workers: 2,
+      backoff: false,
+      mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+      logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
+      reservation: {
+        memory: 512,
+        cpu: 4096
+      },
+      messageTimeout: 300,
+      messageRetention: 3000,
+      alarmThreshold: 10,
+      alarmPeriods: 6
+    });
+  }, /Cannot provide both notificationTopic and notificationEmail./);
+
+  var watch = watchbot.template({
+    prefix: 'test',
+    user: true,
+    webhook: true,
+    webhookKey: true,
+    reduce: true,
+    notificationTopic: 'arn:aws:sns:us-east-1:123456789000:fake-topic',
+    cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+    watchbotVersion: 'v0.0.7',
+    service: 'my-service',
+    serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
+    command: ['bash'],
+    env: { SomeKey: 'SomeValue', AnotherKey: 'AnotherValue' },
+    permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
+    watchers: 2,
+    workers: 2,
+    backoff: false,
+    mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data',
+    logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
+    reservation: {
+      memory: 512,
+      cpu: 4096
+    },
+    messageTimeout: 300,
+    messageRetention: 3000,
+    alarmThreshold: 10,
+    alarmPeriods: 6
+  });
+
+  var tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex') + '.json');
+  fs.writeFileSync(tmp, JSON.stringify({ Resources: watch.Resources }));
+
+  cf.validate(tmp).then(function() {
+    assert.pass('valid');
+    assert.end();
+  }).catch(function(err) {
+    assert.ifError(err, 'invalid');
+    assert.end();
+  });
+});
+
 test('[template] multi-watchbot merge', function(assert) {
   var one = watchbot.template({
     prefix: 'one',

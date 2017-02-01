@@ -147,7 +147,8 @@ Name | Default | Description
 **cluster** | | the ARN for an ECS cluster
 **service** | | the name of the worker service
 **serviceVersion** | | the version of the worker service to use
-**notificationEmail** | | the email address to receive failure notifications
+**notificationEmail** | | the email address to receive failure notifications. Should not be provided if notificationTopic exists.
+**notificationTopic** | | the ARN of an SNS topic to receive failure notifications. Should not be provided if notificationEmail exists.
 permissions | [] | permissions to any AWS resources that the worker will need to perform a task. Be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
 env | {} | environment variables to set on worker containers
 command | undefined | overrides a Dockerfile's `CMD`
