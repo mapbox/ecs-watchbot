@@ -315,33 +315,3 @@ util.mock('[main] LogLevel', function(assert){
     assert.end();
   });
 });
-
-util.mock('[main] resource polling error', function(assert) {
-  var context = this;
-  context.ecs.fail = true;
-
-  watchbot.main(config);
-  setTimeout(function() {
-    assert.ok(context.logs.find(function(log) {
-      return /Error polling cluster resources: Mock ECS error/.test(log);
-    }), 'resource polling error logged');
-    assert.end();
-  }, 1800);
-});
-
-util.mock('[main] insufficient resources available', function(assert) {
-  var context = this;
-
-  context.sqs.messages = [
-    { MessageId: 'finish-0', ReceiptHandle: '0', Body: JSON.stringify({ Subject: 'subject0', Message: 'message0' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
-  ];
-
-  // No memory left to run new tasks
-  context.ecs.memory = 1;
-  setTimeout(watchbot.main.end, 1800);
-  watchbot.main(config).on('finish', function() {
-    assert.deepEqual(context.sqs.receiveMessage, [], 'prevented from getting SQS messages');
-    assert.deepEqual(context.ecs.runTask, [], 'did not run any tasks');
-    assert.end();
-  });
-});

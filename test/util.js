@@ -217,41 +217,6 @@ module.exports.mock = function(name, callback) {
         });
       });
     };
-    AWS.ECS.prototype.listContainerInstances = function(params, callback) {
-      context.ecs.listContainerInstances.push(params);
-      setImmediate(function() {
-        if (context.ecs.failInstances) return callback(new Error('Mock ECS error'));
-
-        var instances = context.ecs.instances || ['arn:aws:ecs:us-east-1:1234567890:some/fake'];
-        var startFrom = !params.nextToken ? 0 : instances.indexOf(params.nextToken) + 1;
-        var sent = instances.slice(startFrom, startFrom + 1);
-
-        callback(null, {
-          containerInstanceArns: sent,
-          nextToken: startFrom === instances.length - 1 ? undefined : sent.slice(-1)[0]
-        });
-      });
-    };
-    AWS.ECS.prototype.describeContainerInstances = function(params, callback) {
-      context.ecs.describeContainerInstances.push(params);
-      setImmediate(function() {
-        if (context.ecs.fail) return callback(new Error('Mock ECS error'));
-        callback(null, {
-          containerInstances: [
-            {
-              registeredResources: [
-                { name: 'CPU', integerValue: context.ecs.cpu || 100 },
-                { name: 'MEMORY', integerValue: context.ecs.memory || 100 }
-              ],
-              remainingResources: [
-                { name: 'CPU', integerValue: context.ecs.cpu || 100 },
-                { name: 'MEMORY', integerValue: context.ecs.memory || 100 }
-              ]
-            }
-          ]
-        });
-      });
-    };
 
     console.log = function() {
       var msg = util.format.apply(null, arguments);

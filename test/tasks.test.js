@@ -98,7 +98,10 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
   var env = { resourceMemory: 'true' };
   var context = this;
 
-  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency)
+    .on('error', function(err) {
+      assert.equal(err.message, 'Task wasn\'t placed due to RESOURCE:MEMORY');
+    });
   tasks.run(env, function(err) {
     if (err) return assert.end(err);
     assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of memory');
@@ -140,7 +143,11 @@ util.mock('[tasks] run - runTask failure (out of cpu)', function(assert) {
   var env = { resourceCpu: 'true' };
   var context = this;
 
-  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency)
+    .on('error', function(err) {
+      assert.equal(err.message, 'Task wasn\'t placed due to RESOURCE:CPU');
+    });
+
   tasks.run(env, function(err) {
     if (err) return assert.end(err);
     assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of cpu');
