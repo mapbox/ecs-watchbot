@@ -164,7 +164,7 @@ watchers | 1 | number of watcher containers
 workers | 1 | number of concurrent worker containers per watcher
 backoff | true | retry jobs with exponential backoff
 logAggregationFunction | | the ARN of the log collection Lambda function
-mounts | '' | defines container mount points from host EC2s
+mounts | '' | defines persistent container mount points from host EC2s or ephemeral mount points on the container
 reservation | {} | specify desired memory/cpu reservations for worker containers
 reservation.cpu | | specify a soft CPU limit
 reservation.memory | 64 | specify a hard memory limit
