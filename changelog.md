@@ -1,6 +1,6 @@
-### 1.5.0
+### 1.6.0
 
-- adds ephemeral, non-persistent empty data, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
+- adds ephemeral, or non-persistent, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
 
 ### 1.4.0
 
