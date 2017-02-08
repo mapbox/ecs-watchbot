@@ -37,8 +37,7 @@
     "dyno": "^1.2.0",
     "fastlog": "^1.0.0",
     "meow": "^3.7.0",
-    "stream-combiner": "^0.2.2",
-    "underscore": "^1.8.3"
+    "stream-combiner": "^0.2.2"
   },
   "devDependencies": {
     "documentation": "^4.0.0-beta2",
@@ -48,6 +47,7 @@
     "opener": "^1.4.1",
     "sinon": "^1.17.5",
     "tap-spec": "^4.1.1",
-    "tape": "^4.5.1"
+    "tape": "^4.5.1",
+    "underscore": "^1.8.3"
   }
 }
