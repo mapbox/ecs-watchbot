@@ -5,7 +5,6 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 var crypto = require('crypto');
-var _ = require('underscore');
 
 var pkg = require(path.resolve(__dirname, '..', 'package.json'));
 var version = pkg.version;
@@ -126,8 +125,8 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testService, 'service');
   assert.notOk(watch.Resources.testProgressTable, 'progress table');
   assert.notOk(watch.Resources.testProgressTablePermission, 'progress table permission');
-  assert.ok(_.findWhere(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints, { ContainerPath: '/mnt/tmp', SourceVolume: 'mnt-2' }), 'ephemeral mount point check');
-  assert.deepEqual(_.findWhere(watch.Resources.testWorker.Properties.Volumes, { Name: 'mnt-2' }).Host, {});
+  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }));
+  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }));
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
@@ -209,8 +208,8 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'debug' }], 'log level env var');
-  assert.ok(_.findWhere(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints, { ContainerPath: '/mnt/tmp', SourceVolume: 'mnt-2' }), 'ephemeral mount point check');
-  assert.deepEqual(_.findWhere(watch.Resources.testWorker.Properties.Volumes, { Name: 'mnt-2' }).Host, {});
+  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }));
+  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }));
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
@@ -289,8 +288,8 @@ test('[template] include all resources, all references', function(assert) {
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') });
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[7], { Name: 'ExponentialBackoff', Value: cf.ref('UseBackoff') });
-  assert.ok(_.findWhere(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints, { ContainerPath: '/mnt/tmp', SourceVolume: 'mnt-2' }), 'ephemeral mount point check');
-  assert.deepEqual(_.findWhere(watch.Resources.testWorker.Properties.Volumes, { Name: 'mnt-2' }).Host, {});
+  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }));
+  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }));
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
