@@ -122,10 +122,12 @@ util.mock('[main] task running failure (out of memory)', function(assert) {
   setTimeout(watchbot.main.end, 1800);
   watchbot.main(config).on('finish', function() {
     assert.equal(context.ecs.describeTasks.length, 0, 'no ecs.describeTasks requests');
-    assert.equal(context.sqs.receiveMessage.length, 1, 'one sqs.receiveMessage requests');
-    assert.equal(context.ecs.runTask.length, 2, '2 ecs.runTask requests');
-    assert.deepEqual(context.sns.publish, [], 'does not send failure notification');
-    assert.deepEqual(context.sqs.changeMessageVisibility, [], 'no sqs.changeMessageVisibility requests');
+    assert.equal(context.sqs.receiveMessage.length, 2, 'one sqs.receiveMessage requests');
+    assert.equal(context.ecs.runTask.length, 1, '1 ecs.runTask request');
+    util.collectionsEqual(assert, context.sns.publish, [], 'doesn\'t send error notification');
+    util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
+      { ReceiptHandle: '1', VisibilityTimeout: 0 }
+    ], 'expected sqs.changeMessageVisibility requests');
     assert.end();
   });
 });

@@ -103,21 +103,10 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
       assert.equal(err.message, 'Task wasn\'t placed due to RESOURCE:MEMORY');
     });
   tasks.run(env, function(err) {
-    if (err) return assert.end(err);
+    assert.equal(err.toString(), 'Error: RESOURCE:MEMORY');
+    assert.equal(err.code, 'NotRun');
     assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of memory');
     util.collectionsEqual(assert, context.ecs.runTask, [
-      {
-        startedBy: 'watchbot',
-        taskDefinition: taskDef,
-        overrides: {
-          containerOverrides: [
-            {
-              name: containerName,
-              environment: [{ name: 'resourceMemory', value: 'true' }]
-            }
-          ]
-        }
-      },
       {
         startedBy: 'watchbot',
         taskDefinition: taskDef,
@@ -143,27 +132,13 @@ util.mock('[tasks] run - runTask failure (out of cpu)', function(assert) {
   var env = { resourceCpu: 'true' };
   var context = this;
 
-  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency)
-    .on('error', function(err) {
-      assert.equal(err.message, 'Task wasn\'t placed due to RESOURCE:CPU');
-    });
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency);
 
   tasks.run(env, function(err) {
-    if (err) return assert.end(err);
+    assert.equal(err.toString(), 'Error: RESOURCE:CPU');
+    assert.equal(err.code, 'NotRun');
     assert.equal(context.ecs.resourceFail, 1, 'retried runTask request when cluster out of cpu');
     util.collectionsEqual(assert, context.ecs.runTask, [
-      {
-        startedBy: 'watchbot',
-        taskDefinition: taskDef,
-        overrides: {
-          containerOverrides: [
-            {
-              name: containerName,
-              environment: [{ name: 'resourceCpu', value: 'true' }]
-            }
-          ]
-        }
-      },
       {
         startedBy: 'watchbot',
         taskDefinition: taskDef,
