@@ -1,3 +1,7 @@
+### 1.5.0
+
+- adds ephemeral, non-persistent empty data, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
+
 ### 1.4.0
 
 - adds `options.reservation.softMemory` which allows the caller to set up a soft memory reservation on worker tasks
