@@ -144,7 +144,7 @@ module.exports.mock = function(name, callback) {
           return item.name === 'MessageId';
         });
 
-        if (exitCode && exitCode.value === 'mismatch') {
+        if (exitCode && exitCode.value === 'mismatch1') {
           status.push({
             clusterArn: 'cluster-arn',
             containerInstanceArn: 'instance-arn',
@@ -153,6 +153,20 @@ module.exports.mock = function(name, callback) {
             stoppedReason: 'mismatched',
             overrides: { containerOverrides: [{ environment: env }] },
             containers: [{ exitCode: 0 }, { exitCode: 1 }],
+            startedAt: 1484155849718,
+            stoppedAt: 1484155857691
+          });
+
+          delete tasks[arn];
+        } else if (exitCode && exitCode.value === 'mismatch2') {
+          status.push({
+            clusterArn: 'cluster-arn',
+            containerInstanceArn: 'instance-arn',
+            taskArn: arn,
+            lastStatus: 'STOPPED',
+            stoppedReason: 'mismatched',
+            overrides: { containerOverrides: [{ environment: env }] },
+            containers: [{ exitCode: 0 }, { exitCode: 1, reason: 'some container reason' }],
             startedAt: 1484155849718,
             stoppedAt: 1484155857691
           });
@@ -171,6 +185,7 @@ module.exports.mock = function(name, callback) {
             stoppedAt: 1484155857691
           });
         } else if (exitCode && exitCode.value !== 'pending') {
+          var containers = (exitCode.value === '1') ? [{ exitCode: Number(exitCode.value), reason: 'some container reason' }] : [{ exitCode: Number(exitCode.value) }];
           status.push({
             clusterArn: 'cluster-arn',
             containerInstanceArn: 'instance-arn',
@@ -178,7 +193,7 @@ module.exports.mock = function(name, callback) {
             lastStatus: 'STOPPED',
             stoppedReason: exitCode.value,
             overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: Number(exitCode.value) }],
+            containers: containers,
             startedAt: 1484155849718,
             stoppedAt: 1484155857691
           });
