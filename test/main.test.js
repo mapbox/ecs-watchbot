@@ -7,7 +7,7 @@ var config = {
   TaskDefinition: 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1',
   Concurrency: '3',
   QueueUrl: 'https://fake.us-east-1/sqs/url',
-  EventQueueUrl: 'https://fake.us-east-1/sqs/url-for-events',
+  TaskEventQueueUrl: 'https://fake.us-east-1/sqs/url-for-events',
   StackName: 'watchbot-testing',
   ExponentialBackoff: false
   // , LogLevel: 'debug'

@@ -10,6 +10,7 @@ var required = [
   'TaskDefinition',
   'Concurrency',
   'QueueUrl',
+  'TaskEventQueueUrl',
   'NotificationTopic',
   'StackName',
   'ExponentialBackoff',
