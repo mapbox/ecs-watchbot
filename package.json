@@ -25,7 +25,8 @@
   },
   "bin": {
     "watchbot-log": "./bin/watchbot-log.js",
-    "watchbot-progress": "./node_modules/@mapbox/watchbot-progress/bin/watchbot-progress.js"
+    "watchbot-progress": "./node_modules/@mapbox/watchbot-progress/bin/watchbot-progress.js",
+    "worker-capacity": "./bin/worker-capacity.js"
   },
   "dependencies": {
     "@mapbox/watchbot-progress": "^1.1.1",
