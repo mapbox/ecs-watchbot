@@ -3,7 +3,7 @@
 var AWS = require('aws-sdk');
 var argv = require('minimist')(process.argv.slice(2));
 
-getClusterArn(argv, function(err, clusterArn) {
+getClusterArn(argv, (err, clusterArn) => {
   if (err) print(err);
   if (clusterArn) print(clusterArn);
 });
@@ -18,12 +18,20 @@ function getClusterArn(argv, callback) {
 
   /* Get the CloudFormation template */
   var cloudformation = new AWS.CloudFormation({ region: argv.region });
-  cloudformation.describeStacks({ StackName: argv.stack }, function(err, res) {
+  cloudformation.getTemplate({ StackName: argv.stack }, (err, res) => {
     if (err) return callback(new Error(err));
-    return callback(null, res.Stacks[0].Parameters.find(function(p) { return p.ParameterKey === 'Cluster' }).ParameterValue);
+    var cluster = JSON.parse(res.TemplateBody).Resources.WatchbotService.Properties.Cluster;
+    if (typeof cluster === 'string') return callback(null, cluster);
+    if (typeof cluster === 'object') {
+      var param = cluster.Ref;
+      cloudformation.describeStacks({ StackName: argv.stack }, (err, res) => {
+        if (err) return callback(err);
+        return callback(null, res.Stacks[0].Parameters.find(function(p) { return p.ParameterKey === param; }).ParameterValue);
+      });
+    }
   });
 }
 
 function print(message) {
   console.log('\n' + message + '\n');
-};
+}
