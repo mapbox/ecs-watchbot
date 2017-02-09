@@ -1,5 +1,5 @@
 // var AWS = require('@mapbox/mock-aws-sdk-js');
-var file = require('../bin/worker-capacity');
+var file = require('../lib/capacity');
 var test = require('tape');
 
 test('calculateRoom', (assert) => {
