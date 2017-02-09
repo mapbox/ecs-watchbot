@@ -2,20 +2,26 @@
 
 var AWS = require('aws-sdk');
 var argv = require('minimist')(process.argv.slice(2));
-var queue = require('d3-queue').queue;
 
-run(argv, (err, result) => {
-  if (err) print(err);
-  if (result.capacity) print(result.cluster + ' currently has enough space for an additional ' + result.capacity + ' ' + argv.stack + ' workers.')
-});
+module.exports = {};
+module.exports.run = run;
+module.exports.getClusterArn = getClusterArn;
+module.exports.getReservations = getReservations;
+module.exports.listInstances = listInstances;
+module.exports.calculateRoom = calculateRoom;
+
+// run(argv, (err, result) => {
+//   if (err) console.log('\n' + err + '\n');
+//   if (result.capacity) console.log('\n' + result.cluster + ' currently has enough space for an additional ' + result.capacity + ' ' + argv.stack + ' workers.\n');
+// });
 
 function run(argv, callback) {
   getClusterArn(argv, (err, clusterArn) => {
-    if (err) return callback(new Error(err));
+    if (err) return callback(err);
     getReservations(argv, (err, rsvps) => {
-      if (err) return callback(new Error(err));
+      if (err) return callback(err);
       listInstances(clusterArn, (err, resources) => {
-        if (err) return callback(new Error(err));
+        if (err) return callback(err);
         var result = {
           capacity: calculateRoom(resources, rsvps),
           cluster: clusterArn.match(/arn:aws:ecs:.*:\d*:cluster\/(.*)/)[1]
@@ -51,7 +57,7 @@ function getReservations(argv, callback) {
   cloudformation.getTemplate({ StackName: argv.stack }, (err, res) => {
     if (err) return callback(new Error(err));
     var worker = JSON.parse(res.TemplateBody).Resources.WatchbotWorker.Properties.ContainerDefinitions[0];
-    return callback(null, { Memory: worker.Memory, Cpu: worker.Cpu });
+    return callback(null, { Memory: worker.Memory || worker.MemoryReservation, Cpu: worker.Cpu });
   });
 }
 
@@ -75,15 +81,11 @@ function listInstances(cluster, callback) {
 function calculateRoom(resources, rsvps) {
   var taskCapacity = 0;
   for (var i in resources) {
-    var cpu = resources[i].find((e) => { return e.name === 'CPU' }).integerValue;
-    var memory = resources[i].find((e) => { return e.name === 'MEMORY' }).integerValue;
+    var cpu = resources[i].find((e) => { return e.name === 'CPU'; }).integerValue;
+    var memory = resources[i].find((e) => { return e.name === 'MEMORY'; }).integerValue;
     var taskCapacityCpu = (cpu / rsvps.Cpu).toFixed(0);
     var taskCapacityMemory = (memory / rsvps.Memory).toFixed(0);
     taskCapacity += Math.min(taskCapacityCpu, taskCapacityMemory);
-  };
+  }
   return taskCapacity;
-}
-
-function print(message) {
-  console.log('\n' + message + '\n');
 }
