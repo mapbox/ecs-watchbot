@@ -1,6 +1,9 @@
-### 1.6.0
+### unreleased
 
+- removes cluster resource polling - workers will try to be placed and fail instead of avoiding placement attempts
+- collects CloudWatch metrics for worker errors (non-zero exit codes), and for failed task placements
 - adds ephemeral, or non-persistent, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
+- returns `task.container[n].reason` as `reason` when task finishes, if available
 
 ### 1.4.0
 
