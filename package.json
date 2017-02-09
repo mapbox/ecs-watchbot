@@ -37,6 +37,7 @@
     "dyno": "^1.2.0",
     "fastlog": "^1.0.0",
     "meow": "^3.7.0",
+    "minimist": "^1.2.0",
     "stream-combiner": "^0.2.2",
     "underscore": "^1.8.3"
   },

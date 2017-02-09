@@ -2,11 +2,29 @@
 
 var AWS = require('aws-sdk');
 var argv = require('minimist')(process.argv.slice(2));
+var queue = require('d3-queue').queue;
 
-getClusterArn(argv, (err, clusterArn) => {
+run(argv, (err, result) => {
   if (err) print(err);
-  if (clusterArn) print(clusterArn);
+  if (result.capacity) print(result.cluster + ' currently has enough space for an additional ' + result.capacity + ' ' + argv.stack + ' workers.')
 });
+
+function run(argv, callback) {
+  getClusterArn(argv, (err, clusterArn) => {
+    if (err) return callback(new Error(err));
+    getReservations(argv, (err, rsvps) => {
+      if (err) return callback(new Error(err));
+      listInstances(clusterArn, (err, resources) => {
+        if (err) return callback(new Error(err));
+        var result = {
+          capacity: calculateRoom(resources, rsvps),
+          cluster: clusterArn.match(/arn:aws:ecs:.*:\d*:cluster\/(.*)/)[1]
+        };
+        return callback(null, result);
+      });
+    });
+  });
+}
 
 function getClusterArn(argv, callback) {
   /* Confirm that region and stack are provided */
@@ -18,18 +36,52 @@ function getClusterArn(argv, callback) {
 
   /* Get the CloudFormation template */
   var cloudformation = new AWS.CloudFormation({ region: argv.region });
+  cloudformation.describeStacks({ StackName: argv.stack }, (err, res) => {
+    if (err) return callback(new Error(err));
+    if (!res.Stacks[0] || !res.Stacks[0].Outputs.length) return callback(new Error('Check that the provided region and stack name are correct. You may need to re-create your stack to expose the Outputs property.'));
+
+    var cluster = res.Stacks[0].Outputs.find((o) => { return o.OutputKey === 'ClusterArn'; });
+    if (!cluster) return callback(new Error('Recreate your stack to expose the cluster ARN output.'));
+    return callback(null, cluster.OutputValue);
+  });
+}
+
+function getReservations(argv, callback) {
+  var cloudformation = new AWS.CloudFormation({ region: argv.region });
   cloudformation.getTemplate({ StackName: argv.stack }, (err, res) => {
     if (err) return callback(new Error(err));
-    var cluster = JSON.parse(res.TemplateBody).Resources.WatchbotService.Properties.Cluster;
-    if (typeof cluster === 'string') return callback(null, cluster);
-    if (typeof cluster === 'object') {
-      var param = cluster.Ref;
-      cloudformation.describeStacks({ StackName: argv.stack }, (err, res) => {
-        if (err) return callback(err);
-        return callback(null, res.Stacks[0].Parameters.find(function(p) { return p.ParameterKey === param; }).ParameterValue);
-      });
-    }
+    var worker = JSON.parse(res.TemplateBody).Resources.WatchbotWorker.Properties.ContainerDefinitions[0];
+    return callback(null, { Memory: worker.Memory, Cpu: worker.Cpu });
   });
+}
+
+function listInstances(cluster, callback) {
+  var ecs = new AWS.ECS({ region: argv.region });
+  var resources = {};
+
+  ecs.listContainerInstances({ cluster: cluster }).eachPage((err, data, done) => {
+    if (err) return callback(new Error(err));
+    if (!data) return done();
+    ecs.describeContainerInstances({ cluster: cluster, containerInstances: data.containerInstanceArns }, (err, data) => {
+      if (err) return callback(new Error(err));
+      data.containerInstances.forEach((i) => {
+        resources[i.ec2InstanceId] = i.remainingResources;
+      });
+      return callback(null, resources);
+    });
+  });
+}
+
+function calculateRoom(resources, rsvps) {
+  var taskCapacity = 0;
+  for (var i in resources) {
+    var cpu = resources[i].find((e) => { return e.name === 'CPU' }).integerValue;
+    var memory = resources[i].find((e) => { return e.name === 'MEMORY' }).integerValue;
+    var taskCapacityCpu = (cpu / rsvps.Cpu).toFixed(0);
+    var taskCapacityMemory = (memory / rsvps.Memory).toFixed(0);
+    taskCapacity += Math.min(taskCapacityCpu, taskCapacityMemory);
+  };
+  return taskCapacity;
 }
 
 function print(message) {
