@@ -1,5 +1,7 @@
 ### unreleased
 
+- adds a second SQS queue used for the watcher's internal tracking of CloudWatch task state-change events
+- drops polling of DescribeTasks API to learn when workers are completed
 - removes cluster resource polling - workers will try to be placed and fail instead of avoiding placement attempts
 - collects CloudWatch metrics for worker errors (non-zero exit codes), and for failed task placements
 - adds ephemeral, or non-persistent, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))

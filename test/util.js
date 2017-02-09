@@ -4,6 +4,8 @@ var AWS = require('aws-sdk');
 var tape = require('tape');
 var crypto = require('crypto');
 var util = require('util');
+var messageToEnv = require('../lib/messages').messageToEnv;
+var envToRunTaskParams = require('../lib/tasks').envToRunTaskParams;
 
 module.exports.mock = function(name, callback) {
   tape(name, function(assert) {
@@ -15,6 +17,7 @@ module.exports.mock = function(name, callback) {
     var context = {
       sqs: {
         receiveMessage: [],
+        receiveEventMessage: [],
         deleteMessage: [],
         changeMessageVisibility: []
       },
@@ -31,15 +34,26 @@ module.exports.mock = function(name, callback) {
       logs: []
     };
 
-    AWS.SQS = function(config) { context.sqs.config = config; };
+    AWS.SQS = function(config) {
+      context.sqs.config = config;
+      this.isEventQueue = /event/.test(config.params.QueueUrl);
+    };
     AWS.SQS.prototype.receiveMessage = function(params, callback) {
-      context.sqs.receiveMessage.push(params);
-      if (!context.sqs.messages || !context.sqs.messages.length)
-        return callback(null, { Messages: [] });
+      var messagesToReceive;
+      if (this.isEventQueue) {
+        messagesToReceive = context.sqs.eventMessages || [];
+        context.sqs.receiveEventMessage.push(params);
+      } else {
+        messagesToReceive = context.sqs.messages || [];
+        context.sqs.receiveMessage.push(params);
+      }
+
+      if (!messagesToReceive.length)
+        return setImmediate(callback, null, { Messages: [] });
       var max = params.MaxNumberOfMessages || 1;
 
       var error = false;
-      var msgs = context.sqs.messages.splice(0, max).map(function(msg) {
+      var msgs = messagesToReceive.splice(0, max).map(function(msg) {
         if (msg.MessageId === 'error') error = true;
         msg.Attributes.ApproximateReceiveCount++;
         if (msg.Attributes.ApproximateReceiveCount === 1)
@@ -47,8 +61,13 @@ module.exports.mock = function(name, callback) {
         return msg;
       });
 
-      if (error) return callback(new Error('Mock SQS error'));
-      callback(null, { Messages: msgs });
+      if (this.isEventQueue)
+        context.sqs.eventMessages = messagesToReceive;
+      else
+        context.sqs.messages = messagesToReceive;
+
+      if (error) return setImmediate(callback, new Error('Mock SQS error'));
+      setImmediate(callback, null, { Messages: msgs });
     };
     AWS.SQS.prototype.deleteMessage = function(params, callback) {
       context.sqs.deleteMessage.push(params);
@@ -120,118 +139,6 @@ module.exports.mock = function(name, callback) {
         tasks: [{ taskArn: arn }]
       });
     };
-    AWS.ECS.prototype.describeTasks = function(params, callback) {
-      context.ecs.describeTasks.push(params);
-
-      if (params.tasks.find(function(arn) {
-        var env = tasks[arn];
-        var exitCode = env.find(function(item) {
-          return item.name === 'exit';
-        });
-        var messageId = env.find(function(item) {
-          return item.name === 'MessageId';
-        });
-        return (exitCode && exitCode.value === 'error') || (messageId && messageId.value === 'task-failure');
-      })) return callback(new Error('Mock ECS error'));
-
-      var data = {};
-      data.tasks = params.tasks.reduce(function(status, arn) {
-        var env = tasks[arn];
-        var exitCode = env.find(function(item) {
-          return item.name === 'exit';
-        });
-        var messageId = env.find(function(item) {
-          return item.name === 'MessageId';
-        });
-
-        if (exitCode && exitCode.value === 'mismatch1') {
-          status.push({
-            clusterArn: 'cluster-arn',
-            containerInstanceArn: 'instance-arn',
-            taskArn: arn,
-            lastStatus: 'STOPPED',
-            stoppedReason: 'mismatched',
-            overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: 0 }, { exitCode: 1 }],
-            startedAt: 1484155849718,
-            stoppedAt: 1484155857691
-          });
-
-          delete tasks[arn];
-        } else if (exitCode && exitCode.value === 'mismatch2') {
-          status.push({
-            clusterArn: 'cluster-arn',
-            containerInstanceArn: 'instance-arn',
-            taskArn: arn,
-            lastStatus: 'STOPPED',
-            stoppedReason: 'mismatched',
-            overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: 0 }, { exitCode: 1, reason: 'some container reason' }],
-            startedAt: 1484155849718,
-            stoppedAt: 1484155857691
-          });
-
-          delete tasks[arn];
-        } else if (exitCode && exitCode.value === 'match') {
-          status.push({
-            clusterArn: 'cluster-arn',
-            containerInstanceArn: 'instance-arn',
-            taskArn: arn,
-            lastStatus: 'STOPPED',
-            stoppedReason: 'match',
-            overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: 0 }, { exitCode: 0 }],
-            startedAt: 1484155849718,
-            stoppedAt: 1484155857691
-          });
-        } else if (exitCode && exitCode.value !== 'pending') {
-          var containers = (exitCode.value === '1') ? [{ exitCode: Number(exitCode.value), reason: 'some container reason' }] : [{ exitCode: Number(exitCode.value) }];
-          status.push({
-            clusterArn: 'cluster-arn',
-            containerInstanceArn: 'instance-arn',
-            taskArn: arn,
-            lastStatus: 'STOPPED',
-            stoppedReason: exitCode.value,
-            overrides: { containerOverrides: [{ environment: env }] },
-            containers: containers,
-            startedAt: 1484155849718,
-            stoppedAt: 1484155857691
-          });
-          delete tasks[arn];
-        } else if (messageId && /^finish/.test(messageId.value)) {
-          var exit = messageId.value.match(/^finish-(\d)$/)[1];
-          status.push({
-            clusterArn: 'cluster-arn',
-            containerInstanceArn: 'instance-arn',
-            taskArn: arn,
-            lastStatus: 'STOPPED',
-            stoppedReason: exit,
-            overrides: { containerOverrides: [{ environment: env }] },
-            containers: [{ exitCode: Number(exit) }],
-            startedAt: 1484155849718,
-            stoppedAt: 1484155857691
-          });
-          delete tasks[arn];
-        }
-
-        return status;
-      }, []);
-
-      callback(null, data);
-    };
-    AWS.ECS.prototype.describeTaskDefinition = function(params, callback) {
-      context.ecs.describeTaskDefinition.push(params);
-      setImmediate(function() {
-        if (context.ecs.failTask) return callback(new Error('Mock ECS error'));
-        callback(null, {
-          taskDefinition: {
-            containerDefinitions: [
-              { cpu: 0, memory: 5 }
-            ]
-          }
-        });
-      });
-    };
 
     console.log = function() {
       var msg = util.format.apply(null, arguments);
@@ -270,4 +177,12 @@ module.exports.collectionsEqual = function(assert, a, b, msg) {
   }, a.length === b.length);
   if (equal) assert.pass(msg);
   else assert.deepEqual(a, b, msg);
+};
+
+module.exports.expectedArn = function(message, taskDefinition, containerName, startedBy) {
+  var clone = JSON.parse(JSON.stringify(message));
+  clone.Attributes.ApproximateReceiveCount = clone.Attributes.ApproximateReceiveCount + 1;
+  var env = messageToEnv(clone);
+  var params = envToRunTaskParams(env, taskDefinition, containerName, startedBy);
+  return crypto.createHash('md5').update(JSON.stringify(params)).digest('hex');
 };

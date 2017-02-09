@@ -34,6 +34,9 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotTopic, 'topic');
   assert.ok(watch.Resources.WatchbotQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.WatchbotQueueSizeAlarm, 'queue alarm');
+  assert.ok(watch.Resources.WatchbotTaskEventQueue, 'task event queue');
+  assert.ok(watch.Resources.WatchbotTaskEventRule, 'task event rule');
+  assert.ok(watch.Resources.WatchbotTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
   assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 0 }], 'notify after retry default value');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Privileged, 'privileged is false');
@@ -113,6 +116,9 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
+  assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
+  assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
+  assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 2 }], 'notify after retry default value');
   assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Privileged, 'privileged is true');
@@ -190,7 +196,9 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
-
+  assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
+  assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
+  assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
   assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');
@@ -274,6 +282,9 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
+  assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
+  assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
+  assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
   assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');
@@ -282,14 +293,14 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testWatcher, 'watcher');
   assert.ok(watch.Resources.testService, 'service');
   assert.ok(watch.Resources.testProgressTable, 'progress table');
-  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.ReadCapacityUnits, 20);
-  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.WriteCapacityUnits, 20);
+  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.ReadCapacityUnits, 20, 'progressTable read capacity');
+  assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.WriteCapacityUnits, 20, 'progressTable write capacity');
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
-  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') });
-  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[7], { Name: 'ExponentialBackoff', Value: cf.ref('UseBackoff') });
-  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }));
-  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }));
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') }, 'sets Concurrency');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[8], { Name: 'ExponentialBackoff', Value: cf.ref('UseBackoff') }, 'sets ExponentialBackoff');
+  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }), 'ephemeral volume container');
+  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }), 'ephemeral volume host');
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
