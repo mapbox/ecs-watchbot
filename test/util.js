@@ -4,6 +4,8 @@ var AWS = require('aws-sdk');
 var tape = require('tape');
 var crypto = require('crypto');
 var util = require('util');
+var messageToEnv = require('../lib/messages').messageToEnv;
+var envToRunTaskParams = require('../lib/tasks').envToRunTaskParams;
 
 module.exports.mock = function(name, callback) {
   tape(name, function(assert) {
@@ -15,6 +17,7 @@ module.exports.mock = function(name, callback) {
     var context = {
       sqs: {
         receiveMessage: [],
+        receiveEventMessage: [],
         deleteMessage: [],
         changeMessageVisibility: []
       },
@@ -31,15 +34,26 @@ module.exports.mock = function(name, callback) {
       logs: []
     };
 
-    AWS.SQS = function(config) { context.sqs.config = config; };
+    AWS.SQS = function(config) {
+      context.sqs.config = config;
+      this.isEventQueue = /event/.test(config.params.QueueUrl);
+    };
     AWS.SQS.prototype.receiveMessage = function(params, callback) {
-      context.sqs.receiveMessage.push(params);
-      if (!context.sqs.messages || !context.sqs.messages.length)
-        return callback(null, { Messages: [] });
+      var messagesToReceive;
+      if (this.isEventQueue) {
+        messagesToReceive = context.sqs.eventMessages || [];
+        context.sqs.receiveEventMessage.push(params);
+      } else {
+        messagesToReceive = context.sqs.messages || [];
+        context.sqs.receiveMessage.push(params);
+      }
+
+      if (!messagesToReceive.length)
+        return setImmediate(callback, null, { Messages: [] });
       var max = params.MaxNumberOfMessages || 1;
 
       var error = false;
-      var msgs = context.sqs.messages.splice(0, max).map(function(msg) {
+      var msgs = messagesToReceive.splice(0, max).map(function(msg) {
         if (msg.MessageId === 'error') error = true;
         msg.Attributes.ApproximateReceiveCount++;
         if (msg.Attributes.ApproximateReceiveCount === 1)
@@ -47,8 +61,13 @@ module.exports.mock = function(name, callback) {
         return msg;
       });
 
-      if (error) return callback(new Error('Mock SQS error'));
-      callback(null, { Messages: msgs });
+      if (this.isEventQueue)
+        context.sqs.eventMessages = messagesToReceive;
+      else
+        context.sqs.messages = messagesToReceive;
+
+      if (error) return setImmediate(callback, new Error('Mock SQS error'));
+      setImmediate(callback, null, { Messages: msgs });
     };
     AWS.SQS.prototype.deleteMessage = function(params, callback) {
       context.sqs.deleteMessage.push(params);
@@ -270,4 +289,12 @@ module.exports.collectionsEqual = function(assert, a, b, msg) {
   }, a.length === b.length);
   if (equal) assert.pass(msg);
   else assert.deepEqual(a, b, msg);
+};
+
+module.exports.expectedArn = function(message, taskDefinition, containerName, startedBy) {
+  var clone = JSON.parse(JSON.stringify(message));
+  clone.Attributes.ApproximateReceiveCount = clone.Attributes.ApproximateReceiveCount + 1;
+  var env = messageToEnv(clone);
+  var params = envToRunTaskParams(env, taskDefinition, containerName, startedBy);
+  return crypto.createHash('md5').update(JSON.stringify(params)).digest('hex');
 };

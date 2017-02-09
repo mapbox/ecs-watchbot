@@ -282,6 +282,9 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
+  assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
+  assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
+  assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
   assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');
