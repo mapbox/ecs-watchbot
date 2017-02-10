@@ -38,8 +38,15 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.WatchbotTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.WatchbotTaskEventQueuePolicy, 'task event queue policy');
+  assert.ok(watch.Resources.WatchbotFailedWorkerPlacementMetric, 'failed worker metric');
+  assert.ok(watch.Resources.WatchbotWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.WatchbotMessageReceivesMetric, 'message receives metric');
+  assert.ok(watch.Resources.WatchbotWatcherConcurrencyMetric, 'watcher concurrency metric');
+  assert.ok(watch.Resources.WatchbotWorkerErrorsMetric, 'worker errors metric');
+  assert.ok(watch.Resources.WatchbotWorkerErrorsAlarm, 'worker errors alarm');
+  assert.equal(watch.Resources.WatchbotWorkerErrorsAlarm.Properties.Threshold, 10, 'worker errors alarm threshold');
   assert.ok(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
-  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 0 }], 'notify after retry default value');
+  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-4, -3), [{ Name: 'NotifyAfterRetries', Value: 0 }], 'notify after retry default value');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Privileged, 'privileged is false');
   assert.equal(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Memory, 64, 'sets default hard memory limit');
   assert.ok(watch.Resources.WatchbotWorkerRole, 'worker role');
@@ -56,7 +63,8 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotService, 'service');
   assert.notOk(watch.Resources.WatchbotProgressTable, 'progress table');
   assert.notOk(watch.Resources.WatchbotProgressTablePermission, 'progress table permission');
-  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'info' }], 'log level env var');
+  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-2, -1), [{ Name: 'LogLevel', Value: 'info' }], 'log level env var');
+  assert.deepEqual(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'AlarmOnEachFailure', Value: 'false' }], 'alarm on failure env var');
 
   assert.deepEqual(/^\d+\.\d+\.\d+$/.test(watch.Metadata.EcsWatchbotVersion), true, 'ecs-watchbot version metadata');
 
@@ -124,8 +132,15 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
+  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
+  assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
+  assert.ok(watch.Resources.testWatcherConcurrencyMetric, 'watcher concurrency metric');
+  assert.ok(watch.Resources.testWorkerErrorsMetric, 'worker errors metric');
+  assert.ok(watch.Resources.testWorkerErrorsAlarm, 'worker errors alarm');
+  assert.equal(watch.Resources.testWorkerErrorsAlarm.Properties.Threshold, 10, 'worker errors alarm threshold');
   assert.ok(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
-  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), [{ Name: 'NotifyAfterRetries', Value: 2 }], 'notify after retry default value');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-4, -3), [{ Name: 'NotifyAfterRetries', Value: 2 }], 'notify after retry default value');
   assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Privileged, 'privileged is true');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
@@ -188,9 +203,11 @@ test('[template] include all resources, no references', function(assert) {
     },
     messageTimeout: 300,
     messageRetention: 3000,
+    errorThreshold: 11,
     alarmThreshold: 10,
     alarmPeriods: 6,
-    debugLogs: true
+    debugLogs: true,
+    alarmOnEachFailure: true
   });
 
   assert.ok(watch.Resources.testUser, 'user');
@@ -213,6 +230,13 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
+  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
+  assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
+  assert.ok(watch.Resources.testWatcherConcurrencyMetric, 'watcher concurrency metric');
+  assert.ok(watch.Resources.testWorkerErrorsMetric, 'worker errors metric');
+  assert.ok(watch.Resources.testWorkerErrorsAlarm, 'worker errors alarm');
+  assert.equal(watch.Resources.testWorkerErrorsAlarm.Properties.Threshold, 11, 'worker errors alarm threshold');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
   assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');
@@ -229,7 +253,8 @@ test('[template] include all resources, no references', function(assert) {
   assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.WriteCapacityUnits, 30);
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
-  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'debug' }], 'log level env var');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-2, -1), [{ Name: 'LogLevel', Value: 'debug' }], 'log level env var');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'AlarmOnEachFailure', Value: 'true' }], 'alarm on failure env var');
   assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.every((pt) => { return pt.ContainerPath && pt.SourceVolume; }), 'mount point properties');
   assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[0], { Name: 'mnt-0', Host: { SourcePath: '/var/tmp' } });
   assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[1], { Name: 'mnt-1', Host: { SourcePath: '/mnt/data' } });
@@ -283,7 +308,9 @@ test('[template] include all resources, all references', function(assert) {
     messageTimeout: cf.ref('MessageTimeout'),
     messageRetention: cf.ref('MessageRetention'),
     alarmThreshold: cf.ref('AlarmThreshold'),
-    alarmPeriods: cf.ref('AlarmPeriods')
+    errorThreshold: cf.ref('Errors'),
+    alarmPeriods: cf.ref('AlarmPeriods'),
+    alarmOnEachFailure: cf.ref('AlarmOnFailures')
   });
 
   assert.ok(watch.Resources.testUser, 'user');
@@ -308,6 +335,13 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
+  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
+  assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
+  assert.ok(watch.Resources.testWatcherConcurrencyMetric, 'watcher concurrency metric');
+  assert.ok(watch.Resources.testWorkerErrorsMetric, 'worker errors metric');
+  assert.ok(watch.Resources.testWorkerErrorsAlarm, 'worker errors alarm');
+  assert.deepEqual(watch.Resources.testWorkerErrorsAlarm.Properties.Threshold, cf.ref('Errors'), 'worker errors alarm threshold');
   assert.ok(watch.Resources.testWorkerRole, 'worker role');
   assert.equal(watch.Resources.testWorkerRole.Properties.Policies.length, 2, 'default and user-defined worker permissions');
   assert.deepEqual(watch.Resources.testWorkerRole.Properties.Policies[1].PolicyDocument.Statement, [{ Effect: 'Allow', Actions: '*', Resources: '*' }], 'user-defined permissions');
@@ -322,10 +356,10 @@ test('[template] include all resources, all references', function(assert) {
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') }, 'sets Concurrency');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[8], { Name: 'ExponentialBackoff', Value: cf.ref('UseBackoff') }, 'sets ExponentialBackoff');
+  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'AlarmOnEachFailure', Value: cf.ref('AlarmOnFailures') }], 'alarm on failure env var');
   assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[0], { Name: 'mnt-0', Host: { SourcePath: { 'Fn::Sub': ['/var/tmp/${stack}', { stack: { Ref: 'some-stack-name' } }] } } });
   assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[1], { Name: 'mnt-1', Host: { SourcePath: '/mnt/data' } });
   assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[2], { Name: 'mnt-2', Host: {} });
-
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
   assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');

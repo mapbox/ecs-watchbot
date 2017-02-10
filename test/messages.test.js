@@ -147,7 +147,7 @@ util.mock('[messages] complete - no backoff', function(assert) {
   var queueUrl = 'https://fake.us-east-1/sqs/url';
   var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
   var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName);
+  var messages = watchbot.messages(queueUrl, topic, stackName, false, true);
   var context = this;
 
   context.sqs.messages = [
@@ -276,7 +276,7 @@ util.mock('[messages] complete - with backoff', function(assert) {
   var queueUrl = 'https://fake.us-east-1/sqs/url';
   var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
   var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, true);
   var context = this;
 
   context.sqs.messages = [
@@ -350,7 +350,7 @@ util.mock('[messages] complete - message not found in sqs', function(assert) {
   var queueUrl = 'https://fake.us-east-1/sqs/url';
   var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
   var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName);
+  var messages = watchbot.messages(queueUrl, topic, stackName, false, true);
   var context = this;
 
   context.sqs.messages = [
@@ -424,7 +424,7 @@ util.mock('[messages] complete - message cannot backoff anymore', function(asser
   var queueUrl = 'https://fake.us-east-1/sqs/url';
   var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
   var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, true);
   var context = this;
 
   context.sqs.messages = [
@@ -475,7 +475,7 @@ util.mock('[messages] complete - stack name is long', function(assert) {
   var queueUrl = 'https://fake.us-east-1/sqs/url';
   var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
   var stackName = 'test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, true);
   var context = this;
 
   context.sqs.messages = [
@@ -527,7 +527,7 @@ util.mock('[messages] complete - stack name is way too long', function(assert) {
   var queueUrl = 'https://fake.us-east-1/sqs/url';
   var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
   var stackName = 'test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, true);
   var context = this;
 
   context.sqs.messages = [
@@ -583,7 +583,7 @@ util.mock('[messages] complete - notification contains log snippet', function(as
   var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
   var logs = 'oh snap it broke!\n';
 
-  var messages = watchbot.messages(queueUrl, topic, stackName, true, logGroupArn);
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, true, logGroupArn);
 
   context.sqs.messages = [
     { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
@@ -655,7 +655,7 @@ util.mock('[messages] complete - failure to read CloudWatch logs', function(asse
   var context = this;
   var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
 
-  var messages = watchbot.messages(queueUrl, topic, stackName, true, logGroupArn);
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, true, logGroupArn);
 
   context.sqs.messages = [
     { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
@@ -703,6 +703,76 @@ util.mock('[messages] complete - failure to read CloudWatch logs', function(asse
     });
     queue.awaitAll(function(err) {
       assert.equal(err.message, 'oh snap!', 'cwlogs error passed through to callback');
+      cwlogs.readable.restore();
+      assert.end();
+    });
+  });
+});
+
+util.mock('[messages] complete - no notification', function(assert) {
+  var queueUrl = 'https://fake.us-east-1/sqs/url';
+  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
+  var stackName = 'test';
+  var context = this;
+  var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
+  var logs = 'oh snap it broke!\n';
+
+  var messages = watchbot.messages(queueUrl, topic, stackName, true, false, logGroupArn);
+
+  context.sqs.messages = [
+    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  // mock the command to read logs underlaying watchbot.fetch
+  sinon.stub(cwlogs, 'readable', function(options) {
+    assert.equal(options.group, 'some-log-group', 'created cwlogs client with expected log group');
+    assert.equal(options.region, 'eu-west-1', 'created cwlogs client with expected region');
+
+    var readable = new stream.Readable();
+    readable._read = function() {
+      readable.push(logs);
+      readable.push(null);
+    };
+
+    return readable;
+  });
+
+  // first poll in order to get the messages in flight
+  messages.poll(4, function(err) {
+    if (err) return assert.end(err);
+
+    // Then generate fake finishedTask objects for each message
+    var finishedTasks = [
+      {
+        arns: {
+          cluster: 'cluster-arn',
+          instance: 'instance-arn',
+          task: 'task-arn'
+        },
+        reason: 'failed',
+        env: {
+          MessageId: '1',
+          Subject: 'subject1',
+          Message: 'message1',
+          SentTimestamp: '10',
+          ApproximateFirstReceiveTimestamp: '20',
+          ApproximateReceiveCount: '1'
+        },
+        outcome: 'return & notify'
+      }
+    ];
+
+    // complete each finishedTask
+    var queue = d3.queue();
+    finishedTasks.forEach(function(finishedTask) {
+      queue.defer(messages.complete, finishedTask);
+    });
+    queue.awaitAll(function(err) {
+      if (err) return assert.end(err);
+
+      // make assertions
+      assert.equal(context.sns.publish.length, 0, 'no notifications sent');
+
       cwlogs.readable.restore();
       assert.end();
     });

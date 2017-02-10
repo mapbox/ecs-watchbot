@@ -9,7 +9,8 @@ var config = {
   QueueUrl: 'https://fake.us-east-1/sqs/url',
   TaskEventQueueUrl: 'https://fake.us-east-1/sqs/url-for-events',
   StackName: 'watchbot-testing',
-  ExponentialBackoff: false
+  ExponentialBackoff: 'false',
+  AlarmOnEachFailure: 'true'
   // , LogLevel: 'debug'
 };
 
@@ -26,12 +27,7 @@ util.mock('[main] message polling error', function(assert) {
     var errorMsg = context.logs.find(function(log) {
       return /Mock SQS error/.test(log);
     });
-    assert.deepEqual(context.sns.publish, [
-      {
-        Subject: '[watchbot] message polling error',
-        Message: 'Mock SQS error'
-      }
-    ], 'sent expected error notification');
+    assert.deepEqual(context.sns.publish, [], 'sent no error notification');
     assert.ok(errorMsg, 'logged error message');
     assert.end();
   });
@@ -162,12 +158,7 @@ util.mock('[main] message completion error after task run failure', function(ass
     assert.ok(context.logs.find(function(log) {
       return /Mock ECS error/.test(log);
     }), 'printed error message');
-    util.collectionsEqual(assert, context.sns.publish, [
-      {
-        Subject: '[watchbot] message completion error',
-        Message: 'Mock SQS error'
-      }
-    ], 'sent expected error notifications');
+    util.collectionsEqual(assert, context.sns.publish, [], 'sent no error notifications');
     util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
       { ReceiptHandle: 'error', VisibilityTimeout: 0 }
     ], 'expected sqs.changeMessageVisibility requests');
@@ -359,9 +350,7 @@ util.mock('[main] message completion error', function(assert) {
       { ReceiptHandle: 'error' }, { ReceiptHandle: 'error-event' }
     ], 'expected sqs.deleteMessage request');
 
-    util.collectionsEqual(assert, context.sns.publish, [
-      { Message: 'Mock SQS error', Subject: '[watchbot] message completion error' }
-    ], 'expected sns.publish requests');
+    util.collectionsEqual(assert, context.sns.publish, [], 'sent no error notifications');
     assert.end();
   });
 });
