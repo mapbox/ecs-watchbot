@@ -34,12 +34,9 @@ test('[capacity] run', (assert) => {
       });
     }
   });
-  var count = 0;
-  AWS.stub('ECS', 'describeContainerInstances', (params, callback) => {
-    count++;
-    if (count === 1) return callback(null, fixtures.describeContainerInstances0);
-    if (count === 2) return callback(null, fixtures.describeContainerInstances1);
-  });
+  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances');
+  describeContainerInstances.onCall(0).yields(null, fixtures.describeContainerInstances0);
+  describeContainerInstances.onCall(1).yields(null, fixtures.describeContainerInstances1);
 
   file.run(['us-east-1', 'cats-api-staging'], (err, res) => {
     assert.ifError(err, 'should not error');
@@ -215,12 +212,9 @@ test('[capacity] listInstances - multiple pages', (assert) => {
       });
     }
   });
-  var count = 0;
-  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances', (params, callback) => {
-    count++;
-    if (count === 1) return callback(null, fixtures.describeContainerInstances0);
-    if (count === 2) return callback(null, fixtures.describeContainerInstances1);
-  });
+  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances');
+  describeContainerInstances.onCall(0).yields(null, fixtures.describeContainerInstances0);
+  describeContainerInstances.onCall(1).yields(null, fixtures.describeContainerInstances1);
 
   file.listInstances(argv, cluster, (err, res) => {
     assert.deepEqual(listContainerInstances.firstCall.args[0], { cluster: cluster });
