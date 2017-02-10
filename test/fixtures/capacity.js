@@ -128,3 +128,11 @@ module.exports.describeContainerInstances = {
     }
   ]
 };
+
+module.exports.describeContainerInstances0 = {
+  containerInstances: [module.exports.describeContainerInstances.containerInstances[0]]
+};
+
+module.exports.describeContainerInstances1 = {
+  containerInstances: [module.exports.describeContainerInstances.containerInstances[1]]
+};

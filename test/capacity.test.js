@@ -34,11 +34,16 @@ test('[capacity] run', (assert) => {
       });
     }
   });
-  AWS.stub('ECS', 'describeContainerInstances').yields(null, fixtures.describeContainerInstances);
+  var count = 0;
+  AWS.stub('ECS', 'describeContainerInstances', (params, callback) => {
+    count++;
+    if (count === 1) return callback(null, fixtures.describeContainerInstances0);
+    if (count === 2) return callback(null, fixtures.describeContainerInstances1);
+  });
 
   file.run(['us-east-1', 'cats-api-staging'], (err, res) => {
     assert.ifError(err, 'should not error');
-    assert.deepEqual(res, { capacity: 256, cluster: 'some-cluster-Cluster-000000000000' });
+    assert.deepEqual(res, { capacity: 256, cluster: 'some-cluster-Cluster-000000000000', stack: 'cats-api-staging' });
     AWS.CloudFormation.restore();
     AWS.ECS.restore();
     assert.end();
@@ -191,10 +196,10 @@ test('[capacity] listInstances - single page', (assert) => {
     assert.deepEqual(listContainerInstances.firstCall.args[0], { cluster: cluster });
     assert.deepEqual(describeContainerInstances.firstCall.args[0], { cluster: cluster, containerInstances: listContainerInstances.containerInstanceArns });
     assert.ifError(err, 'should not error');
-    assert.deepEqual(res, {
-      'i-00000000000000000': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 184306 }],
-      'i-fffffffffffffffff': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 183986 }]
-    });
+    assert.deepEqual(res, [
+      [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 184306 }],
+      [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 183986 }]
+    ]);
     AWS.ECS.restore();
     assert.end();
   });
@@ -210,7 +215,12 @@ test('[capacity] listInstances - multiple pages', (assert) => {
       });
     }
   });
-  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances').yields(null, fixtures.describeContainerInstances);
+  var count = 0;
+  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances', (params, callback) => {
+    count++;
+    if (count === 1) return callback(null, fixtures.describeContainerInstances0);
+    if (count === 2) return callback(null, fixtures.describeContainerInstances1);
+  });
 
   file.listInstances(argv, cluster, (err, res) => {
     assert.deepEqual(listContainerInstances.firstCall.args[0], { cluster: cluster });
@@ -223,10 +233,10 @@ test('[capacity] listInstances - multiple pages', (assert) => {
       containerInstances: ['arn:aws:ecs:us-east-1:123456789000:container-instance/ffffffff-0000-ffff-0000-ffffffffffff']
     });
     assert.ifError(err, 'should not error');
-    assert.deepEqual(res, {
-      'i-00000000000000000': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 184306 }],
-      'i-fffffffffffffffff': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 183986 }]
-    });
+    assert.deepEqual(res, [
+      [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 184306 }],
+      [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 183986 }]
+    ]);
     AWS.ECS.restore();
     assert.end();
   });
