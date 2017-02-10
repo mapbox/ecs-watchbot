@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var argv = require('minimist')(process.argv.slice(2));
+var argv = process.argv.slice(2);
 var run = require('../lib/capacity').run;
 
 run(argv, (err, result) => {

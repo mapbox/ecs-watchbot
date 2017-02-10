@@ -8,15 +8,39 @@ var cluster = 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-0
 var error = 'some error';
 
 test('[capacity] run - missing region', (assert) => {
-  file.run({ stack: 'cats-api-staging' }, (err) => {
-    assert.equal(err, 'Usage:   worker-capacity --region <region>  --stack <stack_name>\nExample: worker-capacity --region us-east-1 --stack cats-api-staging');
+  file.run(['cats-api-staging'], (err) => {
+    assert.equal(err, 'Usage:   worker-capacity <region> <stack_name>\nExample: worker-capacity us-east-1 cats-api-staging');
     assert.end();
   });
 });
 
 test('[capacity] run - missing stack', (assert) => {
-  file.run({ region: 'us-east-1' }, (err) => {
-    assert.equal(err, 'Usage:   worker-capacity --region <region>  --stack <stack_name>\nExample: worker-capacity --region us-east-1 --stack cats-api-staging');
+  file.run(['us-east-1'], (err) => {
+    assert.equal(err, 'Usage:   worker-capacity <region> <stack_name>\nExample: worker-capacity us-east-1 cats-api-staging');
+    assert.end();
+  });
+});
+
+test('[capacity] run', (assert) => {
+  AWS.stub('CloudFormation', 'describeStacks').yields(null, fixtures.describeStacks);
+  AWS.stub('CloudFormation', 'describeStackResources').yields(null, fixtures.describeStackResources);
+  AWS.stub('ECS', 'describeTaskDefinition').yields(null, fixtures.describeTaskDefinitionBothMem);
+  AWS.stub('ECS', 'listContainerInstances').returns({
+    eachPage: (callback) => {
+      callback(null, fixtures.listContainerInstancesPage0, () => {
+        callback(null, fixtures.listContainerInstancesPage1, () => {
+          callback();
+        });
+      });
+    }
+  });
+  AWS.stub('ECS', 'describeContainerInstances').yields(null, fixtures.describeContainerInstances);
+
+  file.run(['us-east-1', 'cats-api-staging'], (err, res) => {
+    assert.ifError(err, 'should not error');
+    assert.deepEqual(res, { capacity: 256, cluster: 'some-cluster-Cluster-000000000000' });
+    AWS.CloudFormation.restore();
+    AWS.ECS.restore();
     assert.end();
   });
 });
