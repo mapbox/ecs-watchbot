@@ -1,18 +1,31 @@
 var AWS = require('@mapbox/mock-aws-sdk-js');
 var file = require('../lib/capacity');
-var sinon = require('sinon');
+var fixtures = require('./fixtures/capacity');
 var test = require('tape');
 
-test('[capacity] getClusterArn - describeStacks error', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var error = 'some error';
+var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
+var cluster = 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-000000000000';
+var error = 'some error';
 
-  AWS.stub('CloudFormation', 'describeStacks', (params, callback) => {
-    assert.deepEqual(params, { StackName: argv.stack });
-    return callback(error);
+test('[capacity] run - missing region', (assert) => {
+  file.run({ stack: 'cats-api-staging' }, (err) => {
+    assert.equal(err, 'Usage:   worker-capacity --region <region>  --stack <stack_name>\nExample: worker-capacity --region us-east-1 --stack cats-api-staging');
+    assert.end();
   });
+});
 
-  file.getClusterArn(argv, (err, res) => {
+test('[capacity] run - missing stack', (assert) => {
+  file.run({ region: 'us-east-1' }, (err) => {
+    assert.equal(err, 'Usage:   worker-capacity --region <region>  --stack <stack_name>\nExample: worker-capacity --region us-east-1 --stack cats-api-staging');
+    assert.end();
+  });
+});
+
+test('[capacity] getClusterArn - describeStacks error', (assert) => {
+  var describeStacks = AWS.stub('CloudFormation', 'describeStacks').yields(error);
+
+  file.getClusterArn(argv, (err) => {
+    assert.deepEqual(describeStacks.firstCall.args[0], { StackName: argv.stack });
     assert.equal(err.message, error);
     AWS.CloudFormation.restore();
     assert.end();
@@ -20,55 +33,24 @@ test('[capacity] getClusterArn - describeStacks error', (assert) => {
 });
 
 test('[capacity] getClusterArn', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var describeStacks = {
-    Stacks: [
-      {
-        StackId: 'arn:aws:cloudformation:us-east-1:123456789000:stack/cats-api-staging/00000000-ffff-0000-ffff-000000000000',
-        StackName: 'cats-api-staging',
-        Outputs: [
-          {
-            OutputKey: 'ClusterArn',
-            OutputValue: 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-000000000000',
-            Description: 'Service cluster ARN'
-          },
-          {
-            OutputKey: 'SomeOtherOutputKey',
-            OutputValue: 'SomeOtherOutputValue',
-            Description: 'Decoy output!'
-          }
-        ]
-      }
-    ]
-  };
-
-  AWS.stub('CloudFormation', 'describeStacks', (params, callback) => {
-    assert.deepEqual(params, { StackName: argv.stack });
-    return callback(null, describeStacks);
-  });
+  var describeStacks = AWS.stub('CloudFormation', 'describeStacks').yields(null, fixtures.describeStacks);
 
   file.getClusterArn(argv, (err, res) => {
+    assert.deepEqual(describeStacks.firstCall.args[0], { StackName: argv.stack });
     assert.ifError(err, 'should not error');
-    assert.equal(res, describeStacks.Stacks[0].Outputs[0].OutputValue);
+    assert.equal(res, fixtures.describeStacks.Stacks[0].Outputs[0].OutputValue);
     AWS.CloudFormation.restore();
     assert.end();
   });
 });
 
 test('[capacity] getReservations - describeStackResources error', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var error = 'some error';
+  var describeStackResources = AWS.stub('CloudFormation', 'describeStackResources').yields(error);
+  var describeTaskDefinition = AWS.stub('ECS', 'describeTaskDefinition');
 
-  AWS.stub('CloudFormation', 'describeStackResources', (params, callback) => {
-    assert.deepEqual(params, { StackName: argv.stack });
-    return callback(error);
-  });
-
-  AWS.stub('ECS', 'describeTaskDefinition', (params, callback) => {
-    assert.ifError(params, 'ecs.describeTaskDefinition should not be called');
-  });
-
-  file.getReservations(argv, (err, res) => {
+  file.getReservations(argv, (err) => {
+    assert.deepEqual(describeStackResources.firstCall.args[0], { StackName: argv.stack });
+    assert.equal(describeTaskDefinition.called, false, 'ecs.describeTaskDefinition should not be called');
     assert.equal(err.message, error);
     AWS.CloudFormation.restore();
     AWS.ECS.restore();
@@ -77,33 +59,12 @@ test('[capacity] getReservations - describeStackResources error', (assert) => {
 });
 
 test('[capacity] getReservations - describeTaskDefinition error', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var error = 'some error';
-  var describeStackResources = {
-    StackResources: [
-      {
-        StackName: 'cats-api-staging',
-        StackId: 'arn:aws:cloudformation:us-east-1:123456789000:stack/cats-api-staging/00000000-ffff-0000-ffff-000000000000',
-        LogicalResourceId: 'WatchbotWorker',
-        PhysicalResourceId: 'arn:aws:ecs:us-east-1:123456789000:task-definition/cats-api-staging-WatchbotWorker-000000000000:1',
-        ResourceType: 'AWS::ECS::TaskDefinition',
-        Timestamp: '2017-02-09T18:31:48.982Z',
-        ResourceStatus: 'CREATE_COMPLETE'
-      }
-    ]
-  };
+  var describeStackResources = AWS.stub('CloudFormation', 'describeStackResources').yields(null, fixtures.describeStackResources);
+  var describeTaskDefinition = AWS.stub('ECS', 'describeTaskDefinition').yields(error);
 
-  AWS.stub('CloudFormation', 'describeStackResources', (params, callback) => {
-    assert.deepEqual(params, { StackName: argv.stack });
-    return callback(null, describeStackResources);
-  });
-
-  AWS.stub('ECS', 'describeTaskDefinition', (params, callback) => {
-    assert.deepEqual(params, { taskDefinition: describeStackResources.StackResources[0].PhysicalResourceId });
-    return callback(error);
-  });
-
-  file.getReservations(argv, (err, res) => {
+  file.getReservations(argv, (err) => {
+    assert.deepEqual(describeStackResources.firstCall.args[0], { StackName: argv.stack });
+    assert.deepEqual(describeTaskDefinition.firstCall.args[0], { taskDefinition: fixtures.describeStackResources.StackResources[0].PhysicalResourceId });
     assert.equal(err.message, error);
     AWS.CloudFormation.restore();
     AWS.ECS.restore();
@@ -112,42 +73,12 @@ test('[capacity] getReservations - describeTaskDefinition error', (assert) => {
 });
 
 test('[capacity] getReservations - soft memory', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var describeStackResources = {
-    StackResources: [
-      {
-        StackName: 'cats-api-staging',
-        StackId: 'arn:aws:cloudformation:us-east-1:123456789000:stack/cats-api-staging/00000000-ffff-0000-ffff-000000000000',
-        LogicalResourceId: 'WatchbotWorker',
-        PhysicalResourceId: 'arn:aws:ecs:us-east-1:123456789000:task-definition/cats-api-staging-WatchbotWorker-000000000000:1',
-        ResourceType: 'AWS::ECS::TaskDefinition',
-        Timestamp: '2017-02-09T18:31:48.982Z',
-        ResourceStatus: 'CREATE_COMPLETE'
-      }
-    ]
-  };
-  var describeTaskDefinition = {
-    taskDefinition: {
-      containerDefinitions: [
-        {
-          cpu: 256,
-          memoryReservation: 128
-        }
-      ]
-    }
-  };
-
-  AWS.stub('CloudFormation', 'describeStackResources', (params, callback) => {
-    assert.deepEqual(params, { StackName: argv.stack });
-    return callback(null, describeStackResources);
-  });
-
-  AWS.stub('ECS', 'describeTaskDefinition', (params, callback) => {
-    assert.deepEqual(params, { taskDefinition: describeStackResources.StackResources[0].PhysicalResourceId });
-    return callback(null, describeTaskDefinition);
-  });
+  var describeStackResources = AWS.stub('CloudFormation', 'describeStackResources').yields(null, fixtures.describeStackResources);
+  var describeTaskDefinition = AWS.stub('ECS', 'describeTaskDefinition').yields(null, fixtures.describeTaskDefinitionSoftMem);
 
   file.getReservations(argv, (err, res) => {
+    assert.deepEqual(describeStackResources.firstCall.args[0], { StackName: argv.stack });
+    assert.deepEqual(describeTaskDefinition.firstCall.args[0], { taskDefinition: fixtures.describeStackResources.StackResources[0].PhysicalResourceId });
     assert.ifError(err, 'should not error');
     assert.deepEqual(res, { Memory: 128, Cpu: 256 });
     AWS.CloudFormation.restore();
@@ -157,42 +88,12 @@ test('[capacity] getReservations - soft memory', (assert) => {
 });
 
 test('[capacity] getReservations - hard memory', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var describeStackResources = {
-    StackResources: [
-      {
-        StackName: 'cats-api-staging',
-        StackId: 'arn:aws:cloudformation:us-east-1:123456789000:stack/cats-api-staging/00000000-ffff-0000-ffff-000000000000',
-        LogicalResourceId: 'WatchbotWorker',
-        PhysicalResourceId: 'arn:aws:ecs:us-east-1:123456789000:task-definition/cats-api-staging-WatchbotWorker-000000000000:1',
-        ResourceType: 'AWS::ECS::TaskDefinition',
-        Timestamp: '2017-02-09T18:31:48.982Z',
-        ResourceStatus: 'CREATE_COMPLETE'
-      }
-    ]
-  };
-  var describeTaskDefinition = {
-    taskDefinition: {
-      containerDefinitions: [
-        {
-          cpu: 256,
-          memory: 128
-        }
-      ]
-    }
-  };
-
-  AWS.stub('CloudFormation', 'describeStackResources', (params, callback) => {
-    assert.deepEqual(params, { StackName: argv.stack });
-    return callback(null, describeStackResources);
-  });
-
-  AWS.stub('ECS', 'describeTaskDefinition', (params, callback) => {
-    assert.deepEqual(params, { taskDefinition: describeStackResources.StackResources[0].PhysicalResourceId });
-    return callback(null, describeTaskDefinition);
-  });
+  var describeStackResources = AWS.stub('CloudFormation', 'describeStackResources').yields(null, fixtures.describeStackResources);
+  var describeTaskDefinition = AWS.stub('ECS', 'describeTaskDefinition').yields(null, fixtures.describeTaskDefinitionHardMem);
 
   file.getReservations(argv, (err, res) => {
+    assert.deepEqual(describeStackResources.firstCall.args[0], { StackName: argv.stack });
+    assert.deepEqual(describeTaskDefinition.firstCall.args[0], { taskDefinition: fixtures.describeStackResources.StackResources[0].PhysicalResourceId });
     assert.ifError(err, 'should not error');
     assert.deepEqual(res, { Memory: 128, Cpu: 256 });
     AWS.CloudFormation.restore();
@@ -202,43 +103,12 @@ test('[capacity] getReservations - hard memory', (assert) => {
 });
 
 test('[capacity] getReservations - both memories', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var describeStackResources = {
-    StackResources: [
-      {
-        StackName: 'cats-api-staging',
-        StackId: 'arn:aws:cloudformation:us-east-1:123456789000:stack/cats-api-staging/00000000-ffff-0000-ffff-000000000000',
-        LogicalResourceId: 'WatchbotWorker',
-        PhysicalResourceId: 'arn:aws:ecs:us-east-1:123456789000:task-definition/cats-api-staging-WatchbotWorker-000000000000:1',
-        ResourceType: 'AWS::ECS::TaskDefinition',
-        Timestamp: '2017-02-09T18:31:48.982Z',
-        ResourceStatus: 'CREATE_COMPLETE'
-      }
-    ]
-  };
-  var describeTaskDefinition = {
-    taskDefinition: {
-      containerDefinitions: [
-        {
-          cpu: 256,
-          memory: 128,
-          memoryReservation: 64
-        }
-      ]
-    }
-  };
-
-  AWS.stub('CloudFormation', 'describeStackResources', (params, callback) => {
-    assert.deepEqual(params, { StackName: argv.stack });
-    return callback(null, describeStackResources);
-  });
-
-  AWS.stub('ECS', 'describeTaskDefinition', (params, callback) => {
-    assert.deepEqual(params, { taskDefinition: describeStackResources.StackResources[0].PhysicalResourceId });
-    return callback(null, describeTaskDefinition);
-  });
+  var describeStackResources = AWS.stub('CloudFormation', 'describeStackResources').yields(null, fixtures.describeStackResources);
+  var describeTaskDefinition = AWS.stub('ECS', 'describeTaskDefinition').yields(null, fixtures.describeTaskDefinitionBothMem);
 
   file.getReservations(argv, (err, res) => {
+    assert.deepEqual(describeStackResources.firstCall.args[0], { StackName: argv.stack });
+    assert.deepEqual(describeTaskDefinition.firstCall.args[0], { taskDefinition: fixtures.describeStackResources.StackResources[0].PhysicalResourceId });
     assert.ifError(err, 'should not error');
     assert.deepEqual(res, { Memory: 128, Cpu: 256 });
     AWS.CloudFormation.restore();
@@ -247,172 +117,95 @@ test('[capacity] getReservations - both memories', (assert) => {
   });
 });
 
-test('[capacity] listInstances - single page', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var cluster = 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-000000000000';
-  var listContainerInstances = {
-    containerInstanceArns: [
-      'arn:aws:ecs:us-east-1:123456789000:container-instance/00000000-ffff-0000-ffff-000000000000',
-      'arn:aws:ecs:us-east-1:123456789000:container-instance/ffffffff-0000-ffff-0000-ffffffffffff'
-    ]
-  };
-  var describeContainerInstances = {
-    "containerInstances": [
-      {
-        "ec2InstanceId": "i-00000000000000000",
-        "remainingResources": [
-          {
-            "name": "CPU",
-            "integerValue": 32768
-          },
-          {
-            "name": "MEMORY",
-            "integerValue": 184306
-          }
-        ]
-      },
-      {
-        "ec2InstanceId": "i-fffffffffffffffff",
-        "remainingResources": [
-          {
-            "name": "CPU",
-            "integerValue": 32768
-          },
-          {
-            "name": "MEMORY",
-            "integerValue": 183986
-          }
-        ]
-      }
-    ]
-  };
-
-  AWS.stub('ECS', 'listContainerInstances').returns({
+test('[capacity] listInstances - listContainerInstances error', (assert) => {
+  var listContainerInstances = AWS.stub('ECS', 'listContainerInstances').returns({
     eachPage: (callback) => {
-      callback(null, listContainerInstances);
+      callback(error);
     }
   });
+  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances');
 
-  AWS.stub('ECS', 'describeContainerInstances', (params, callback) => {
-    assert.deepEqual(params, { cluster: cluster, containerInstances: listContainerInstances.containerInstanceArns });
-    callback(null, describeContainerInstances);
+  file.listInstances(argv, cluster, (err) => {
+    assert.deepEqual(listContainerInstances.firstCall.args, [{ cluster: cluster }]);
+    assert.equal(describeContainerInstances.called, false, 'should not have called ecs.describeContainerInstances');
+    assert.equal(err.message, error);
+    AWS.ECS.restore();
+    assert.end();
   });
+});
+
+test('[capacity] listInstances - describeContainerInstances error', (assert) => {
+  var listContainerInstances = AWS.stub('ECS', 'listContainerInstances').returns({
+    eachPage: (callback) => {
+      callback(null, fixtures.listContainerInstances, () => {
+        callback();
+      });
+    }
+  });
+  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances').yields(error);
+
+  file.listInstances(argv, cluster, (err) => {
+    assert.deepEqual(listContainerInstances.firstCall.args[0], { cluster: cluster });
+    assert.deepEqual(describeContainerInstances.firstCall.args[0], { cluster: cluster, containerInstances: fixtures.listContainerInstances.containerInstanceArns });
+    assert.equal(err.message, error);
+    AWS.ECS.restore();
+    assert.end();
+  });
+});
+
+test('[capacity] listInstances - single page', (assert) => {
+  var listContainerInstances = AWS.stub('ECS', 'listContainerInstances').returns({
+    eachPage: (callback) => {
+      callback(null, listContainerInstances, () => {
+        callback();
+      });
+    }
+  });
+  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances').yields(null, fixtures.describeContainerInstances);
 
   file.listInstances(argv, cluster, (err, res) => {
+    assert.deepEqual(listContainerInstances.firstCall.args[0], { cluster: cluster });
+    assert.deepEqual(describeContainerInstances.firstCall.args[0], { cluster: cluster, containerInstances: listContainerInstances.containerInstanceArns });
     assert.ifError(err, 'should not error');
     assert.deepEqual(res, {
-      'i-00000000000000000': [
-        {
-          name: 'CPU',
-          integerValue: 32768
-        },
-        {
-          name: 'MEMORY',
-          integerValue: 184306
-        }
-      ],
-      'i-fffffffffffffffff': [
-        {
-          name: 'CPU',
-          integerValue: 32768
-        },
-        {
-          name: 'MEMORY',
-          integerValue: 183986
-        }
-      ]
+      'i-00000000000000000': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 184306 }],
+      'i-fffffffffffffffff': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 183986 }]
     });
     AWS.ECS.restore();
     assert.end();
-  })
+  });
 });
 
 test('[capacity] listInstances - multiple pages', (assert) => {
-  var argv = { region: 'us-east-1', stack: 'cats-api-staging' };
-  var cluster = 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-000000000000';
-  var listContainerInstances1 = {
-    containerInstanceArns: [
-      'arn:aws:ecs:us-east-1:123456789000:container-instance/00000000-ffff-0000-ffff-000000000000'
-    ]
-  };
-  var listContainerInstances2 = {
-    containerInstanceArns: [
-      'arn:aws:ecs:us-east-1:123456789000:container-instance/ffffffff-0000-ffff-0000-ffffffffffff'
-    ]
-  };
-  var describeContainerInstances = {
-    "containerInstances": [
-      {
-        "ec2InstanceId": "i-00000000000000000",
-        "remainingResources": [
-          {
-            "name": "CPU",
-            "integerValue": 32768
-          },
-          {
-            "name": "MEMORY",
-            "integerValue": 184306
-          }
-        ]
-      },
-      {
-        "ec2InstanceId": "i-fffffffffffffffff",
-        "remainingResources": [
-          {
-            "name": "CPU",
-            "integerValue": 32768
-          },
-          {
-            "name": "MEMORY",
-            "integerValue": 183986
-          }
-        ]
-      }
-    ]
-  };
-
-  AWS.stub('ECS', 'listContainerInstances').returns({
+  var listContainerInstances = AWS.stub('ECS', 'listContainerInstances').returns({
     eachPage: (callback) => {
-      callback(null, listContainerInstances1, () => {
-        callback(null, listContainerInstances2, () => {
+      callback(null, fixtures.listContainerInstancesPage0, () => {
+        callback(null, fixtures.listContainerInstancesPage1, () => {
           callback();
         });
       });
     }
   });
-
-  AWS.stub('ECS', 'describeContainerInstances', (params, callback) => {
-    assert.deepEqual(params, { cluster: 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-000000000000', containerInstances: [ 'arn:aws:ecs:us-east-1:123456789000:container-instance/00000000-ffff-0000-ffff-000000000000' ] });
-    callback(null, describeContainerInstances);
-  });
+  var describeContainerInstances = AWS.stub('ECS', 'describeContainerInstances').yields(null, fixtures.describeContainerInstances);
 
   file.listInstances(argv, cluster, (err, res) => {
+    assert.deepEqual(listContainerInstances.firstCall.args[0], { cluster: cluster });
+    assert.deepEqual(describeContainerInstances.firstCall.args[0], {
+      cluster: 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-000000000000',
+      containerInstances: ['arn:aws:ecs:us-east-1:123456789000:container-instance/00000000-ffff-0000-ffff-000000000000']
+    });
+    assert.deepEqual(describeContainerInstances.secondCall.args[0], {
+      cluster: 'arn:aws:ecs:us-east-1:123456789000:cluster/some-cluster-Cluster-000000000000',
+      containerInstances: ['arn:aws:ecs:us-east-1:123456789000:container-instance/ffffffff-0000-ffff-0000-ffffffffffff']
+    });
     assert.ifError(err, 'should not error');
     assert.deepEqual(res, {
-      'i-00000000000000000': [
-        {
-          name: 'CPU',
-          integerValue: 32768
-        },
-        {
-          name: 'MEMORY',
-          integerValue: 184306
-        }
-      ],
-      'i-fffffffffffffffff': [
-        {
-          name: 'CPU',
-          integerValue: 32768
-        },
-        {
-          name: 'MEMORY',
-          integerValue: 183986
-        }
-      ]
+      'i-00000000000000000': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 184306 }],
+      'i-fffffffffffffffff': [{ name: 'CPU', integerValue: 32768 }, { name: 'MEMORY', integerValue: 183986 }]
     });
     AWS.ECS.restore();
     assert.end();
-  })
+  });
 });
 
 test('[capacity] calculateRoom - no room', (assert) => {
@@ -434,9 +227,6 @@ test('[capacity] calculateRoom - room', (assert) => {
   ];
 
   var result = file.calculateRoom(resources, reservation);
-  var expected = Math.min((resources[0][0].integerValue/reservation.Cpu).toFixed(0), (resources[0][1].integerValue/reservation.Memory).toFixed(0)) +
-                 Math.min((resources[1][0].integerValue/reservation.Cpu).toFixed(0), (resources[1][1].integerValue/reservation.Memory).toFixed(0)) +
-                 Math.min((resources[2][0].integerValue/reservation.Cpu).toFixed(0), (resources[2][1].integerValue/reservation.Memory).toFixed(0));
-  assert.equal(result, expected, 'should equal sum of tasks per instance based on most limited resource');
+  assert.equal(result, 235, 'should equal sum of tasks per instance based on most limited resource');
   assert.end();
 });
