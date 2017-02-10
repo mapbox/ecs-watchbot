@@ -131,8 +131,10 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testService, 'service');
   assert.notOk(watch.Resources.testProgressTable, 'progress table');
   assert.notOk(watch.Resources.testProgressTablePermission, 'progress table permission');
-  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }));
-  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }));
+  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.every((pt) => { return pt.ContainerPath && pt.SourceVolume; }), 'mount point properties');
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[0], { Name: 'mnt-0', Host: { SourcePath: '/var/tmp' } });
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[1], { Name: 'mnt-1', Host: { SourcePath: '/mnt/data' } });
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[2], { Name: 'mnt-2', Host: {} });
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
@@ -165,7 +167,10 @@ test('[template] include all resources, no references', function(assert) {
     watchers: 2,
     workers: 2,
     backoff: false,
-    mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data,/mnt/tmp',
+    mounts: {
+      container: ['/var/tmp', '/mnt/data', '/mnt/tmp'],
+      host: ['/var/tmp', '/mnt/data', '']
+    },
     logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
       memory: 512,
@@ -216,8 +221,10 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'LogLevel', Value: 'debug' }], 'log level env var');
-  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }));
-  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }));
+  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.every((pt) => { return pt.ContainerPath && pt.SourceVolume; }), 'mount point properties');
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[0], { Name: 'mnt-0', Host: { SourcePath: '/var/tmp' } });
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[1], { Name: 'mnt-1', Host: { SourcePath: '/mnt/data' } });
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[2], { Name: 'mnt-2', Host: {} });
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
@@ -233,6 +240,7 @@ test('[template] include all resources, no references', function(assert) {
 });
 
 test('[template] include all resources, all references', function(assert) {
+  var stackName = 'some-stack-name';
   var watch = watchbot.template({
     prefix: 'test',
     user: true,
@@ -251,7 +259,10 @@ test('[template] include all resources, all references', function(assert) {
     watchers: cf.ref('NumWatchers'),
     workers: cf.ref('NumWorkers'),
     backoff: cf.ref('UseBackoff'),
-    mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data,/mnt/tmp',
+    mounts: {
+      container: [cf.sub('/var/tmp/${stack}', { stack: cf.ref(stackName) }), '/mnt/data', '/mnt/tmp'],
+      host: [cf.sub('/var/tmp/${stack}', { stack: cf.ref(stackName) }), '/mnt/data', '']
+    },
     logAggregationFunction: cf.ref('LogAggregationFunction'),
     reservation: {
       memory: cf.ref('MemoryReservation'),
@@ -299,8 +310,9 @@ test('[template] include all resources, all references', function(assert) {
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') }, 'sets Concurrency');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[8], { Name: 'ExponentialBackoff', Value: cf.ref('UseBackoff') }, 'sets ExponentialBackoff');
-  assert.ok(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MountPoints.find(function(pt) { return pt.ContainerPath === '/mnt/tmp' && pt.SourceVolume === 'mnt-2'; }), 'ephemeral volume container');
-  assert.ok(watch.Resources.testWorker.Properties.Volumes.find(function(vol) { return vol.Name === 'mnt-2' && Object.keys(vol.Host).length === 0; }), 'ephemeral volume host');
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[0], { Name: 'mnt-0', Host: { SourcePath: { 'Fn::Sub': ['/var/tmp/${stack}', { stack: { Ref: 'some-stack-name' } }] } } });
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[1], { Name: 'mnt-1', Host: { SourcePath: '/mnt/data' } });
+  assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[2], { Name: 'mnt-2', Host: {} });
 
   assert.deepEqual(watch.ref.logGroup, cf.ref('testLogGroup'), 'logGroup ref');
   assert.deepEqual(watch.ref.topic, cf.ref('testTopic'), 'topic ref');
