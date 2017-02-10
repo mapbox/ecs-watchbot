@@ -7,6 +7,7 @@
 - adds ephemeral, or non-persistent, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
 - returns `task.container[n].reason` as `reason` when task finishes, if available
 - adds a `worker-capacity` script to estimate how many additional worker tasks can be placed in your service's cluster at its current capacity
+- adds mount point object compatibility for cloudfriend operators, and any other operators that use semicolons and commas
 
 ### 1.4.0
 
