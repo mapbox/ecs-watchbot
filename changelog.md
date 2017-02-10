@@ -6,6 +6,7 @@
 - collects CloudWatch metrics for worker errors (non-zero exit codes), and for failed task placements
 - adds ephemeral, or non-persistent, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
 - returns `task.container[n].reason` as `reason` when task finishes, if available
+- adds a `worker-capacity` script to estimate how many additional worker tasks can be placed in your service's cluster at its current capacity
 
 ### 1.4.0
 
