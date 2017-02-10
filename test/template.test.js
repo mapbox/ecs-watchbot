@@ -10,9 +10,10 @@ var pkg = require(path.resolve(__dirname, '..', 'package.json'));
 var version = pkg.version;
 
 test('[template] bare-bones, all defaults, no references', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var watch = watchbot.template({
     notificationEmail: 'devnull@mapbox.com',
-    cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+    cluster: cluster,
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
   });
@@ -69,16 +70,20 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
   assert.notOk(watch.ref.progressTable, 'progressTable ref');
 
+  assert.ok(watch.Outputs.ClusterArn, 'cluster arn output exists');
+  assert.equal(watch.Outputs.ClusterArn.Value, cluster, 'cluster arn ref');
+
   assert.end();
 });
 
 test('[template] webhooks but no key, no references', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var watch = watchbot.template({
     prefix: 'test',
     user: true,
     webhook: true,
     notificationEmail: 'devnull@mapbox.com',
-    cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+    cluster: cluster,
     watchbotVersion: 'v0.0.7',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
@@ -146,10 +151,14 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
   assert.notOk(watch.ref.progressTable, 'progressTable ref');
 
+  assert.ok(watch.Outputs.ClusterArn, 'cluster arn output exists');
+  assert.equal(watch.Outputs.ClusterArn.Value, cluster, 'cluster arn ref');
+
   assert.end();
 });
 
 test('[template] include all resources, no references', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var watch = watchbot.template({
     prefix: 'test',
     user: true,
@@ -157,7 +166,7 @@ test('[template] include all resources, no references', function(assert) {
     webhookKey: true,
     reduce: true,
     notificationEmail: 'devnull@mapbox.com',
-    cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/fake',
+    cluster: cluster,
     watchbotVersion: 'v0.0.7',
     service: 'my-service',
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256',
@@ -235,6 +244,9 @@ test('[template] include all resources, no references', function(assert) {
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
   assert.deepEqual(watch.ref.progressTable, cf.ref('testProgressTable'), 'progressTable ref');
+
+  assert.ok(watch.Outputs.ClusterArn, 'cluster arn output exists');
+  assert.equal(watch.Outputs.ClusterArn.Value, cluster, 'cluster arn ref');
 
   assert.end();
 });
@@ -323,6 +335,9 @@ test('[template] include all resources, all references', function(assert) {
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
   assert.deepEqual(watch.ref.progressTable, cf.ref('testProgressTable'), 'progressTable ref');
+
+  assert.ok(watch.Outputs.ClusterArn, 'cluster arn output exists');
+  assert.deepEqual(watch.Outputs.ClusterArn.Value, cf.ref('Cluster'), 'cluster arn ref');
 
   assert.end();
 });
