@@ -26,7 +26,7 @@
   "bin": {
     "watchbot-log": "./bin/watchbot-log.js",
     "watchbot-progress": "./node_modules/@mapbox/watchbot-progress/bin/watchbot-progress.js",
-    "worker-capacity": "./bin/worker-capacity.js"
+    "watchbot": "./bin/cli.js"
   },
   "dependencies": {
     "@mapbox/watchbot-progress": "^1.1.1",
@@ -37,7 +37,6 @@
     "d3-queue": "^2.0.3",
     "dyno": "^1.2.0",
     "fastlog": "^1.0.0",
-    "meow": "^3.7.0",
     "stream-combiner": "^0.2.2",
     "underscore": "^1.8.3"
   },
@@ -45,8 +44,11 @@
     "@mapbox/mock-aws-sdk-js": "0.0.4",
     "dynamodb-test": "^0.2.2",
     "eslint": "^2.6.0",
+    "inquirer": "^3.0.1",
+    "meow": "^3.7.0",
     "nyc": "^6.4.0",
     "opener": "^1.4.1",
+    "p-queue": "^1.0.0",
     "sinon": "^1.17.5",
     "tap-spec": "^4.1.1",
     "tape": "^4.5.1"
