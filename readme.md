@@ -162,7 +162,6 @@ readCapacityUnits | 30 | approximate reads per second to progress table in reduc
 writeCapacityUnits | 30 | approximate writes per second to progress table in reduce-mode
 watchers | 1 | number of watcher containers
 workers | 1 | number of concurrent worker containers per watcher
-backoff | true | retry jobs with exponential backoff
 logAggregationFunction | | the ARN of the log collection Lambda function
 mounts | '' | defines persistent container mount points from host EC2s or ephemeral mount points on the container
 reservation | {} | specify desired memory/cpu reservations for worker containers
@@ -175,7 +174,6 @@ errorThreshold | 10 | number of failed workers to trigger alarm
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm
 alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
 debugLogs | false | enable verbose watcher logging
-notifyAfterRetries | 0 | retry on any exit codes other than 0, 3, and 4 before alarm
 privileged | false | give the container elevated privileges on the host container instance
 
 ### watchbot.template references

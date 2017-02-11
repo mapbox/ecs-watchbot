@@ -13,9 +13,7 @@ var required = [
   'TaskEventQueueUrl',
   'NotificationTopic',
   'StackName',
-  'ExponentialBackoff',
   'LogGroupArn',
-  'NotifyAfterRetries',
   'AlarmOnEachFailure'
 ];
 
