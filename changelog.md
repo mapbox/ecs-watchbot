@@ -1,13 +1,18 @@
 ### unreleased
 
-- adds a second SQS queue used for the watcher's internal tracking of CloudWatch task state-change events
-- drops polling of DescribeTasks API to learn when workers are completed
-- removes cluster resource polling - workers will try to be placed and fail instead of avoiding placement attempts
-- collects CloudWatch metrics for worker errors (non-zero exit codes), and for failed task placements
-- adds ephemeral, or non-persistent, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
+- fixes a bug that wouldn't have allowed you to disable exponential backoff
 - returns `task.container[n].reason` as `reason` when task finishes, if available
-- adds a `worker-capacity` script to estimate how many additional worker tasks can be placed in your service's cluster at its current capacity
+- adds a second SQS queue used for the watcher's internal tracking of CloudWatch task state-change events
+- adds ephemeral, or non-persistent, volume compatibility (see [AWS's task data volume documentation](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html))
 - adds mount point object compatibility for cloudfriend operators, and any other operators that use semicolons and commas
+- adds a `worker-capacity` script to estimate how many additional worker tasks can be placed in your service's cluster at its current capacity
+- adds CloudWatch metrics for worker errors (non-zero exit codes), failed worker container placement, worker duration, watcher concurrency, and message receive counts
+- adds an alarm for number of worker errors in 60s, configurable through `watchbot.template(options)` `.errorThreshold`. Defaults to alarms after 10 failures per minute.
+- drops polling of DescribeTasks API to learn when workers are completed
+- **BREAKING** removes cluster resource polling - workers will try to be placed and fail instead of avoiding placement attempts
+- **BREAKING** by default, watchbot no longer sends notification emails each time a worker errors. You can opt-in to this behavior by setting `watchbot.template(options)` `.alarmOnEachFailure: true`.
+- **BREAKING** no longer sends notifications on error interacting with SQS. Instead watchbot silently proceeds.
+- **BREAKING** watcher log format has changed. Now watcher logs print JSON objects
 
 ### 1.4.0
 

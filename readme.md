@@ -171,6 +171,7 @@ reservation.memory | 64 | specify a hard memory limit
 reservation.softMemory | | specify a soft memory limit
 messageTimeout | 600 | max seconds it takes to process a job
 messageRetention | 1209600 | max seconds a message can remain in SQS
+errorThreshold | 10 | number of failed workers to trigger alarm
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm
 alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
 debugLogs | false | enable verbose watcher logging
@@ -245,6 +246,18 @@ $ watchbot-log "This is something that I want logged: eggs and beans"
 # Pipe another command's output into watchbot-log
 $ echo "This is something that I want logged: eggs and beans" | watchbot-log
 ```
+
+## Custom metrics
+
+Custom metrics are collected under the namespace `Mapbox/ecs-watchbot`. They are mined via filters on CloudWatch logs, and can help you learn about the state of your watchbot stack.
+
+|Metric|Description|Statistics
+|---|---|---|
+|`FailedWorkerPlacement-{StackName}`|The total number of times a watcher had difficulty placing a worker on the cluster - This probably means your concurrency is too high, your reservations are too high, or your cluster is too small.|Sum|
+|`WorkerErrors-{StackName}`|The total number of failed workers per minute. High levels of this error trigger the `WorkerErrors` alarm|Sum|
+|`MessageReceives-{StackName}`|A metric collected for every received message that indicates how many times the message has been pulled from the queue.|Maximum|
+|`WatcherConcurrency-{StackName}`|The number of workers running per watcher.|`Sum`and `Average`|
+|`WorkerDuration-{StackName}`|The amount of time taken by a worker to run a task.|`Average`, `Minimum` and `Maximum`|
 
 ## Reduce mode
 
