@@ -70,9 +70,9 @@ Name | Default | Description
 **notificationTopic** | | the ARN of an SNS topic to receive failure notifications. Should not be provided if notificationEmail exists.
 permissions | [] | permissions to any AWS resources that the worker will need to perform a task. Be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
 env | {} | environment variables to set on worker containers
-command | undefined | overrides a Dockerfile's `CMD`
+command | | overrides a Dockerfile's `CMD`
 watchbotVersion | installed version | the version of watchbot to use
-prefix | Watchbot | a prefix for logical resource names
+prefix | `Watchbot` | a prefix for logical resource names
 user | false | create an IAM user with permission to publish
 webhook | false | create an HTTPS endpoint to accept jobs
 webbhookKey | false | require an access token on the webhook endpoint
@@ -82,7 +82,7 @@ writeCapacityUnits | 30 | approximate writes per second to progress table in red
 watchers | 1 | number of watcher containers
 workers | 1 | number of concurrent worker containers per watcher
 logAggregationFunction | | the ARN of the log collection Lambda function
-mounts | '' | defines persistent container mount points from host EC2s or ephemeral mount points on the container
+mounts | | defines persistent container mount points from host EC2s or ephemeral mount points on the container
 reservation | {} | specify desired memory/cpu reservations for worker containers
 reservation.cpu | | specify a soft CPU limit
 reservation.memory | 64 | specify a hard memory limit
@@ -93,7 +93,7 @@ errorThreshold | 10 | number of failed workers to trigger alarm
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm
 alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
 debugLogs | false | enable verbose watcher logging
-privileged | false | give the container elevated privileges on the host container instance
+privileged | false | give the worker container elevated privileges on the host EC2
 
 ### watchbot.template references
 

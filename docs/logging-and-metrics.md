@@ -42,12 +42,12 @@ $ echo "This is something that I want logged: eggs and beans" | watchbot-log
 
 ## Custom metrics
 
-Custom metrics are collected under the namespace `Mapbox/ecs-watchbot`. They are mined via filters on CloudWatch logs, and can help you learn about the state of your Watchbot stack.
+Custom metrics are collected under the namespace `Mapbox/ecs-watchbot`. They are mined via filters on CloudWatch logs, and can help you learn about the state of your Watchbot stack. Each custom metric is suffixed with your stack's name, e.g. `-MyWatchbotStack`.
 
-|Metric|Description|Statistics
-|---|---|---|
-|`FailedWorkerPlacement-{StackName}`|The total number of times a watcher had difficulty placing a worker on the cluster - This probably means your concurrency is too high, your reservations are too high, or your cluster is too small.|Sum|
-|`WorkerErrors-{StackName}`|The total number of failed workers per minute. High levels of this error trigger the `WorkerErrors` alarm|Sum|
-|`MessageReceives-{StackName}`|A metric collected for every received message that indicates how many times the message has been pulled from the queue.|Maximum|
-|`WatcherConcurrency-{StackName}`|The number of workers running per watcher.|`Sum`and `Average`|
-|`WorkerDuration-{StackName}`|The amount of time taken by a worker to run a task.|`Average`, `Minimum` and `Maximum`|
+Metric | Description | Statistics
+--- | --- | ---
+**FailedWorkerPlacement** | The total number of times a watcher had difficulty placing a worker on the cluster - This probably means your concurrency is too high, your reservations are too high, or your cluster is too small | Sum
+**WorkerErrors** | The total number of failed workers per minute. High levels of this error trigger the `WorkerErrors` alarm | Sum
+**MessageReceives** | A metric collected for every received message that indicates how many times the message has been pulled from the queue | Maximum
+**WatcherConcurrency** | The number of workers running per watcher | `Sum`and `Average`
+**WorkerDuration** | The amount of time taken by a worker to run a task | `Average`, `Minimum` and `Maximum`
