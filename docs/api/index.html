@@ -1,0 +1,2524 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>@mapbox/watchbot 1.5.0 | Documentation</title>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <link href='assets/bass.css' type='text/css' rel='stylesheet' />
+  <link href='assets/style.css' type='text/css' rel='stylesheet' />
+  <link href='assets/github.css' type='text/css' rel='stylesheet' />
+</head>
+<body class='documentation'>
+  <div class='max-width-4 mx-auto'>
+    <div class='clearfix md-mxn2'>
+      <div class='fixed xs-hide fix-3 overflow-auto max-height-100'>
+        <div class='py1 px2'>
+          <h3 class='mb0 no-anchor'>@mapbox/watchbot</h3>
+          <div class='mb1'><code>1.5.0</code></div>
+          <input
+            placeholder='Filter'
+            id='filter-input'
+            class='col12 block input'
+            type='text' />
+          <div id='toc'>
+            <ul class='list-reset h5 py1-ul'>
+              
+                
+                <li><a
+                  href='#watchbot'
+                  class=" toggle-sibling">
+                  watchbot
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#watchbot.merge'
+                        class='regular pre-open'>
+                        .merge
+                      </a></li>
+                    
+                      <li><a
+                        href='#watchbot.main'
+                        class='regular pre-open'>
+                        .main
+                      </a></li>
+                    
+                      <li><a
+                        href='#watchbot.notifications'
+                        class='regular pre-open'>
+                        .notifications
+                      </a></li>
+                    
+                      <li><a
+                        href='#watchbot.messages'
+                        class='regular pre-open'>
+                        .messages
+                      </a></li>
+                    
+                      <li><a
+                        href='#watchbot.tasks'
+                        class='regular pre-open'>
+                        .tasks
+                      </a></li>
+                    
+                      <li><a
+                        href='#watchbot.template'
+                        class='regular pre-open'>
+                        .template
+                      </a></li>
+                    
+                      <li><a
+                        href='#watchbot.log'
+                        class='regular pre-open'>
+                        .log
+                      </a></li>
+                    
+                      <li><a
+                        href='#watchbot.fetch'
+                        class='regular pre-open'>
+                        .fetch
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#notifications'
+                  class=" toggle-sibling">
+                  notifications
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#notifications.send'
+                        class='regular pre-open'>
+                        .send
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#environment'
+                  class="">
+                  environment
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#messages'
+                  class=" toggle-sibling">
+                  messages
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#messages.poll'
+                        class='regular pre-open'>
+                        .poll
+                      </a></li>
+                    
+                      <li><a
+                        href='#messages.complete'
+                        class='regular pre-open'>
+                        .complete
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#tasks'
+                  class=" toggle-sibling">
+                  tasks
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#tasks.run'
+                        class='regular pre-open'>
+                        .run
+                      </a></li>
+                    
+                      <li><a
+                        href='#tasks.poll'
+                        class='regular pre-open'>
+                        .poll
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                  
+                </div>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#taskstatus'
+                  class="">
+                  taskStatus
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#outcome'
+                  class="">
+                  outcome
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#success'
+                  class="">
+                  success
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#finishedtask'
+                  class="">
+                  finishedTask
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#watchbotoutput'
+                  class="">
+                  WatchbotOutput
+                  
+                </a>
+                
+                </li>
+              
+            </ul>
+          </div>
+          <div class='mt1 h6 quiet'>
+            <a href='http://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
+          </div>
+        </div>
+      </div>
+      <div class='fix-margin-3'>
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='watchbot'>
+      watchbot
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>Watchbot's JavaScript API</p>
+
+
+  <div class='pre p1 fill-light mt0'>watchbot</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='watchbot.merge'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>merge</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Merges CloudFormation templates together.</p>
+
+
+  <div class='pre p1 fill-light mt0'>merge</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>template</span> <code class='quiet'>(...<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    a CloudFormation template to merge with
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        a CloudFormation template including all the Metadata,
+Parameters, Mappings, Conditions, Resources, and Outputs from the input
+templates
+
+      
+    
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Throws</div>
+    <ul>
+      
+        <li>any: errors when there is overlap in logical resource names between
+templates
+</li>
+      
+    </ul>
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='watchbot.main'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>main</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>The main Watchbot loop</p>
+
+
+  <div class='pre p1 fill-light mt0'>main</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>config</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    configuration parameters
+
+          </div>
+          
+          <table class='mt1 mb2 fixed-table h5 col-12'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='bold fill-light'>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody class='mt1'>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.NotificationTopic</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the ARN for the notification SNS topic
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.Cluster</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the ARN for the ECS cluster
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.TaskDefinition</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the ARN for the worker task definition
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.ContainerName</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the name of the container defined by the TaskDefinition
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.Concurrency</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+                  </td>
+                  <td class='break-word'><span>the number of concurrent tasks
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.QueueUrl</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the URL for the SQS queue
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.TaskEventQueueUrl</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the URL for the SQS queue containing task-state events
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.StackName</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the name of the CFN stack
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.AlarmOnEachFailure</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>
+                  </td>
+                  <td class='break-word'><span>whether to send errors when workers fail
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>config.LogLevel</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?</code>
+                  
+                    (default <code>info</code>)
+                  </td>
+                  <td class='break-word'><span>fastlog log level
+</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        an event emitter that will emit an 
+<code>finish</code>
+ event if the
+main loop is stopped.
+
+      
+    
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='watchbot.mainend'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>end()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Signals the main loop to shut down.</p>
+
+
+  <div class='pre p1 fill-light mt0'>end()</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='watchbot.notifications'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>notifications</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Creates notifications objects</p>
+
+
+  <div class='pre p1 fill-light mt0'>notifications</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the ARN of an SNS topic to receive notifications
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        an 
+<a href="#notifications">notifications</a>
+ object
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='watchbot.messages'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>messages</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Creates messages objects</p>
+
+
+  <div class='pre p1 fill-light mt0'>messages</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>queue</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the URL of an SQS queue
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>topic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the ARN of an SNS topic for failure notifications
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>stackName</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the name of the CloudFormation stack
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>sendNotifications</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>)</code>
+	    whether to send a notification email
+each time an invocation fails.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>logGroup</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?)</code>
+	    the ARN of a CloudWatch LogGroup where container
+logs are written
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        a 
+<a href="#messages">messages</a>
+ object
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='watchbot.tasks'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>tasks</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Creates tasks objects</p>
+
+
+  <div class='pre p1 fill-light mt0'>tasks</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>cluster</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the ARN of the ECS cluster to run tasks on
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>taskDefinition</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the ARN of the processing TaskDefinition to run
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>containerName</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the name of the container defined by the TaskDefinition
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>concurrency</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</code>
+	    the desired task concurrency
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>queue</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the SQS URL that receives task-status events
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>startedBy</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?
+            = <code>watchbot</code>)</code>
+	    the desired 
+<code>startedBy</code>
+ string for worker tasks
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        a 
+<a href="#tasks">tasks</a>
+ object
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='watchbot.template'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>template</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Builds Watchbot resources for you to include in a CloudFormation template</p>
+
+
+  <div class='pre p1 fill-light mt0'>template</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    configuration parameters
+
+          </div>
+          
+          <table class='mt1 mb2 fixed-table h5 col-12'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='bold fill-light'>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody class='mt1'>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.cluster</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | ref)</code>
+                  </td>
+                  <td class='break-word'><span>the ARN for the ECS cluster that will
+host Watchbot's containers.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.service</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+                  </td>
+                  <td class='break-word'><span>the name of your service. This is usually
+the name of your Github repository. It 
+<strong>must</strong>
+ match the name of the ECR
+repository where your images are stored.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.serviceVersion</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | ref)</code>
+                  </td>
+                  <td class='break-word'><span>the version of you service to
+deploy. This should reference a specific image in ECR.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.permissions</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>?</code>
+                  
+                    (default <code>[]</code>)
+                  </td>
+                  <td class='break-word'><span>permissions that your worker will
+need in order to complete tasks.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.env</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>?</code>
+                  
+                    (default <code>{}</code>)
+                  </td>
+                  <td class='break-word'><span>key-value pairs that will be provided to the worker
+containers as environment variables. Keys must be strings, and values can either
+be strings or references to other CloudFormation resources via 
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.watchbotVersion</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | ref)?</code>
+                  
+                    (default <code>current</code>)
+                  </td>
+                  <td class='break-word'><span>the version of Watchbot's
+container that will be deployed. Defaults to the installed version
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.notificationEmail</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | ref)?</code>
+                  </td>
+                  <td class='break-word'><span>an email address to receive
+notifications when processing fails.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.notificationTopic</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | ref)?</code>
+                  </td>
+                  <td class='break-word'><span>an ARN of the SNS topic to receive
+notifications when processing fails.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.alarmOnEachFailure</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a> | ref)?</code>
+                  
+                    (default <code>false</code>)
+                  </td>
+                  <td class='break-word'><span>if set to 
+<code>true</code>
+,
+the provided notificationEmail or notificationTopic will be sent a message
+every time any single worker fails. When 
+<code>false</code>
+, the email or topic will
+only receive a message when there have been more than some threshold number
+of errors in a 60s period. See 
+<code>options.errorThreshold</code>
+ for more information.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.prefix</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?</code>
+                  
+                    (default <code>&#39;Watchbot&#39;</code>)
+                  </td>
+                  <td class='break-word'><span>a prefix that will be applied
+to the logical names of all the resources Watchbot creates. If you're
+building a template that includes more than one Watchbot system, you'll need
+to specify this in order to differentiate the resources.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.user</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>?</code>
+                  
+                    (default <code>false</code>)
+                  </td>
+                  <td class='break-word'><span>if true, Watchbot will build an IAM
+User and associated access key pair. The user will have permission to publish
+messages to Watchbot's SNS topic in order to spawn processing jobs. The
+AccessKeyId and SecretAccessKey will be available as stack outputs.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.webhook</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>?</code>
+                  
+                    (default <code>false</code>)
+                  </td>
+                  <td class='break-word'><span>if true, Watchbot will build an
+HTTPS endpoint via ApiGateway. JSON payloads can be POSTed to this endpoint,
+and will be passed through to Watchbot's SNS topic, spawning processing jobs.
+By default, no authentication is required in order to POST to the endpoint.
+The endpoint URL will be available as a stack output.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.webhookKey</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>?</code>
+                  
+                    (default <code>false</code>)
+                  </td>
+                  <td class='break-word'><span>if true, Watchbot will generate
+an API token and require that it be passed to all POST requests to the webhook
+endpoint. The token will be available as a stack output.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.reduce</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>?</code>
+                  
+                    (default <code>false</code>)
+                  </td>
+                  <td class='break-word'><span>if true, Watchbot will enable the
+workers to utilize a DynamoDB table to track the progress of a distributed
+map-reduce operation.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.readCapacityUnits</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>30</code>)
+                  </td>
+                  <td class='break-word'><span>approximate number of reads
+per second to DynamoDB table in reduce-mode
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.writeCapacityUnits</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>30</code>)
+                  </td>
+                  <td class='break-word'><span>approximate number of writes
+per second to DynamoDB table in reduce-mode
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.watchers</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>1</code>)
+                  </td>
+                  <td class='break-word'><span>the number of watcher containers
+to run. Each watcher container reads from SQS and spawns worker containers
+when messages arrive. Each watcher is responsible for spawning and monitoring
+as many workers as you specify with the 
+<code>workers</code>
+ parameter. This parameter
+can be provided as either a number or a reference, i.e. 
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.workers</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>1</code>)
+                  </td>
+                  <td class='break-word'><span>the number of concurrent worker
+containers that any single watcher is responsible for spawning and monitoring.
+This parameter can be provided as either a number or a reference, i.e.
+
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.logAggregationFunction</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?</code>
+                  
+                    (default <code>&#39;&#39;</code>)
+                  </td>
+                  <td class='break-word'><span>the ARN of a Lambda function
+function to send logs to.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.mounts</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>?</code>
+                  
+                    (default <code>&#39;&#39;</code>)
+                  </td>
+                  <td class='break-word'><span>if your worker containers need to mount
+files or folders from the host EC2 file system, specify those mounts with this
+parameter. A single persistent mount point can be specified as
+
+<code>{host location}:{container location}</code>
+, e.g. /root:/mnt/root. A single ephemeral
+mount point can be specified as
+
+<code>{container location}</code>
+, e.g. /mnt/tmp. Separate multiple mount strings with commas
+if you need to mount more than one location. You can also specify a mount object
+with 
+<code>container</code>
+ and 
+<code>host</code>
+ property arrays, in which the indeces correspond:
+
+<code>{ container: [{container location}], host: [{host location}] }</code>
+, e.g.
+{ container: 
+[
+/mnt/root, /mnt/tmp
+]
+, host: 
+[
+/root, ''
+]
+ }. A blank host entry will
+create an ephemeral mount point at the corresponding container filepath.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.reservation</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>?</code>
+                  
+                    (default <code>{}</code>)
+                  </td>
+                  <td class='break-word'><span>worker container resource reservations
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.messageTimeout</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>600</code>)
+                  </td>
+                  <td class='break-word'><span>once Watchbot pulls a
+message from SQS and spawns a worker to process it, SQS will wait this many
+seconds for a response. If the worker has not yet finished processing the
+message for any reason, SQS will make the message visible again and Watchbot
+will spawn another worker to process it. This is helpful when containers or
+processing scripts crash, but make sure that it allows sufficient time for
+routine processing to occur. If set too low, you will end up processing jobs
+multiple times. This parameter can be provided as either a number or a
+reference, i.e. 
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.messageRetention</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>1209600</code>)
+                  </td>
+                  <td class='break-word'><span>the number of seconds
+that a message will exist in SQS until it is deleted. The default value is the
+maximum time that SQS allows, 14 days. This parameter can be provided as
+either a number or a reference, i.e. 
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.errorThreshold</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>10</code>)
+                  </td>
+                  <td class='break-word'><span>Watchbot creates a
+CloudWatch alarm that will fire if there have been more than this number
+of failed worker invocations in a 60 second period. This parameter can be provided as
+either a number or a reference, i.e. 
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.alarmThreshold</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>40</code>)
+                  </td>
+                  <td class='break-word'><span>Watchbot creates a
+CloudWatch alarm that will go off when there have been too many messages in
+SQS for a certain period of time. Use this parameter to adjust the Threshold
+number of messages to trigger the alarm. This parameter can be provided as
+either a number or a reference, i.e. 
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.alarmPeriods</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a> | ref)?</code>
+                  
+                    (default <code>24</code>)
+                  </td>
+                  <td class='break-word'><span>Use this parameter to control
+the duration that the SQS queue must be over the message threshold before
+triggering an alarm. You specify the number of 5-minute periods before an
+alarm is triggered. The default is 24 periods, or 2 hours. This parameter
+can be provided as either a number or a reference, i.e. 
+<code>{"Ref": "..."}</code>
+.
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.debugLogs</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>?</code>
+                  
+                    (default <code>false</code>)
+                  </td>
+                  <td class='break-word'><span>enable verbose watcher logging
+</span></td>
+                </tr>
+              
+                <tr>
+                  <td class='break-word'><span class='code bold'>options.privileged</span> <code class='quiet'><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>?</code>
+                  
+                    (default <code>false</code>)
+                  </td>
+                  <td class='break-word'><span>give the container elevated
+privileges on the host container instance
+</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>command</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a>?
+            = <code>undefined</code>)</code>
+	    an array of strings to that define the
+command to run when the container is launched. If your Dockerfile specifies a
+CMD, it will be overriden.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='watchbot.log'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>log</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Writes logs to stdout prefixed with a timestamp, category, and message id. Usage
+is identical to <code>console.log</code></p>
+
+
+  <div class='pre p1 fill-light mt0'>log</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>msg</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    a string containing one or more substition strings
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>subst1</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    strings with which to replace substitution strings within 
+<code>msg</code>
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='watchbot.fetch'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>fetch</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Retrieve container logs from CloudWatch logs. This function searches the last
+15 minutes of available logs, and returns up to 50kb of the most recent events</p>
+
+
+  <div class='pre p1 fill-light mt0'>fetch</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>logGroup</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the ARN of the CloudWatch LogGroup
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>messageId</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the SQS message id to search for
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
+	    a function that will be given a string of logs
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='notifications'>
+      notifications
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>An notifications object</p>
+
+
+  <div class='pre p1 fill-light mt0'>notifications</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='notifications.send'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>send(subject, message, callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Send a notification to the SNS topic</p>
+
+
+  <div class='pre p1 fill-light mt0'>send(subject: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, message: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, callback: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>subject</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the subject of the message
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>message</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    the body of the message
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
+	    a function to call when the notification has
+been sent
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='environment'>
+      environment
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>Environment variables providing SQS message details to the processing task</p>
+
+
+  <div class='pre p1 fill-light mt0'>environment</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Properties</div>
+    <div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>MessageId</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : the SQS MessageId
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>Subject</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : the message's subject
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>Message</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : the message's body
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>SentTimestamp</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : the time the message was sent
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>ApproximateFirstReceiveTimestamp</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : the time the
+message was first received
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>ApproximateReceiveCount</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : the number of times the
+message has been received
+
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='messages'>
+      messages
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>An SQS message tracker</p>
+
+
+  <div class='pre p1 fill-light mt0'>messages</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='messages.poll'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>poll(max, callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Poll SQS to find jobs</p>
+
+
+  <div class='pre p1 fill-light mt0'>poll(max: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>, callback: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>max</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</code>
+	    the maximum number of jobs to take from the queue (max 10)
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
+	    a function called after polling completes. The
+callback will be provided with an object of key-value object pairs representing
+environment variables (see 
+<a href="#environment">environment</a>
+) to be provided to a task
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='messages.complete'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>complete(finishedTask, callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Handle a completed SQS message</p>
+
+
+  <div class='pre p1 fill-light mt0'>complete(finishedTask: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, callback: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>finishedTask</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    a 
+<a href="fainishedTask">fainishedTask</a>
+ object defining the task outcome
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
+	    a function called when the finished job has been
+handled appropriately
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='tasks'>
+      tasks
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>An ECS task runner and status tracker</p>
+
+
+  <div class='pre p1 fill-light mt0'>tasks</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='tasks.run'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>run(env, callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Runs a task if currently below desired concurrency</p>
+
+
+  <div class='pre p1 fill-light mt0'>run(env: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, callback: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>env</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    key-value pairs of environment variables to provide
+to the task
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
+	    a function to run when the task has been started.
+An error object with code 
+<code>AboveConcurrency</code>
+ indicates that there are already
+the maximum number of concurrent tasks running.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='tasks.poll'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>poll(callback)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Checks the status of all pending tasks</p>
+
+
+  <div class='pre p1 fill-light mt0'>poll(callback: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>callback</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a>)</code>
+	    a function to handle the response. Will be
+provided a 
+<a href="#taskstatus">taskStatus</a>
+ object.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='taskstatus'>
+      taskStatus
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>An array of <a href="#finishedtask">finishedTask</a> objects</p>
+
+
+  <div class='pre p1 fill-light mt0'>taskStatus</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Properties</div>
+    <div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>free</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>)</code>
+          : the difference between current and maximum
+desired task concurrency.
+
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='outcome'>
+      outcome
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>Possible task outcomes</p>
+
+
+  <div class='pre p1 fill-light mt0'>outcome</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Properties</div>
+    <div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>success</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : indicates that the container(s) provided an
+exit code 0. The SQS message should be deleted.
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>fail</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : indicates that the container(s) provided an exit
+code 3. The SQS message should be deleted and a notification sent.
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>noop</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : indicates that the container(s) provided an exit
+code 4. The SQS message should be returned.
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>retry</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : indicates that container(s) provided an unknown
+or mismatched exit code. The SQS message should be returned and a
+notification sent.
+
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='success'>
+      success
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>A task's reason for finishing
+If exit code is 0, return success. If exit code does not equal 0 and
+stopped container reason is provided return that. Otherwise, return
+stopped task reason.</p>
+
+
+  <div class='pre p1 fill-light mt0'>success</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='finishedtask'>
+      finishedTask
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>An object providing information about the outcome of a task</p>
+
+
+  <div class='pre p1 fill-light mt0'>finishedTask</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Properties</div>
+    <div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>arns</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+          : indentifiers for resources involved in running the task
+
+          
+            <ul>
+              
+                <li><code>arns.cluster</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+                  
+                  <p>the ECS cluster's ARN</p>
+</li>
+              
+                <li><code>arns.instance</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+                  
+                  <p>the EC2's ARN (use in ecs.describeContainerInstances requests)</p>
+</li>
+              
+                <li><code>arns.task</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>
+                  
+                  <p>the tasks ARN (use in ecs.describeTasks requests)</p>
+</li>
+              
+            </ul>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>reason</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : the ECS-provided reason that the task ended
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>env</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+          : key-value pairs indicating the task's
+environment variables
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>outcome</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+          : one of the outcomes defined by 
+<a href="tasks.outcome">tasks.outcome</a>
+
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='watchbotoutput'>
+      WatchbotOutput
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>The Watchbot template builder output object</p>
+
+
+  <div class='pre p1 fill-light mt0'>WatchbotOutput</div>
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Properties</div>
+    <div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>Resources</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+          : A CloudFormation Resources object
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>Metadata</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+          : A CloudFormation Metadata object
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>Mappings</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+          : A CloudFormation Mappings object
+
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <span class='code bold'>refs</span> <code class='quiet'>(<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+          : a set of CloudFormation 
+<code>Ref</code>
+s to important
+Watchbot resources. These references are only useful in the context of a
+CloudFormation template.
+
+          
+            <ul>
+              
+                <li><code>refs.logGroup</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>
+                  
+                  <p>the name of the CloudWatch LogGroup to
+which Watchbot will write watcher and worker logs.</p>
+</li>
+              
+                <li><code>refs.topic</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>
+                  
+                  <p>the ARN for Watchbot's SNS topic. Publish
+messages to this topic to trigger processing.</p>
+</li>
+              
+                <li><code>refs.queueUrl</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>
+                  
+                  <p>the URL for Watchbot's SQS queue.</p>
+</li>
+              
+                <li><code>refs.queueArn</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>
+                  
+                  <p>the ARN for Watchbot's SQS queue.</p>
+</li>
+              
+                <li><code>refs.accessKeyId</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>?
+                  
+                  <p>if the <code>user</code> parameter was set to
+true, this is an access key with permission to publish messages to Watchbot's
+SNS topic.</p>
+</li>
+              
+                <li><code>refs.secretAccessKey</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>?
+                  
+                  <p>if the <code>user</code> parameter was set to
+true, this is a secret access key with permission to publish messages to Watchbot's
+SNS topic.</p>
+</li>
+              
+                <li><code>refs.webhookEndpoint</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>?
+                  
+                  <p>if the <code>webhook</code> parameter was
+set to true, this is the URL for the ApiGateway endpoint. JSON payloads
+POSTed to this endpoint will be passed through to Watchbot's SNS topic to
+spawn processing.</p>
+</li>
+              
+                <li><code>refs.webhookKey</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>?
+                  
+                  <p>if the <code>webhookKey</code> parameter was
+set to true, this access token must be provided in all POST requests to the
+webhook endpoint.</p>
+</li>
+              
+            </ul>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+      </div>
+    </div>
+  </div>
+  <script src='assets/anchor.js'></script>
+  <script src='assets/site.js'></script>
+</body>
+</html>

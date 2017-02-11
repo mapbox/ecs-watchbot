@@ -21,7 +21,7 @@
     "test": "nyc tape test/*.test.js | tap-spec",
     "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
     "pretest": "eslint bin lib test index.js",
-    "docs": "documentation build --format html --output docs --config docs/config.json && opener docs/index.html"
+    "dev-docs": "documentation build --format html --output docs/api --config docs/api/config.json && opener docs/api/index.html"
   },
   "bin": {
     "watchbot-log": "./bin/watchbot-log.js",
@@ -43,7 +43,6 @@
   },
   "devDependencies": {
     "@mapbox/mock-aws-sdk-js": "0.0.4",
-    "documentation": "^4.0.0-beta2",
     "dynamodb-test": "^0.2.2",
     "eslint": "^2.6.0",
     "nyc": "^6.4.0",
