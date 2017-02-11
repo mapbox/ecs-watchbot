@@ -36,8 +36,20 @@ This likely represents an error in your worker's code, or an edge-case that your
 
 ### Why?
 
-There were more than a threshold number of messages in the SQS queue for some period of time. Both the threshold and the alarm period are configured when you create your template via `watchbot.tempalte()` through the `options.alarmThreshold` and `options.alarmPeriod` values. The default threshold is 40, and the default period is 2 hours.
+There were more than a threshold number of messages in the SQS queue for some period of time. Both the threshold and the alarm period are configured when you create your template via `watchbot.template()` through the `options.alarmThreshold` and `options.alarmPeriod` values. The default threshold is 40, and the default period is 2 hours.
 
-### What to do?
+### What to do
 
 This represents a situation where messages are piling up in SQS faster than they are being processed. You may need to decrease the rate at which messages are being sent to SQS, or investigate whether there is something else preventing workers from processing effectively.
+
+## DeadLetter
+
+### Why?
+
+There are visible messages in the dead letter queue. SQS messages are received by watchbot's watcher container. If processing the message fails for any reason, the message is sent back to watchbot's primary queue and will be retried. If 10 attempts to process a message result in a failure, then the message will be sent to the dead letter queue.
+
+### What to do
+
+These messages consistently failed processing attempts. It is possible that these messages represent an edge case in your worker's processing code. In this case, you should investigate your system's logs to try and determine how the workers failed.
+
+It is also possible that this represents failure to successfully place tasks in your cluster. If this is the case, then you will also have seen alarms on FailedWorkerPlacement (see above).

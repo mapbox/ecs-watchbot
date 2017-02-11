@@ -15,6 +15,7 @@
 - **BREAKING** watcher log format has changed. Now watcher logs print JSON objects
 - **BREAKING** removes `.notifyAfterRetries` option
 - **BREAKING** removes `.backoff` option. Workers are always retried with exponential backoff
+- **BREAKING** adds a dead letter queue. Messages received more than 14 times by a watcher container will be sent to this queue. Any visible messages in this queue will trip an alarm.
 
 ### 1.4.0
 

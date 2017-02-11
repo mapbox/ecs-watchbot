@@ -32,6 +32,8 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotLogGroup, 'log group');
   assert.notOk(watch.Resources.WatchbotLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.WatchbotQueue, 'queue');
+  assert.ok(watch.Resources.WatchbotDeadLetterQueue, 'dead letter queue');
+  assert.ok(watch.Resources.WatchbotDeadLetterAlarm, 'dead letter alarm');
   assert.ok(watch.Resources.WatchbotTopic, 'topic');
   assert.ok(watch.Resources.WatchbotQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.WatchbotQueueSizeAlarm, 'queue alarm');
@@ -123,6 +125,8 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testLogGroup, 'log group');
   assert.notOk(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
+  assert.ok(watch.Resources.testDeadLetterQueue, 'dead letter queue');
+  assert.ok(watch.Resources.testDeadLetterAlarm, 'dead letter alarm');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
@@ -219,6 +223,8 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testLogGroup, 'log group');
   assert.ok(watch.Resources.testLogForwarding, 'log forwarding function');
   assert.ok(watch.Resources.testQueue, 'queue');
+  assert.ok(watch.Resources.testDeadLetterQueue, 'dead letter queue');
+  assert.ok(watch.Resources.testDeadLetterAlarm, 'dead letter alarm');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
@@ -323,6 +329,8 @@ test('[template] include all resources, all references', function(assert) {
   assert.equal(watch.Resources.testLogForwarding.Condition, 'testUseLogForwarding', 'log forwarding function is conditional');
   assert.deepEqual(watch.Conditions.testUseLogForwarding, cf.notEquals(cf.ref('LogAggregationFunction'), ''), 'log forwarding condition provided');
   assert.ok(watch.Resources.testQueue, 'queue');
+  assert.ok(watch.Resources.testDeadLetterQueue, 'dead letter queue');
+  assert.ok(watch.Resources.testDeadLetterAlarm, 'dead letter alarm');
   assert.ok(watch.Resources.testTopic, 'topic');
   assert.ok(watch.Resources.testQueuePolicy, 'queue policy');
   assert.ok(watch.Resources.testQueueSizeAlarm, 'queue alarm');
