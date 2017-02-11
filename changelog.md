@@ -14,6 +14,7 @@
 - **BREAKING** no longer sends notifications on error interacting with SQS. Instead watchbot silently proceeds.
 - **BREAKING** watcher log format has changed. Now watcher logs print JSON objects
 - **BREAKING** removes `.notifyAfterRetries` option
+- **BREAKING** removes `.backoff` option. Workers are always retried with exponential backoff
 
 ### 1.4.0
 

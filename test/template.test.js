@@ -97,7 +97,6 @@ test('[template] webhooks but no key, no references', function(assert) {
     env: { SomeKey: 'SomeValue', AnotherKey: 'AnotherValue' },
     watchers: 2,
     workers: 2,
-    backoff: false,
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data,/mnt/tmp',
     reservation: {
       memory: 512,
@@ -187,7 +186,6 @@ test('[template] include all resources, no references', function(assert) {
     permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
     watchers: 2,
     workers: 2,
-    backoff: false,
     mounts: {
       container: ['/var/tmp', '/mnt/data', '/mnt/tmp'],
       host: ['/var/tmp', '/mnt/data', '']
@@ -292,7 +290,6 @@ test('[template] include all resources, all references', function(assert) {
     permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
     watchers: cf.ref('NumWatchers'),
     workers: cf.ref('NumWorkers'),
-    backoff: cf.ref('UseBackoff'),
     mounts: {
       container: [cf.sub('/var/tmp/${stack}', { stack: cf.ref(stackName) }), '/mnt/data', '/mnt/tmp'],
       host: [cf.sub('/var/tmp/${stack}', { stack: cf.ref(stackName) }), '/mnt/data', '']
@@ -352,7 +349,6 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testProgressTablePermission, 'progress table permission');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'ProgressTable', Value: cf.join(['arn:aws:dynamodb:', cf.region, ':', cf.accountId, ':table/', cf.ref('testProgressTable')]) }], 'progress table env var');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[3], { Name: 'Concurrency', Value: cf.ref('NumWorkers') }, 'sets Concurrency');
-  assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment[8], { Name: 'ExponentialBackoff', Value: cf.ref('UseBackoff') }, 'sets ExponentialBackoff');
   assert.deepEqual(watch.Resources.testWatcher.Properties.ContainerDefinitions[0].Environment.slice(-1), [{ Name: 'AlarmOnEachFailure', Value: cf.ref('AlarmOnFailures') }], 'alarm on failure env var');
   assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[0], { Name: 'mnt-0', Host: { SourcePath: { 'Fn::Sub': ['/var/tmp/${stack}', { stack: { Ref: 'some-stack-name' } }] } } });
   assert.deepEqual(watch.Resources.testWorker.Properties.Volumes[1], { Name: 'mnt-1', Host: { SourcePath: '/mnt/data' } });
@@ -390,7 +386,6 @@ test('[template] resources are valid', function(assert) {
     permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
     watchers: 2,
     workers: 2,
-    backoff: false,
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data,/mnt/tmp',
     logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
@@ -434,7 +429,6 @@ test('[template] notificationTopic vs notificationEmail', function(assert) {
       permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
       watchers: 2,
       workers: 2,
-      backoff: false,
       mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data,/mnt/tmp',
       logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
       reservation: {
@@ -464,7 +458,6 @@ test('[template] notificationTopic vs notificationEmail', function(assert) {
     permissions: [{ Effect: 'Allow', Actions: '*', Resources: '*' }],
     watchers: 2,
     workers: 2,
-    backoff: false,
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data,/mnt/tmp',
     logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {

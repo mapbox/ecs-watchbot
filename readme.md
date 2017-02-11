@@ -162,7 +162,6 @@ readCapacityUnits | 30 | approximate reads per second to progress table in reduc
 writeCapacityUnits | 30 | approximate writes per second to progress table in reduce-mode
 watchers | 1 | number of watcher containers
 workers | 1 | number of concurrent worker containers per watcher
-backoff | true | retry jobs with exponential backoff
 logAggregationFunction | | the ARN of the log collection Lambda function
 mounts | '' | defines persistent container mount points from host EC2s or ephemeral mount points on the container
 reservation | {} | specify desired memory/cpu reservations for worker containers
