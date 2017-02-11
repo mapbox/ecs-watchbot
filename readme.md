@@ -175,7 +175,6 @@ errorThreshold | 10 | number of failed workers to trigger alarm
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm
 alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
 debugLogs | false | enable verbose watcher logging
-notifyAfterRetries | 0 | retry on any exit codes other than 0, 3, and 4 before alarm
 privileged | false | give the container elevated privileges on the host container instance
 
 ### watchbot.template references

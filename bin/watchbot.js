@@ -15,7 +15,6 @@ var required = [
   'StackName',
   'ExponentialBackoff',
   'LogGroupArn',
-  'NotifyAfterRetries',
   'AlarmOnEachFailure'
 ];
 

@@ -13,6 +13,7 @@
 - **BREAKING** by default, watchbot no longer sends notification emails each time a worker errors. You can opt-in to this behavior by setting `watchbot.template(options)` `.alarmOnEachFailure: true`.
 - **BREAKING** no longer sends notifications on error interacting with SQS. Instead watchbot silently proceeds.
 - **BREAKING** watcher log format has changed. Now watcher logs print JSON objects
+- **BREAKING** removes `.notifyAfterRetries` option
 
 ### 1.4.0
 
