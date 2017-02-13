@@ -1,8 +1,8 @@
-### unreleased
+### 2.1.0
 
 - fixes a bug in the changelog
 - consolidates CLI commands into a single `watchbot` command
-- adds a CLI command for interacting with the dead letter queue
+- adds a CLI command for interacting with the dead letter queue. **Note** that you cannot use the CLI unless you're working with a 2.1.0+ stack.
 
 ### 2.0.0
 
