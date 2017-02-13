@@ -3,6 +3,7 @@ var sinon = require('sinon');
 var AWS = require('@mapbox/mock-aws-sdk-js');
 var dead = require('../lib/dead-letter');
 var inquirer = require('inquirer');
+var logs = require('../lib/logs');
 
 test('[dead-letter] proper client setup & stack description', (assert) => {
   var desc = AWS.stub('CloudFormation', 'describeStacks', function() {
@@ -54,7 +55,9 @@ test('[dead-letter] check initial prompts (multiple watchbots)', (assert) => {
             { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
             { OutputKey: 'twoDeadLetterQueueUrl', OutputValue: 'twoDead' },
             { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
-            { OutputKey: 'twoQueueUrl', OutputValue: 'twoWork' }
+            { OutputKey: 'twoQueueUrl', OutputValue: 'twoWork' },
+            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' },
+            { OutputKey: 'twoLogGroup', OutputValue: 'twoLogs' }
           ]
         }
       ]
@@ -108,7 +111,8 @@ test('[dead-letter] check initial prompts (single watchbot)', (assert) => {
         {
           Outputs: [
             { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' }
+            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
           ]
         }
       ]
@@ -158,7 +162,8 @@ test('[dead-letter] reject purge confirmation', (assert) => {
         {
           Outputs: [
             { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' }
+            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
           ]
         }
       ]
@@ -193,7 +198,8 @@ test('[dead-letter] return messages to work queue', (assert) => {
         {
           Outputs: [
             { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' }
+            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
           ]
         }
       ]
@@ -286,7 +292,8 @@ test('[dead-letter] reject return messages confirmation', (assert) => {
         {
           Outputs: [
             { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' }
+            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
           ]
         }
       ]
@@ -326,7 +333,8 @@ test('[dead-letter] individual message triage', (assert) => {
   prompt.onCall(1).returns(Promise.resolve({ action: 'Return this message to the work queue?' }));
   prompt.onCall(2).returns(Promise.resolve({ action: 'Return this message to the dead letter queue?' }));
   prompt.onCall(3).returns(Promise.resolve({ action: 'Delete this message entirely?' }));
-  prompt.onCall(4).returns(Promise.resolve({ action: 'Stop individual triage?' }));
+  prompt.onCall(4).returns(Promise.resolve({ action: 'View this message\'s recent logs?' }));
+  prompt.onCall(5).returns(Promise.resolve({ action: 'Stop individual triage?' }));
 
   AWS.stub('CloudFormation', 'describeStacks', function() {
     this.request.promise.returns(Promise.resolve({
@@ -334,7 +342,8 @@ test('[dead-letter] individual message triage', (assert) => {
         {
           Outputs: [
             { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' }
+            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
           ]
         }
       ]
@@ -367,6 +376,13 @@ test('[dead-letter] individual message triage', (assert) => {
     this.request.promise.returns(Promise.resolve());
   });
 
+  var fetch = sinon.stub(logs, 'fetch');
+  fetch.onCall(0).yields(null, [
+    '[Sun, 12 Feb 2017 00:24:41 GMT] [watchbot] [a406f47b-a0f2-49a6-a159-b0f8578104bf] {"subject":"bozo","message":"message-4","receives":"1"}',
+    '[Sun, 12 Feb 2017 00:24:42 GMT] [watchbot] [436d13dc-a666-44fd-a2df-70f1f4b3f107] {"subject":"bozo","message":"message-5","receives":"1"}'
+  ].join('\n'));
+  fetch.onCall(1).yields(null, 'final logs\n');
+
   dead({ stackName: 'stack', region: 'region' }, (err) => {
     assert.ifError(err, 'success');
     if (err) return assert.end();
@@ -397,9 +413,14 @@ test('[dead-letter] individual message triage', (assert) => {
       QueueUrl: 'oneDead',
       ReceiptHandle: 'handle-4',
       VisibilityTimeout: 0
-    }), 'returns the fourth, unseen message to the dead letter queue');
+    }), 'returns the fourth message to the dead letter queue');
+
+    assert.equal(fetch.callCount, 2, 'two calls to fetch recent logs');
+    assert.ok(fetch.calledWith('oneLogs', 'message-4'), 'one fetch call based on message itself');
+    assert.ok(fetch.calledWith('oneLogs', 'a406f47b-a0f2-49a6-a159-b0f8578104bf'), 'one fetch call based on original message id');
 
     prompt.restore();
+    fetch.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
@@ -416,13 +437,14 @@ test('[dead-letter] write out messages', (assert) => {
         {
           Outputs: [
             { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' }
+            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
           ]
         }
       ]
     }));
   });
-  
+
   var receive = AWS.stub('SQS', 'receiveMessage');
   receive.onCall(0).returns({
     promise: () => Promise.resolve({
