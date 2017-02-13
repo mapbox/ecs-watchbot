@@ -81,10 +81,10 @@ test('[dead-letter] check initial prompts (multiple watchbots)', (assert) => {
     assert.equal(prompt.args[1][0].length, 1, 'second prompt one question');
     assert.equal(prompt.args[1][0][0].type, 'list', 'second prompt type = list');
     assert.deepEqual(prompt.args[1][0][0].choices, [
-      'Purge the dead letter queue?',
-      'Return all dead messages to the work queue?',
       'Triage dead messages individually?',
-      'Print out all dead messages?'
+      'Print out all dead messages?',
+      'Return all dead messages to the work queue?',
+      'Purge the dead letter queue?'
     ], 'second prompt expected actions');
 
     assert.equal(prompt.args[2][0].length, 1, 'third prompt one question');
@@ -132,10 +132,10 @@ test('[dead-letter] check initial prompts (single watchbot)', (assert) => {
     assert.equal(prompt.args[0][0].length, 1, 'first prompt one question');
     assert.equal(prompt.args[0][0][0].type, 'list', 'first prompt type = list');
     assert.deepEqual(prompt.args[0][0][0].choices, [
-      'Purge the dead letter queue?',
-      'Return all dead messages to the work queue?',
       'Triage dead messages individually?',
-      'Print out all dead messages?'
+      'Print out all dead messages?',
+      'Return all dead messages to the work queue?',
+      'Purge the dead letter queue?'
     ], 'first prompt expected actions');
 
     assert.equal(prompt.args[1][0].length, 1, 'second prompt one question');
