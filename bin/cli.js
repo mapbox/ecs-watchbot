@@ -4,18 +4,21 @@
 
 var meow = require('meow');
 
-var cli = meow(`
-  USAGE: watchbot <command> [OPTIONS]
+var cli = meow({
+  help: `
+    USAGE: watchbot <command> [OPTIONS]
 
-  Commands:
-    worker-capacity     assess available resources on the cluster
-    dead-letter         triage messages in dead letter queue
+    Commands:
+      worker-capacity     assess available resources on the cluster
+      dead-letter         triage messages in dead letter queue
 
-  Options:
-    -h, --help          show this help message
-    -s, --stack-name    the full name of a watchbot stack
-    -r, --region        the region of the stack (default us-east-1)
-`, {
+    Options:
+      -h, --help          show this help message
+      -s, --stack-name    the full name of a watchbot stack
+      -r, --region        the region of the stack (default us-east-1)
+  `,
+  description: 'Helper utilities for interacting with watchbot stacks'
+}, {
   alias: { s: 'stack-name', r: 'region' },
   defaults: { region: 'us-east-1' }
 });
