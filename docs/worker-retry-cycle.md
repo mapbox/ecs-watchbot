@@ -27,4 +27,4 @@ If the 10th attempt to process a message fails, then the message will have been 
 
 If a message fails processing 10 times, Watchbot will stop attempting it. The message will be dropped into a second SQS queue, called a dead letter queue. When there are **any** messages visible in this queue, Watchbot will trip the [DeadLetter alarm](./alarms.md#deadletter). This helps to give visibility into edge-case messages that may highlight a bug in worker code.
 
-Once a message is in the dead letter queue, it will stay there until it is manually removed, or after 14 days. Coming soon: command-line utility to help process messages in the dead letter queue.
+Once a message is in the dead letter queue, it will stay there until it is manually removed, or after 14 days. See [the CLI documentation](./command-line-utilities.md#dead-letter) for instructions for interacting with the dead letter queue.

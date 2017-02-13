@@ -1,5 +1,11 @@
 ### unreleased
 
+- fixes a bug in the changelog
+- consolidates CLI commands into a single `watchbot` command
+- adds a CLI command for interacting with the dead letter queue
+
+### 2.0.0
+
 - fixes a bug that wouldn't have allowed you to disable exponential backoff
 - returns `task.container[n].reason` as `reason` when task finishes, if available
 - adds a second SQS queue used for the watcher's internal tracking of CloudWatch task state-change events
