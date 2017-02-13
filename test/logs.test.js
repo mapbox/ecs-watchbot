@@ -106,6 +106,10 @@ test('[logs] fetch a ton of logs', function(assert) {
   logs += '\n' + crypto.randomBytes(25 * 1024).toString('hex') + '\n';
 
   sinon.stub(cwlogs, 'readable', function(options) {
+    var tminus6 = Date.now() - 6 * 60 * 60 * 1000;
+    assert.ok(Math.abs(tminus6 - options.start) < 10000, 'queries last 6 hours of logs');
+    delete options.start;
+    
     assert.deepEqual(options, {
       region: 'eu-west-1',
       group: 'some-log-group',
