@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:14.04
 
 # Setup
 RUN apt-get update -qq && apt-get install -y curl
