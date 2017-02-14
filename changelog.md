@@ -1,3 +1,7 @@
+### 2.1.1
+
+- Removes `-event-target` from the ID of the cloudwatch events filter to make it shorter. refs #119
+
 ### 2.1.0
 
 - fixes a bug in the changelog
