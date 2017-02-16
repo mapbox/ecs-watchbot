@@ -2,6 +2,10 @@
 
 - stale messages in the TaskEventQueue will be dropped after 20 minutes
 
+### 2.2.0
+
+- `CannotStartContainerError`, `CannotPullContainerError` and `DockerTimeoutError` errors do not cause notifications when AlarmOnEveryError is set
+
 ### 2.1.1
 
 - Removes `-event-target` from the ID of the cloudwatch events filter to make it shorter. refs #119
