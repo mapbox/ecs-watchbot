@@ -99,6 +99,38 @@ util.mock('[tasks] run - runTask request error', function(assert) {
   });
 });
 
+util.mock('[tasks] run - runTask CannotPullContainer error', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var queueUrl = 'https://fake.us-east-1/sqs/url-for-events';
+  var containerName = 'container';
+  var concurrency = 10;
+  var env = { cannotPullContainer: 'true' };
+  var context = this;
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, queueUrl);
+  tasks.run(env, function(err) {
+    assert.equal(err.toString(), 'CannotPullContainerError: API error (500): Get https://234858372212.dkr.ecr.us-east-1.amazonaws.com/v1/_ping: dial tcp: i/o timeout');
+    assert.equal(err.code, 'NotRun');
+    util.collectionsEqual(assert, context.ecs.runTask, [
+      {
+        startedBy: 'watchbot',
+        taskDefinition: taskDef,
+        overrides: {
+          containerOverrides: [
+            {
+              name: containerName,
+              environment: [{ name: 'cannotPullContainer', value: 'true' }]
+            }
+          ]
+        }
+      }
+    ], 'expected runTask requestss');
+    tasks.stop();
+    assert.end();
+  });
+});
+
 util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';

@@ -105,6 +105,12 @@ module.exports.mock = function(name, callback) {
       if (params.overrides.containerOverrides[0].environment[0].name === 'failure')
         return callback(null, { tasks: [], failures: [{ reason: 'unrecognized' }] });
 
+      if (params.overrides.containerOverrides[0].environment[0].name === 'cannotPullContainer') {
+        var err = new Error('API error (500): Get https://234858372212.dkr.ecr.us-east-1.amazonaws.com/v1/_ping: dial tcp: i/o timeout');
+        err.name = 'CannotPullContainerError';
+        return callback(err);
+      }
+
       if (params.overrides.containerOverrides[0].environment[0].name === 'resourceMemory') {
         if (context.ecs.resourceFail === 0) {
           context.ecs.resourceFail++;
