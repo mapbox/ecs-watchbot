@@ -1,6 +1,7 @@
 ### next
 
 - stale messages in the TaskEventQueue will be dropped after 20 minutes
+- watcher runs on ubuntu 16.04 LTS
 
 ### 2.2.0
 
