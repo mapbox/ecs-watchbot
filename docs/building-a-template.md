@@ -92,6 +92,7 @@ messageRetention | 1209600 | max seconds a message can remain in SQS
 errorThreshold | 10 | number of failed workers to trigger alarm
 alarmThreshold | 40 | number of jobs in SQS to trigger alarm
 alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
+alarmOnEachFailure | false | send a notification email each time a worker errors
 debugLogs | false | enable verbose watcher logging
 privileged | false | give the worker container elevated privileges on the host EC2
 
