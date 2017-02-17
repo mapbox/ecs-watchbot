@@ -1,5 +1,6 @@
-### next
+### 2.2.1
 
+- fixes error handling for `Cannot*ContainerError` no-op
 - stale messages in the TaskEventQueue will be dropped after 20 minutes
 - watcher runs on ubuntu 16.04 LTS
 
