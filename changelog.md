@@ -1,3 +1,7 @@
+### 2.2.2
+
+- always uses exponential backoff when returning work messages to SQS
+
 ### 2.2.1
 
 - fixes error handling for `Cannot*ContainerError` no-op
