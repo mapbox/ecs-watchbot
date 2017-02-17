@@ -99,38 +99,6 @@ util.mock('[tasks] run - runTask request error', function(assert) {
   });
 });
 
-util.mock('[tasks] run - runTask CannotPullContainer error', function(assert) {
-  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
-  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
-  var queueUrl = 'https://fake.us-east-1/sqs/url-for-events';
-  var containerName = 'container';
-  var concurrency = 10;
-  var env = { cannotPullContainer: 'true' };
-  var context = this;
-
-  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, queueUrl);
-  tasks.run(env, function(err) {
-    assert.equal(err.toString(), 'CannotPullContainerError: API error (500): Get https://234858372212.dkr.ecr.us-east-1.amazonaws.com/v1/_ping: dial tcp: i/o timeout');
-    assert.equal(err.code, 'NotRun');
-    util.collectionsEqual(assert, context.ecs.runTask, [
-      {
-        startedBy: 'watchbot',
-        taskDefinition: taskDef,
-        overrides: {
-          containerOverrides: [
-            {
-              name: containerName,
-              environment: [{ name: 'cannotPullContainer', value: 'true' }]
-            }
-          ]
-        }
-      }
-    ], 'expected runTask requestss');
-    tasks.stop();
-    assert.end();
-  });
-});
-
 util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
   var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
   var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
@@ -248,6 +216,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
     { exit: '2', MessageId: 'exit-2', ApproximateReceiveCount: 1 },
     { exit: '3', MessageId: 'exit-3', ApproximateReceiveCount: 1 },
     { exit: '4', MessageId: 'exit-4', ApproximateReceiveCount: 1 },
+    { exit: '137', MessageId: 'exit-137', ApproximateReceiveCount: 1 },
     { exit: 'pending', MessageId: 'pending', ApproximateReceiveCount: 1 }
   ];
 
@@ -258,6 +227,7 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
     'fc36323938489380babaf87c56568d7f',
     '107e1fc31e0ad9b0e0d2304411596e05',
     'e7336cab2c12be8aacef9718acb7cdb5',
+    '6d8e580ee61b2fcb24bb9317d212a404',
     'ea5ebf4778bd7a4b37ed63052ad252fe'
   ];
 
@@ -280,14 +250,21 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         lastStatus: 'STOPPED',
         stoppedReason: env.exit,
         overrides: { containerOverrides: [{ environment: Object.keys(env).map((key) => ({ name: key, value: env[key] })) }] },
-        containers: [{ exitCode: Number(env.exit), reason: env.exit === '1' ? 'some container reason' : undefined }],
+        containers: [
+          {
+            exitCode: Number(env.exit),
+            reason: env.exit === '1' ?
+              'some container reason' : env.exit === '137' ?
+              'CannotPullContainerError: API error (500): Get https://123456789012.dkr.ecr.us-east-1.amazonaws.com/v1/_ping: dial tcp: i/o timeout' : undefined
+          }
+        ],
         startedAt: 1484155849718,
         stoppedAt: 1484155857691
       }
     });
 
     return message;
-  }).slice(0, 5); // drop one off the list because it hasn't finished yet
+  }).slice(0, 6); // drop one off the list because it hasn't finished yet
 
   // Add an additional message that should get ignored & returned to SQS
   context.sqs.eventMessages.push({
@@ -343,7 +320,8 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '762676041b682bcea049706185d13ac6' }, env: { ApproximateReceiveCount: 1, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: 'some container reason', duration: 7973 },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'fc36323938489380babaf87c56568d7f' }, env: { ApproximateReceiveCount: 1, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2', duration: 7973 },
         { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '107e1fc31e0ad9b0e0d2304411596e05' }, env: { ApproximateReceiveCount: 1, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3', duration: 7973 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'e7336cab2c12be8aacef9718acb7cdb5' }, env: { ApproximateReceiveCount: 1, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973 }
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'e7336cab2c12be8aacef9718acb7cdb5' }, env: { ApproximateReceiveCount: 1, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '6d8e580ee61b2fcb24bb9317d212a404' }, env: { ApproximateReceiveCount: 1, exit: '137', MessageId: 'exit-137' }, outcome: 'immediate', reason: 'CannotPullContainerError: API error (500): Get https://123456789012.dkr.ecr.us-east-1.amazonaws.com/v1/_ping: dial tcp: i/o timeout', duration: 7973 }
       ];
       expectedTaskStatus.free = 9;
 
@@ -357,7 +335,8 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
         { ReceiptHandle: '1-event' },
         { ReceiptHandle: '2-event' },
         { ReceiptHandle: '3-event' },
-        { ReceiptHandle: '4-event' }
+        { ReceiptHandle: '4-event' },
+        { ReceiptHandle: '5-event' }
       ], 'removes SQS messages for completed task events');
 
       // Check that another watcher's message was returned to the queue
