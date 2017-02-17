@@ -118,7 +118,7 @@ util.mock('[main] task running failure (out of memory)', function(assert) {
     assert.equal(context.ecs.runTask.length, 1, '1 ecs.runTask request');
     assert.deepEqual(context.sns.publish, [], 'does not send failure notification');
     util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
-      { ReceiptHandle: '1', VisibilityTimeout: 0 }
+      { ReceiptHandle: '1', VisibilityTimeout: 2 }
     ], 'expected sqs.changeMessageVisibility requests');
     assert.end();
   });
@@ -137,7 +137,7 @@ util.mock('[main] task running failure (unrecognized reason)', function(assert) 
     assert.equal(context.ecs.runTask.length, 1, '1 ecs.runTask request');
     assert.deepEqual(context.sns.publish, [], 'does not send failure notification');
     util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
-      { ReceiptHandle: '1', VisibilityTimeout: 0 }
+      { ReceiptHandle: '1', VisibilityTimeout: 2 }
     ], 'expected sqs.changeMessageVisibility requests');
     assert.end();
   });
@@ -272,7 +272,7 @@ util.mock('[main] manage messages for completed tasks', function(assert) {
     ], ' sqs.deleteMessage for all event messages, and for expected job messages');
     util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
       { ReceiptHandle: '2', VisibilityTimeout: 8 },
-      { ReceiptHandle: '4', VisibilityTimeout: 0 }
+      { ReceiptHandle: '4', VisibilityTimeout: 2 }
     ], 'expected sqs.changeMessageVisibility requests');
     util.collectionsEqual(assert, context.sns.publish, [
       {
