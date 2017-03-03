@@ -1,3 +1,7 @@
+### 2.2.3
+
+- set ulimit to 10240 in the container definition 
+
 ### 2.2.2
 
 - always uses exponential backoff when returning work messages to SQS
