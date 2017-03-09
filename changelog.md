@@ -1,6 +1,10 @@
+### 2.2.4
+
+- find watchbot-progress's path using `require.resolve` to work with Yarn's flat dependency tree [#131](https://github.com/mapbox/ecs-watchbot/issues/131)
+
 ### 2.2.3
 
-- set ulimit to 10240 in the container definition 
+- set ulimit to 10240 in the container definition
 
 ### 2.2.2
 
