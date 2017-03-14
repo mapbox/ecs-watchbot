@@ -42,6 +42,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.WatchbotFailedWorkerPlacementMetric, 'failed worker metric');
   assert.ok(watch.Resources.WatchbotWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.WatchbotWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.WatchbotMessageReceivesMetric, 'message receives metric');
   assert.ok(watch.Resources.WatchbotWatcherConcurrencyMetric, 'watcher concurrency metric');
   assert.ok(watch.Resources.WatchbotWorkerErrorsMetric, 'worker errors metric');
@@ -135,6 +136,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
   assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.testWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
   assert.ok(watch.Resources.testWatcherConcurrencyMetric, 'watcher concurrency metric');
   assert.ok(watch.Resources.testWorkerErrorsMetric, 'worker errors metric');
@@ -233,6 +235,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
   assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.testWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
   assert.ok(watch.Resources.testWatcherConcurrencyMetric, 'watcher concurrency metric');
   assert.ok(watch.Resources.testWorkerErrorsMetric, 'worker errors metric');
@@ -339,6 +342,7 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
   assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
+  assert.ok(watch.Resources.testWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
   assert.ok(watch.Resources.testWatcherConcurrencyMetric, 'watcher concurrency metric');
   assert.ok(watch.Resources.testWorkerErrorsMetric, 'worker errors metric');
