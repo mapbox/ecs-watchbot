@@ -1,3 +1,7 @@
+### 2.3.0
+
+- Add metric for the amount of time the task spent in `PENDING` state.
+
 ### 2.2.4
 
 - find watchbot-progress's path using `require.resolve` to work with Yarn's flat dependency tree [#131](https://github.com/mapbox/ecs-watchbot/issues/131)
