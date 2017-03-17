@@ -246,6 +246,7 @@ util.mock('[main] manage messages for completed tasks', function(assert) {
             ]
           },
           containers: [{ exitCode: Number(message.MessageId.split('-')[1]) }],
+          createdAt: 1484155844718,
           startedAt: 1484155849718,
           stoppedAt: 1484155857691
         }
@@ -326,6 +327,7 @@ util.mock('[main] message completion error', function(assert) {
             ]
           },
           containers: [{ exitCode: Number(message.MessageId.split('-')[1]) }],
+          createdAt: 1484155844718,
           startedAt: 1484155849718,
           stoppedAt: 1484155857691
         }
