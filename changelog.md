@@ -1,3 +1,7 @@
+### 2.3.1
+
+- Add quotes around `$@` operator in the watchbot-progress.sh script to preserve spaces in metadata arguments [#142](https://github.com/mapbox/ecs-watchbot/pull/142)
+
 ### 2.3.0
 
 - Add metric for the amount of time the task spent in `PENDING` state.
