@@ -19,7 +19,7 @@ This means that after a failure on the 9th attempt, the message will be invisibl
 
 Each time a message fails during processing, it is recorded in [the WorkerErrors or FailedWorkerPlacement metrics](./logging-and-metrics.md#custom-metrics). The [WorkerErrors alarm](./alarms.md#workererrors) will trigger whenever there are more than a configured number of failed attempts per minute. The [FailedWorkerPlacement alarm](./alarms.md#failedworkerplacement) will trigger if there are more than 5 failed placements per minute.
 
-If the 10th attempt to process a message fails, then the message will have been retrying for a minimum of 17 minutes, and at this point it will fall into a dead letter queue.
+If the 10th attempt to process a message fails, then the message will have been retrying for a minimum of 17 minutes, and at this point it will fall into a dead letter queue. The FailedWorkerPlacement metric is also collected under the name of the cluster, so you can set scaling policies on your cluster to react to it.
 
 **Important: number of attempts != number of times a worker has tried to process a message**. If a cluster is full, Watchbot will attempt to place workers, fail, replace the messages in the queue, and try again. This counts as an attempt. If cluster capacity is a problem, the cluster basically has 17 minutes to accommodate the increased demand before message will start falling into the dead letter queue. During this time, Watchbot will also trip the [FailedWorkerPlacement alarm](./alarms.md#failedworkerplacement), in case manual intervention is required.
 
