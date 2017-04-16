@@ -29,10 +29,10 @@
     "watchbot": "./bin/cli.js"
   },
   "dependencies": {
+    "@mapbox/cloudfriend": "^1.8.1",
     "@mapbox/watchbot-progress": "^1.1.1",
     "aws-sdk": "^2.4.11",
     "binary-split": "^1.0.2",
-    "cloudfriend": "^1.6.0",
     "cwlogs": "^1.0.2",
     "d3-queue": "^2.0.3",
     "dyno": "^1.2.0",
