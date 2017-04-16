@@ -1,3 +1,7 @@
+### 2.4.0
+
+- Broadcast FailedWorkerPlacement metric under the name of the cluster, in addition to stack name.
+
 ### 2.3.1
 
 - Add quotes around `$@` operator in the watchbot-progress.sh script to preserve spaces in metadata arguments [#142](https://github.com/mapbox/ecs-watchbot/pull/142)
