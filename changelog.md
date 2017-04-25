@@ -1,3 +1,7 @@
+### 2.4.0
+
+- Upgrade node.js runtime to 4.3 for webhook function
+
 ### 2.3.1
 
 - Add quotes around `$@` operator in the watchbot-progress.sh script to preserve spaces in metadata arguments [#142](https://github.com/mapbox/ecs-watchbot/pull/142)
