@@ -49,8 +49,10 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotWorkerErrorsAlarm, 'worker errors alarm');
   assert.equal(watch.Resources.WatchbotWorkerErrorsAlarm.Properties.Threshold, 10, 'worker errors alarm threshold');
   assert.ok(watch.Resources.WatchbotWatcher.Properties.ContainerDefinitions[0].Environment.slice(-3, -2), 'notify after retry');
+  assert.equal(watch.Resources.WatchbotWatcher.Properties.Family, 'my-service', 'watcher family = service name');
   assert.notOk(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Privileged, 'privileged is false');
   assert.equal(watch.Resources.WatchbotWorker.Properties.ContainerDefinitions[0].Memory, 64, 'sets default hard memory limit');
+  assert.equal(watch.Resources.WatchbotWorker.Properties.Family, 'my-service', 'worker family = service name');
   assert.ok(watch.Resources.WatchbotWorkerRole, 'worker role');
   assert.equal(watch.Resources.WatchbotWorkerRole.Properties.Policies.length, 1, 'default worker permissions');
   assert.ok(watch.Resources.WatchbotWatcherRole, 'watcher role');
