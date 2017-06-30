@@ -1,3 +1,7 @@
+### 2.5.0
+
+- Task definitions created by Watchbot's `.template(options)` function will now use `options.service` as the task definition's family.
+
 ### 2.4.0
 
 - Upgrade node.js runtime to 4.3 for webhook function
