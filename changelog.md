@@ -1,3 +1,7 @@
+### 2.5.1
+
+- Fixes a regression in 2.5.0, allowing watcher containers to launch workers with new family names.
+
 ### 2.5.0
 
 - Task definitions created by Watchbot's `.template(options)` function will now use `options.service` as the task definition's family.
