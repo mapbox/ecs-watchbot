@@ -1,3 +1,7 @@
+### 2.5.2
+
+- More permissive engines.node
+
 ### 2.5.1
 
 - Fixes a regression in 2.5.0, allowing watcher containers to launch workers with new family names.
