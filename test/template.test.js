@@ -1,6 +1,6 @@
 var test = require('tape');
 var watchbot = require('..');
-var cf = require('cloudfriend');
+var cf = require('@mapbox/cloudfriend');
 var fs = require('fs');
 var path = require('path');
 var os = require('os');

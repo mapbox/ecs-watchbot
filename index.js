@@ -1,4 +1,4 @@
-var cf = require('cloudfriend');
+var cf = require('@mapbox/cloudfriend');
 
 /**
  * Watchbot's JavaScript API
