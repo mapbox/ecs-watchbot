@@ -1,3 +1,8 @@
+### 3.0.1
+
+- Adjusts log group names to allow stacks to include multiple sets of watchbot resources
+  - LogGroup names are now `${stack-name}-${region}-${prefix}`, where `prefix` defaults to `watchbot` if not otherwise specified.
+
 ### 3.0.0
 
 - **BREAKING** changes to the format with which CloudWatch LogGroups and streams are named. These should be considered breaking changes because upgrading a stack from v2.x to v3.x in-place will result in CloudFormation conflicts. Circumvent the conflicts by manually deleting the existing log group before running the CloudFormation update.
