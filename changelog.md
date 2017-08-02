@@ -1,3 +1,9 @@
+### 3.0.0
+
+- **BREAKING** changes to the format with which CloudWatch LogGroups and streams are named. These should be considered breaking changes because upgrading a stack from v2.x to v3.x in-place will result in CloudFormation conflicts. Circumvent the conflicts by manually deleting the existing log group before running the CloudFormation update.
+  - LogGroup names are now `${stack-name}-${region}`
+  - Streams are now prefixed with `${service-version}` (a GitSha in most cases)
+
 ### 2.5.2
 
 - More permissive engines.node
