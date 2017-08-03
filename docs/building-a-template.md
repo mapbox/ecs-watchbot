@@ -70,6 +70,7 @@ Name | Default | Description
 **notificationTopic** | | the ARN of an SNS topic to receive failure notifications. Should not be provided if notificationEmail exists.
 permissions | [] | permissions to any AWS resources that the worker will need to perform a task. Be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
 env | {} | environment variables to set on worker containers
+family | service name | the name of the the task definition family that watchbot will create revisions of
 command | | overrides a Dockerfile's `CMD`
 watchbotVersion | installed version | the version of watchbot to use
 prefix | `Watchbot` | a prefix for logical resource names

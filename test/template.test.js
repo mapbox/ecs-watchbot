@@ -210,7 +210,8 @@ test('[template] include all resources, no references', function(assert) {
     alarmThreshold: 10,
     alarmPeriods: 6,
     debugLogs: true,
-    alarmOnEachFailure: true
+    alarmOnEachFailure: true,
+    family: 'hibbity'
   });
 
   assert.ok(watch.Resources.testUser, 'user');
@@ -249,6 +250,8 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testWatcherRole, 'watcher role');
   assert.ok(watch.Resources.testWorker, 'worker');
   assert.ok(watch.Resources.testWatcher, 'watcher');
+  assert.equal(watch.Resources.testWorker.Properties.Family, 'hibbity', 'worker family');
+  assert.equal(watch.Resources.testWatcher.Properties.Family, 'hibbity', 'watcher family');
   assert.deepEqual(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Command, ['bash'], 'sets worker command');
   assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Cpu, 4096, 'reserves cpu');
   assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Memory, 512, 'sets hard memory limit');
