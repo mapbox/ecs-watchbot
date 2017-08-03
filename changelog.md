@@ -1,3 +1,7 @@
+### 3.1.0
+
+- Adds a configuration option to specify a `Family` property of watchbot's task definitions
+
 ### 3.0.2
 
 - Adjust CloudWatch Event Rule names to allow stacks to include multiple sets of watchbot resources
