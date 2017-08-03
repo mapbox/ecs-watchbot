@@ -513,9 +513,20 @@ test('[template] multi-watchbot merge', function(assert) {
     serviceVersion: '7a55878c2adbfcfed0ec2c2d5b29fe6c87c19256'
   });
 
+  var result;
+
   assert.doesNotThrow(function() {
-    watchbot.merge(one, two);
+    result = watchbot.merge(one, two);
   }, 'can build multiple watchbots in a single template');
+
+  var rules = Object.keys(result.Resources).filter((name) => {
+    return result.Resources[name].Type === 'AWS::Events::Rule';
+  }).map((name) => result.Resources[name]);
+
+  assert.ok(
+    JSON.stringify(rules[0].Properties.Name) !== JSON.stringify(rules[1].Properties.Name),
+    'cloudwatch event rules have different names'
+  );
 
   assert.end();
 });
