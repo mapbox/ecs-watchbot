@@ -1,3 +1,7 @@
+### 3.0.2
+
+- Adjust CloudWatch Event Rule names to allow stacks to include multiple sets of watchbot resources
+
 ### 3.0.1
 
 - Adjusts log group names to allow stacks to include multiple sets of watchbot resources
