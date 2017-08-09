@@ -105,7 +105,8 @@ test('[template] webhooks but no key, no references', function(assert) {
     mounts: '/var/tmp:/var/tmp,/mnt/data:/mnt/data,/mnt/tmp',
     reservation: {
       memory: 512,
-      cpu: 4096
+      cpu: 4096,
+      disk: 32
     },
     messageTimeout: 300,
     messageRetention: 3000,
@@ -202,7 +203,8 @@ test('[template] include all resources, no references', function(assert) {
     reservation: {
       memory: 512,
       softMemory: 128,
-      cpu: 4096
+      cpu: 4096,
+      disk: 32
     },
     messageTimeout: 300,
     messageRetention: 3000,
@@ -256,6 +258,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Cpu, 4096, 'reserves cpu');
   assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].Memory, 512, 'sets hard memory limit');
   assert.equal(watch.Resources.testWorker.Properties.ContainerDefinitions[0].MemoryReservation, 128, 'sets soft memory limit');
+  assert.deepEqual(watch.Resources.testWorker.Properties.PlacementConstraints[0].Expression, cf.join(['attribute:availableDiskSpace >= ', 32]), 'reserves disk space');
   assert.ok(watch.Resources.testService, 'service');
   assert.ok(watch.Resources.testProgressTable, 'progress table');
   assert.equal(watch.Resources.testProgressTable.Properties.ProvisionedThroughput.ReadCapacityUnits, 30);
@@ -311,7 +314,8 @@ test('[template] include all resources, all references', function(assert) {
     logAggregationFunction: cf.ref('LogAggregationFunction'),
     reservation: {
       memory: cf.ref('MemoryReservation'),
-      cpu: cf.ref('CpuReservation')
+      cpu: cf.ref('CpuReservation'),
+      disk: cf.ref('DiskReservation')
     },
     messageTimeout: cf.ref('MessageTimeout'),
     messageRetention: cf.ref('MessageRetention'),
@@ -407,7 +411,8 @@ test('[template] resources are valid', function(assert) {
     logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
       memory: 512,
-      cpu: 4096
+      cpu: 4096,
+      disk: 32
     },
     messageTimeout: 300,
     messageRetention: 3000,
@@ -450,7 +455,8 @@ test('[template] notificationTopic vs notificationEmail', function(assert) {
       logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
       reservation: {
         memory: 512,
-        cpu: 4096
+        cpu: 4096,
+        disk: 32
       },
       messageTimeout: 300,
       messageRetention: 3000,
@@ -479,7 +485,8 @@ test('[template] notificationTopic vs notificationEmail', function(assert) {
     logAggregationFunction: 'arn:aws:lambda:us-east-1:123456789000:function:log-fake-test',
     reservation: {
       memory: 512,
-      cpu: 4096
+      cpu: 4096,
+      disk: 32
     },
     messageTimeout: 300,
     messageRetention: 3000,
