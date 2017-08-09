@@ -88,6 +88,7 @@ reservation | {} | specify desired memory/cpu reservations for worker containers
 reservation.cpu | | specify a soft CPU limit
 reservation.memory | 64 | specify a hard memory limit
 reservation.softMemory | | specify a soft memory limit
+reservation.disk | | specify a disk reservation in GB for your mounted volume
 messageTimeout | 600 | max seconds it takes to process a job
 messageRetention | 1209600 | max seconds a message can remain in SQS
 errorThreshold | 10 | number of failed workers to trigger alarm
