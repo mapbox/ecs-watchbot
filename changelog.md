@@ -1,3 +1,7 @@
+### 3.2.0
+
+- Adds a configuration option to specify `placementConstraints` of watchbot's task definitions
+
 ### 3.1.0
 
 - Adds a configuration option to specify a `Family` property of watchbot's task definitions
