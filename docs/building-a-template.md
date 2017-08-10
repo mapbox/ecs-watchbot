@@ -68,34 +68,35 @@ Name | Default | Description
 **serviceVersion** | | the version of the worker service to use
 **notificationEmail** | | the email address to receive failure notifications. Should not be provided if notificationTopic exists.
 **notificationTopic** | | the ARN of an SNS topic to receive failure notifications. Should not be provided if notificationEmail exists.
-permissions | [] | permissions to any AWS resources that the worker will need to perform a task. Be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
+alarmOnEachFailure | false | send a notification email each time a worker errors
+alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
+alarmThreshold | 40 | number of jobs in SQS to trigger alarm
+command | | overrides a Dockerfile's `CMD`
+debugLogs | false | enable verbose watcher logging
 env | {} | environment variables to set on worker containers
 family | service name | the name of the the task definition family that watchbot will create revisions of
-command | | overrides a Dockerfile's `CMD`
-watchbotVersion | installed version | the version of watchbot to use
+errorThreshold | 10 | number of failed workers to trigger alarm
+logAggregationFunction | | the ARN of the log collection Lambda function
+messageRetention | 1209600 | max seconds a message can remain in SQS
+messageTimeout | 600 | max seconds it takes to process a job
+mounts | | defines persistent container mount points from host EC2s or ephemeral mount points on the container
+permissions | [] | permissions to any AWS resources that the worker will need to perform a task. Be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
+placementConstraints | false | Add any [ECS task placement constraints](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html)
 prefix | `Watchbot` | a prefix for logical resource names
-user | false | create an IAM user with permission to publish
-webhook | false | create an HTTPS endpoint to accept jobs
-webbhookKey | false | require an access token on the webhook endpoint
+privileged | false | give the worker container elevated privileges on the host EC2
 reduce | false | enable reduce-mode (see below)
 readCapacityUnits | 30 | approximate reads per second to progress table in reduce-mode
-writeCapacityUnits | 30 | approximate writes per second to progress table in reduce-mode
-watchers | 1 | number of watcher containers
-workers | 1 | number of concurrent worker containers per watcher
-logAggregationFunction | | the ARN of the log collection Lambda function
-mounts | | defines persistent container mount points from host EC2s or ephemeral mount points on the container
 reservation | {} | specify desired memory/cpu reservations for worker containers
 reservation.cpu | | specify a soft CPU limit
 reservation.memory | 64 | specify a hard memory limit
 reservation.softMemory | | specify a soft memory limit
-messageTimeout | 600 | max seconds it takes to process a job
-messageRetention | 1209600 | max seconds a message can remain in SQS
-errorThreshold | 10 | number of failed workers to trigger alarm
-alarmThreshold | 40 | number of jobs in SQS to trigger alarm
-alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
-alarmOnEachFailure | false | send a notification email each time a worker errors
-debugLogs | false | enable verbose watcher logging
-privileged | false | give the worker container elevated privileges on the host EC2
+user | false | create an IAM user with permission to publish
+watchbotVersion | installed version | the version of watchbot to use
+watchers | 1 | number of watcher containers
+webhook | false | create an HTTPS endpoint to accept jobs
+webbhookKey | false | require an access token on the webhook endpoint
+workers | 1 | number of concurrent worker containers per watcher
+writeCapacityUnits | 30 | approximate writes per second to progress table in reduce-mode
 
 ### watchbot.template references
 
