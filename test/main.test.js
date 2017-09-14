@@ -70,7 +70,13 @@ util.mock('[main] run a task', function(assert) {
               ]
             }
           ]
-        }
+        },
+        placementStrategy: [
+          {
+            field: 'instanceId',
+            type: 'spread'
+          }
+        ]
       }
     ], 'expected ecs.runTask request');
     assert.end();

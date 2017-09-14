@@ -31,7 +31,13 @@ util.mock('[tasks] run - below concurrency', function(assert) {
               ]
             }
           ]
-        }
+        },
+        placementStrategy: [
+          {
+            field: 'instanceId',
+            type: 'spread'
+          }
+        ]
       }
     ], 'expected runTask request');
 
@@ -124,7 +130,13 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
               environment: [{ name: 'resourceMemory', value: 'true' }]
             }
           ]
-        }
+        },
+        placementStrategy: [
+          {
+            field: 'instanceId',
+            type: 'spread'
+          }
+        ]
       }
     ], 'expected runTask requestss');
     tasks.stop();
@@ -158,7 +170,13 @@ util.mock('[tasks] run - runTask failure (out of cpu)', function(assert) {
               environment: [{ name: 'resourceCpu', value: 'true' }]
             }
           ]
-        }
+        },
+        placementStrategy: [
+          {
+            field: 'instanceId',
+            type: 'spread'
+          }
+        ]
       }
     ], 'expected runTask requests');
     tasks.stop();
