@@ -284,11 +284,11 @@ util.mock('[main] manage messages for completed tasks', function(assert) {
     util.collectionsEqual(assert, context.sns.publish, [
       {
         Subject: config.StackName + ' failed processing message finish-2',
-        Message: 'At ${date}, processing message finish-2 failed on ' + config.StackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: 2\n\nMessage information:\nMessageId: finish-2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 3\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: 3120b788edc53b003f3ebb8afc557f07\n'
+        Message: 'At ${date}, processing message finish-2 failed on ' + config.StackName + '\n\nTask outcome: return & notify\n\nTask stopped reason: 2\n\nMessage information:\nMessageId: finish-2\nSubject: subject2\nMessage: message2\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 3\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: 7a3987a689f58bf858ff550bc516f2a3\n'
       },
       {
         Subject: config.StackName + ' failed processing message finish-3',
-        Message: 'At ${date}, processing message finish-3 failed on ' + config.StackName + '\n\nTask outcome: delete & notify\n\nTask stopped reason: 3\n\nMessage information:\nMessageId: finish-3\nSubject: subject3\nMessage: message3\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: 496a1bbc7db7ef69c5b024bed0fa66e7\n'
+        Message: 'At ${date}, processing message finish-3 failed on ' + config.StackName + '\n\nTask outcome: delete & notify\n\nTask stopped reason: 3\n\nMessage information:\nMessageId: finish-3\nSubject: subject3\nMessage: message3\nSentTimestamp: 10\nApproximateFirstReceiveTimestamp: 20\nApproximateReceiveCount: 1\n\nRuntime resources:\nCluster ARN: cluster-arn\nInstance ARN: instance-arn\nTask ARN: dc32660bf7c087ff4f16e0da1c1a1ded\n'
       }
     ], 'expected sns.publish requests');
 
