@@ -1,3 +1,7 @@
+### 3.2.1
+
+- Adjusts watcher permissions on RunTask so that it can only launch its own Worker tasks.
+
 ### 3.2.0
 
 - Adds a configuration option to specify `placementConstraints` of watchbot's task definitions
