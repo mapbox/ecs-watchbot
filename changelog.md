@@ -1,3 +1,7 @@
+### 3.3.0
+
+- Adds `.ref.notificationTopic` to the output from `watchbot.template()`
+
 ### 3.2.1
 
 - Adjusts watcher permissions on RunTask so that it can only launch its own Worker tasks.
