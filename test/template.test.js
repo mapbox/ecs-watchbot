@@ -77,6 +77,7 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.deepEqual(watch.ref.queueUrl, cf.ref('WatchbotQueue'), 'queueUrl ref');
   assert.deepEqual(watch.ref.queueArn, cf.getAtt('WatchbotQueue', 'Arn'), 'queueArn ref');
   assert.deepEqual(watch.ref.queueName, cf.getAtt('WatchbotQueue', 'QueueName'), 'queueName ref');
+  assert.deepEqual(watch.ref.notificationTopic, cf.ref('WatchbotNotificationTopic'), 'notificationTopic ref');
   assert.notOk(watch.ref.accessKeyId, 'accessKeyId ref');
   assert.notOk(watch.ref.secretAccessKey, 'secretAccessKey ref');
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
@@ -165,6 +166,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');
   assert.deepEqual(watch.ref.queueArn, cf.getAtt('testQueue', 'Arn'), 'queueArn ref');
   assert.deepEqual(watch.ref.queueName, cf.getAtt('testQueue', 'QueueName'), 'queueName ref');
+  assert.deepEqual(watch.ref.notificationTopic, cf.ref('testNotificationTopic'), 'notificationTopic ref');
   assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.notOk(watch.ref.webhookKey, 'webhookKey ref');
@@ -274,6 +276,7 @@ test('[template] include all resources, no references', function(assert) {
   assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');
   assert.deepEqual(watch.ref.queueArn, cf.getAtt('testQueue', 'Arn'), 'queueArn ref');
   assert.deepEqual(watch.ref.queueName, cf.getAtt('testQueue', 'QueueName'), 'queueName ref');
+  assert.deepEqual(watch.ref.notificationTopic, cf.ref('testNotificationTopic'), 'notificationTopic ref');
   assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
@@ -375,6 +378,7 @@ test('[template] include all resources, all references', function(assert) {
   assert.deepEqual(watch.ref.queueUrl, cf.ref('testQueue'), 'queueUrl ref');
   assert.deepEqual(watch.ref.queueArn, cf.getAtt('testQueue', 'Arn'), 'queueArn ref');
   assert.deepEqual(watch.ref.queueName, cf.getAtt('testQueue', 'QueueName'), 'queueName ref');
+  assert.deepEqual(watch.ref.notificationTopic, cf.ref('testNotificationTopic'), 'notificationTopic ref');
   assert.deepEqual(watch.ref.accessKeyId, cf.ref('testUserKey'), 'accessKeyId ref');
   assert.deepEqual(watch.ref.secretAccessKey, cf.getAtt('testUserKey', 'SecretAccessKey'), 'secretAccessKey ref');
   assert.deepEqual(watch.ref.webhookKey, cf.ref('testWebhookKey'), 'webhookKey ref');
