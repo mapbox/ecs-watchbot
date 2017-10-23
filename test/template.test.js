@@ -40,8 +40,9 @@ test('[template] bare-bones, all defaults, no references', function(assert) {
   assert.ok(watch.Resources.WatchbotTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.WatchbotTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.WatchbotTaskEventQueuePolicy, 'task event queue policy');
-  assert.ok(watch.Resources.WatchbotFailedWorkerPlacementMetric, 'failed worker metric');
-  assert.ok(watch.Resources.WatchbotFailedWorkerPlacementAlarm, 'failed worker alarm');
+  assert.ok(watch.Resources.WatchbotFailedWorkerPlacementMetric, 'failed placement metric');
+  assert.ok(watch.Resources.WatchbotFailedWorkerPlacementAlarm, 'failed placement alarm');
+  assert.equal(watch.Resources.WatchbotFailedWorkerPlacementAlarm.Properties.EvaluationPeriods, 1, 'failed placement alarm period');
   assert.ok(watch.Resources.WatchbotWorkerDurationMetric, 'worker duration metric');
   assert.ok(watch.Resources.WatchbotWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.WatchbotMessageReceivesMetric, 'message receives metric');
@@ -113,7 +114,7 @@ test('[template] webhooks but no key, no references', function(assert) {
     messageRetention: 3000,
     alarmThreshold: 10,
     alarmPeriods: 6,
-    failedWorkerPlacementAlarmPeriods: 5,
+    failedPlacementAlarmPeriods: 5,
     privileged: true
   });
 
@@ -139,8 +140,8 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
-  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
-  assert.ok(watch.Resources.testFailedWorkerPlacementAlarm, 'failed worker alarm');
+  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed placement metric');
+  assert.ok(watch.Resources.testFailedWorkerPlacementAlarm, 'failed placement alarm');
   assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
   assert.ok(watch.Resources.testWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
@@ -214,7 +215,7 @@ test('[template] include all resources, no references', function(assert) {
     errorThreshold: 11,
     alarmThreshold: 10,
     alarmPeriods: 6,
-    failedWorkerPlacementAlarmPeriods: 5,
+    failedPlacementAlarmPeriods: 5,
     debugLogs: true,
     alarmOnEachFailure: true,
     family: 'hibbity'
@@ -242,8 +243,8 @@ test('[template] include all resources, no references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
-  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
-  assert.ok(watch.Resources.testFailedWorkerPlacementAlarm, 'failed worker alarm');
+  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed placement metric');
+  assert.ok(watch.Resources.testFailedWorkerPlacementAlarm, 'failed placement alarm');
   assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
   assert.ok(watch.Resources.testWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
@@ -326,7 +327,7 @@ test('[template] include all resources, all references', function(assert) {
     alarmThreshold: cf.ref('AlarmThreshold'),
     errorThreshold: cf.ref('Errors'),
     alarmPeriods: cf.ref('AlarmPeriods'),
-    failedWorkerPlacementAlarmPeriods: cf.ref('FailedWorkerPlacementAlarmPeriods'),
+    failedPlacementAlarmPeriods: cf.ref('failedPlacementAlarmPeriods'),
     alarmOnEachFailure: cf.ref('AlarmOnFailures')
   });
 
@@ -354,8 +355,8 @@ test('[template] include all resources, all references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueue, 'task event queue');
   assert.ok(watch.Resources.testTaskEventRule, 'task event rule');
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
-  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed worker metric');
-  assert.ok(watch.Resources.testFailedWorkerPlacementAlarm, 'failed worker alarm');
+  assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed placement metric');
+  assert.ok(watch.Resources.testFailedWorkerPlacementAlarm, 'failed placement alarm');
   assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
   assert.ok(watch.Resources.testWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
@@ -424,7 +425,7 @@ test('[template] resources are valid', function(assert) {
     messageRetention: 3000,
     alarmThreshold: 10,
     alarmPeriods: 6,
-    failedWorkerPlacementAlarmPeriods: 5
+    failedPlacementAlarmPeriods: 5
   });
 
   var tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex') + '.json');
@@ -468,7 +469,7 @@ test('[template] notificationTopic vs notificationEmail', function(assert) {
       messageRetention: 3000,
       alarmThreshold: 10,
       alarmPeriods: 6,
-      failedWorkerPlacementAlarmPeriods: 5
+      failedPlacementAlarmPeriods: 5
     });
   }, /Cannot provide both notificationTopic and notificationEmail./);
 
@@ -498,7 +499,7 @@ test('[template] notificationTopic vs notificationEmail', function(assert) {
     messageRetention: 3000,
     alarmThreshold: 10,
     alarmPeriods: 6,
-    failedWorkerPlacementAlarmPeriods: 5
+    failedPlacementAlarmPeriods: 5
   });
 
   var tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex') + '.json');
