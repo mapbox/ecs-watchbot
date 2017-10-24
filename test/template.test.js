@@ -142,6 +142,7 @@ test('[template] webhooks but no key, no references', function(assert) {
   assert.ok(watch.Resources.testTaskEventQueuePolicy, 'task event queue policy');
   assert.ok(watch.Resources.testFailedWorkerPlacementMetric, 'failed placement metric');
   assert.ok(watch.Resources.testFailedWorkerPlacementAlarm, 'failed placement alarm');
+  assert.equal(watch.Resources.testFailedWorkerPlacementAlarm.Properties.EvaluationPeriods, 5, 'failed placement alarm period');
   assert.ok(watch.Resources.testWorkerDurationMetric, 'worker duration metric');
   assert.ok(watch.Resources.testWorkerPendingMetric, 'worker pending metric');
   assert.ok(watch.Resources.testMessageReceivesMetric, 'message receives metric');
