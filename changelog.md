@@ -1,3 +1,7 @@
+### 3.4.0
+
+- Makes `EvaluationPeriods` for `FailedWorkerPlacementAlarm` customizable
+
 ### 3.3.0
 
 - Adds `.ref.notificationTopic` to the output from `watchbot.template()`

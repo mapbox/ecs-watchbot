@@ -76,6 +76,7 @@ debugLogs | false | enable verbose watcher logging
 env | {} | environment variables to set on worker containers
 family | service name | the name of the the task definition family that watchbot will create revisions of
 errorThreshold | 10 | number of failed workers to trigger alarm
+failedPlacementAlarmPeriods | 1 | number of 1-min intervals for which failed placements exceeds the threshold of 5 in order to alarm
 logAggregationFunction | | the ARN of the log collection Lambda function
 messageRetention | 1209600 | max seconds a message can remain in SQS
 messageTimeout | 600 | max seconds it takes to process a job
