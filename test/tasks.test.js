@@ -31,7 +31,13 @@ util.mock('[tasks] run - below concurrency', function(assert) {
               ]
             }
           ]
-        }
+        },
+        placementStrategy: [
+          {
+            field: 'instanceId',
+            type: 'spread'
+          }
+        ]
       }
     ], 'expected runTask request');
 
@@ -124,7 +130,13 @@ util.mock('[tasks] run - runTask failure (out of memory)', function(assert) {
               environment: [{ name: 'resourceMemory', value: 'true' }]
             }
           ]
-        }
+        },
+        placementStrategy: [
+          {
+            field: 'instanceId',
+            type: 'spread'
+          }
+        ]
       }
     ], 'expected runTask requestss');
     tasks.stop();
@@ -158,7 +170,13 @@ util.mock('[tasks] run - runTask failure (out of cpu)', function(assert) {
               environment: [{ name: 'resourceCpu', value: 'true' }]
             }
           ]
-        }
+        },
+        placementStrategy: [
+          {
+            field: 'instanceId',
+            type: 'spread'
+          }
+        ]
       }
     ], 'expected runTask requests');
     tasks.stop();
@@ -222,13 +240,13 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
 
   // expected task ARNs are md5sums of runtask request properties, see util.mock
   var expectedArns = [
-    'bb8e8e7405617c973ceac2a9076ae19d',
-    '762676041b682bcea049706185d13ac6',
-    'fc36323938489380babaf87c56568d7f',
-    '107e1fc31e0ad9b0e0d2304411596e05',
-    'e7336cab2c12be8aacef9718acb7cdb5',
-    '6d8e580ee61b2fcb24bb9317d212a404',
-    'ea5ebf4778bd7a4b37ed63052ad252fe'
+    '09de63101b6ebba4163cf72d8e1f7943',
+    '4944116e9b2d72dcc1fa2c71e8950c87',
+    'a849c0f9ac9539a71241dac90ec0119a',
+    'f55b9147b0e1f75e696cc1ba7df927b9',
+    '23daa29d2d5cea7a1861de444a740073',
+    'c9847c9995920e0a2c8c57c0ff9ba0a6',
+    'e4a657dbc6661a36c02ee4a20a469bd6'
   ];
 
   // setup SQS messages in the task event SQS queue
@@ -318,12 +336,12 @@ util.mock('[tasks] poll - one of each outcome', function(assert) {
       }, 'ecs client initialized properly');
 
       var expectedTaskStatus = [
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'bb8e8e7405617c973ceac2a9076ae19d' }, env: { ApproximateReceiveCount: 1, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: 'success', duration: 7973, pending: 5000 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '762676041b682bcea049706185d13ac6' }, env: { ApproximateReceiveCount: 1, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: 'some container reason', duration: 7973, pending: 5000 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'fc36323938489380babaf87c56568d7f' }, env: { ApproximateReceiveCount: 1, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2', duration: 7973, pending: 5000 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '107e1fc31e0ad9b0e0d2304411596e05' }, env: { ApproximateReceiveCount: 1, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3', duration: 7973, pending: 5000 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'e7336cab2c12be8aacef9718acb7cdb5' }, env: { ApproximateReceiveCount: 1, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973, pending: 5000 },
-        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '6d8e580ee61b2fcb24bb9317d212a404' }, env: { ApproximateReceiveCount: 1, exit: '137', MessageId: 'exit-137' }, outcome: 'immediate', reason: 'CannotPullContainerError: API error (500): Get https://123456789012.dkr.ecr.us-east-1.amazonaws.com/v1/_ping: dial tcp: i/o timeout', duration: 7973, pending: 5000 }
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '09de63101b6ebba4163cf72d8e1f7943' }, env: { ApproximateReceiveCount: 1, exit: '0', MessageId: 'exit-0' }, outcome: 'delete', reason: 'success', duration: 7973, pending: 5000 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '4944116e9b2d72dcc1fa2c71e8950c87' }, env: { ApproximateReceiveCount: 1, exit: '1', MessageId: 'exit-1' }, outcome: 'return & notify', reason: 'some container reason', duration: 7973, pending: 5000 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'a849c0f9ac9539a71241dac90ec0119a' }, env: { ApproximateReceiveCount: 1, exit: '2', MessageId: 'exit-2' }, outcome: 'return & notify', reason: '2', duration: 7973, pending: 5000 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'f55b9147b0e1f75e696cc1ba7df927b9' }, env: { ApproximateReceiveCount: 1, exit: '3', MessageId: 'exit-3' }, outcome: 'delete & notify', reason: '3', duration: 7973, pending: 5000 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: '23daa29d2d5cea7a1861de444a740073' }, env: { ApproximateReceiveCount: 1, exit: '4', MessageId: 'exit-4' }, outcome: 'immediate', reason: '4', duration: 7973, pending: 5000 },
+        { arns: { cluster: 'cluster-arn', instance: 'instance-arn', task: 'c9847c9995920e0a2c8c57c0ff9ba0a6' }, env: { ApproximateReceiveCount: 1, exit: '137', MessageId: 'exit-137' }, outcome: 'immediate', reason: 'CannotPullContainerError: API error (500): Get https://123456789012.dkr.ecr.us-east-1.amazonaws.com/v1/_ping: dial tcp: i/o timeout', duration: 7973, pending: 5000 }
       ];
       expectedTaskStatus.free = 9;
 
