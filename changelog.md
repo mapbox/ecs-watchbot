@@ -1,3 +1,7 @@
+### 3.4.1
+
+- Fixes `DeadLetterAlarm` thresholding: changes `ComparisonOperator` from `GreaterThanThreshold` to `GreaterThanOrEqualToThreshold` so that alarm is triggered when a single message is sent to the DeadLetterQueue.
+
 ### 3.4.0
 
 - Makes `EvaluationPeriods` for `FailedWorkerPlacementAlarm` customizable
