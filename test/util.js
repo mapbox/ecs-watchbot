@@ -174,7 +174,8 @@ module.exports.mock = function(name, callback) {
         return callback(null, { tasks: [{ lastStatus: 'RUNNING' }] });
 
       if (params.tasks[0] === '9f5d92d144855210733d560d83759e11'
-          || params.tasks[0] === 'e3278f8cf0a7f9b795d5f91d3739f72d')
+          || params.tasks[0] === 'e3278f8cf0a7f9b795d5f91d3739f72d'
+          || params.tasks[0] === '3b80fe64b7d8278090a63a16e5908ad9')
         return callback(null, { tasks: [{ lastStatus: 'PENDING' }] });
 
       callback();
@@ -186,7 +187,8 @@ module.exports.mock = function(name, callback) {
       if (params.task === '9f5d92d144855210733d560d83759e11')
         return callback(new Error('stop-task-failure'));
 
-      if (params.task === 'e3278f8cf0a7f9b795d5f91d3739f72d')
+      if (params.task === 'e3278f8cf0a7f9b795d5f91d3739f72d'
+          || params.task === '3b80fe64b7d8278090a63a16e5908ad9')
         return callback();
 
       callback();
