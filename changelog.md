@@ -1,3 +1,8 @@
+### 3.5.0
+
+- Adds a log message if the watcher receives an SQS message that it has already launched a task for, and is still waiting to learn whether that task succeeded or failed.
+- Upon receiving a duplicate message, the watcher checks if the in-flight task is in `PENDING` state. If so, it stops the task and returns the message to SQS for a retry.
+
 ### 3.4.1
 
 - Fixes `DeadLetterAlarm` thresholding: changes `ComparisonOperator` from `GreaterThanThreshold` to `GreaterThanOrEqualToThreshold` so that alarm is triggered when a single message is sent to the DeadLetterQueue.
