@@ -26,6 +26,7 @@ module.exports.mock = function(name, callback) {
       },
       ecs: {
         runTask: [],
+        stopTask: [],
         describeTasks: [],
         describeTaskDefinition: [],
         describeContainerInstances: [],
@@ -161,6 +162,36 @@ module.exports.mock = function(name, callback) {
       console.log = log;
       if (err) end(err);
       else end();
+    };
+
+    AWS.ECS.prototype.describeTasks = function(params, callback) {
+      context.ecs.describeTasks.push(params);
+
+      if (params.tasks[0] === '5452a86a162f3603a9b7b5f0d3396d40')
+        return callback(new Error('pending-describe-fail'));
+
+      if (params.tasks[0] === '5328c55acbea9eb7c23336b0718f3324')
+        return callback(null, { tasks: [{ lastStatus: 'RUNNING' }] });
+
+      if (params.tasks[0] === '9f5d92d144855210733d560d83759e11'
+          || params.tasks[0] === 'e3278f8cf0a7f9b795d5f91d3739f72d'
+          || params.tasks[0] === '3b80fe64b7d8278090a63a16e5908ad9')
+        return callback(null, { tasks: [{ lastStatus: 'PENDING' }] });
+
+      callback();
+    };
+
+    AWS.ECS.prototype.stopTask = function(params, callback) {
+      context.ecs.stopTask.push(params);
+
+      if (params.task === '9f5d92d144855210733d560d83759e11')
+        return callback(new Error('stop-task-failure'));
+
+      if (params.task === 'e3278f8cf0a7f9b795d5f91d3739f72d'
+          || params.task === '3b80fe64b7d8278090a63a16e5908ad9')
+        return callback();
+
+      callback();
     };
 
     callback.call(context, assert);

@@ -377,3 +377,149 @@ util.mock('[tasks] poll - SQS error', function(assert) {
     assert.end();
   });
 });
+
+util.mock('[tasks] stopIfPending - message id not in flight', function(assert) {
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var queueUrl = 'https://fake.us-east-1/sqs/url-for-events';
+  var containerName = 'container';
+  var concurrency = 10;
+
+  const env = { exit: '0', MessageId: 'exit-0', ApproximateReceiveCount: 1 };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, queueUrl);
+
+  // Run the task
+  tasks.run(env, function(err) {
+    assert.ifError(err, 'tasks.run success');
+
+    // Then try and stop some other random task, based on message id
+    tasks.stopIfPending({ MessageId: 'not-in-flight' }, function(err, stopped) {
+      assert.ifError(err, 'tasks.stopIfPending success');
+      assert.notOk(stopped, 'reports that no tasks was stopped');
+      tasks.stop();
+      assert.end();
+    });
+  });
+});
+
+util.mock('[tasks] stopIfPending - describeTasks failure', function(assert) {
+  var context = this;
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var queueUrl = 'https://fake.us-east-1/sqs/url-for-events';
+  var containerName = 'container';
+  var concurrency = 10;
+
+  const env = { exit: '0', MessageId: 'pending-describe-fail', ApproximateReceiveCount: 1 };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, queueUrl);
+
+  // Run the task
+  tasks.run(env, function(err) {
+    assert.ifError(err, 'tasks.run success');
+
+    // Then try and stop the task, expect describeTasks to fail
+    tasks.stopIfPending({ MessageId: 'pending-describe-fail' }, function(err) {
+      assert.equal(err.message, 'pending-describe-fail', 'passed through error from describeTasks failure');
+      assert.deepEqual(context.ecs.describeTasks, [
+        { tasks: ['5452a86a162f3603a9b7b5f0d3396d40'] }
+      ], 'described the task launched to process this message id');
+      tasks.stop();
+      assert.end();
+    });
+  });
+});
+
+util.mock('[tasks] stopIfPending - task is RUNNING', function(assert) {
+  var context = this;
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var queueUrl = 'https://fake.us-east-1/sqs/url-for-events';
+  var containerName = 'container';
+  var concurrency = 10;
+
+  const env = { exit: '0', MessageId: 'running', ApproximateReceiveCount: 1 };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, queueUrl);
+
+  // Run the task
+  tasks.run(env, function(err) {
+    assert.ifError(err, 'tasks.run success');
+
+    // Then try and stop the task, which is RUNNING
+    tasks.stopIfPending({ MessageId: 'running' }, function(err, stopped) {
+      assert.ifError(err, 'tasks.stopIfPending success');
+      assert.notOk(stopped, 'reports that no tasks were stopped');
+      assert.deepEqual(context.ecs.describeTasks, [
+        { tasks: ['5328c55acbea9eb7c23336b0718f3324'] }
+      ], 'described the task launched to process this message id');
+      assert.deepEqual(context.ecs.stopTask, [], 'no calls to stopTask');
+      tasks.stop();
+      assert.end();
+    });
+  });
+});
+
+util.mock('[tasks] stopIfPending - task is PENDING, stopTask failure', function(assert) {
+  var context = this;
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var queueUrl = 'https://fake.us-east-1/sqs/url-for-events';
+  var containerName = 'container';
+  var concurrency = 10;
+
+  const env = { exit: '0', MessageId: 'stop-task-failure', ApproximateReceiveCount: 1 };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, queueUrl);
+
+  // Run the task
+  tasks.run(env, function(err) {
+    assert.ifError(err, 'tasks.run success');
+
+    // Then try and stop the task, which is PENDING, but stopTask errors
+    tasks.stopIfPending({ MessageId: 'stop-task-failure' }, function(err) {
+      assert.equal(err.message, 'stop-task-failure', 'passes through error from stopTask request');
+      assert.deepEqual(context.ecs.describeTasks, [
+        { tasks: ['9f5d92d144855210733d560d83759e11'] }
+      ], 'described the task launched to process this message id');
+      assert.deepEqual(context.ecs.stopTask, [
+        { task: '9f5d92d144855210733d560d83759e11' }
+      ], 'called stopTask on the correct task');
+      tasks.stop();
+      assert.end();
+    });
+  });
+});
+
+util.mock('[tasks] stopIfPending - task is PENDING, stopTask success', function(assert) {
+  var context = this;
+  var cluster = 'arn:aws:ecs:us-east-1:123456789012:cluster/fake';
+  var taskDef = 'arn:aws:ecs:us-east-1:123456789012:task-definition/fake:1';
+  var queueUrl = 'https://fake.us-east-1/sqs/url-for-events';
+  var containerName = 'container';
+  var concurrency = 10;
+
+  const env = { exit: '0', MessageId: 'pending', ApproximateReceiveCount: 1 };
+
+  var tasks = watchbot.tasks(cluster, taskDef, containerName, concurrency, queueUrl);
+
+  // Run the task
+  tasks.run(env, function(err) {
+    assert.ifError(err, 'tasks.run success');
+
+    // Then try and stop the task, which is PENDING
+    tasks.stopIfPending({ MessageId: 'pending' }, function(err, stopped) {
+      assert.ifError(err, 'tasks.stopIfPending success');
+      assert.ok(stopped, 'reports that the task was stopped');
+      assert.deepEqual(context.ecs.describeTasks, [
+        { tasks: ['e3278f8cf0a7f9b795d5f91d3739f72d'] }
+      ], 'described the task launched to process this message id');
+      assert.deepEqual(context.ecs.stopTask, [
+        { task: 'e3278f8cf0a7f9b795d5f91d3739f72d' }
+      ], 'called stopTask on the correct task');
+      tasks.stop();
+      assert.end();
+    });
+  });
+});

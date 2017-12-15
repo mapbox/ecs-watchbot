@@ -102,9 +102,20 @@ util.mock('[messages] poll - message still processing', function(assert) {
     // receive the same message again, with a new handle
     context.sqs.messages = [JSON.parse(JSON.stringify(msg))];
     context.sqs.messages[0].ReceiptHandle = '2';
-    messages.poll(1, function(err) {
+    messages.poll(1, function(err, envs, skips) {
       if (err) return assert.end(err);
 
+      assert.deepEqual(skips, [
+        {
+          MessageId: '1',
+          Subject: 'subject1',
+          Message: 'message1',
+          SentTimestamp: '10',
+          ApproximateFirstReceiveTimestamp: '20',
+          ApproximateReceiveCount: '1'
+        }
+      ], 'provides a record of skipped message');
+      
       // complete the message
       messages.complete({ reason: 'success', env: { MessageId: '1' }, outcome: 'delete' }, function(err) {
         if (err) return assert.end(err);

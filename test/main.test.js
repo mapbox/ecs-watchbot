@@ -365,3 +365,38 @@ util.mock('[main] LogLevel', function(assert){
     assert.end();
   });
 });
+
+util.mock('[main] duplicated receives', function(assert) {
+  var context = this;
+
+  context.sqs.messages = [
+    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '2', ReceiptHandle: '2', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '3', ReceiptHandle: '3', Body: JSON.stringify({ Subject: 'subject3', Message: 'message3' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '4', ReceiptHandle: '4', Body: JSON.stringify({ Subject: 'subject4', Message: 'message4' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '5', ReceiptHandle: '5', Body: JSON.stringify({ Subject: 'subject5', Message: 'message5' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '6', ReceiptHandle: '6', Body: JSON.stringify({ Subject: 'subject6', Message: 'message6' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '7', ReceiptHandle: '7', Body: JSON.stringify({ Subject: 'subject7', Message: 'message7' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '8', ReceiptHandle: '8', Body: JSON.stringify({ Subject: 'subject8', Message: 'message8' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '9', ReceiptHandle: '9', Body: JSON.stringify({ Subject: 'subject9', Message: 'message9' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '10', ReceiptHandle: '10', Body: JSON.stringify({ Subject: 'subject10', Message: 'message10' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
+    { MessageId: '1', ReceiptHandle: '11', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
+  ];
+
+  setTimeout(watchbot.main.end, 1800);
+  watchbot.main(Object.assign({}, config, { Concurrency: 20 })).on('finish', function() {
+    assert.deepEqual(context.ecs.describeTasks, [
+      { tasks: ['3b80fe64b7d8278090a63a16e5908ad9'] }
+    ], 'called describeTasks on the right task arn');
+    assert.deepEqual(context.ecs.stopTask, [
+      { task: '3b80fe64b7d8278090a63a16e5908ad9' }
+    ], 'called stopTask on the right task arn');
+    assert.deepEqual(context.sqs.changeMessageVisibility, [
+      {
+        ReceiptHandle: '11',
+        VisibilityTimeout: Math.pow(2, 2)
+      }
+    ], 'returns the message to SQS, using the new receipt handle');
+    assert.end();
+  });
+});
