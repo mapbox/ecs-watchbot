@@ -380,7 +380,7 @@ util.mock('[main] duplicated receives', function(assert) {
     { MessageId: '8', ReceiptHandle: '8', Body: JSON.stringify({ Subject: 'subject8', Message: 'message8' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
     { MessageId: '9', ReceiptHandle: '9', Body: JSON.stringify({ Subject: 'subject9', Message: 'message9' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
     { MessageId: '10', ReceiptHandle: '10', Body: JSON.stringify({ Subject: 'subject10', Message: 'message10' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } },
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0, ApproximateFirstReceiveTimestamp: 20 } }
+    { MessageId: '1', ReceiptHandle: '11', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
   ];
 
   setTimeout(watchbot.main.end, 1800);
@@ -391,6 +391,12 @@ util.mock('[main] duplicated receives', function(assert) {
     assert.deepEqual(context.ecs.stopTask, [
       { task: '3b80fe64b7d8278090a63a16e5908ad9' }
     ], 'called stopTask on the right task arn');
+    assert.deepEqual(context.sqs.changeMessageVisibility, [
+      {
+        ReceiptHandle: '11',
+        VisibilityTimeout: Math.pow(2, 2)
+      }
+    ], 'returns the message to SQS, using the new receipt handle');
     assert.end();
   });
 });
