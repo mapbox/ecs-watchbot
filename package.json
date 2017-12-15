@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "3.4.1",
+  "version": "3.5.0",
   "description": "Build an AWS stack to do your work for you",
   "repository": {
     "type": "git",
