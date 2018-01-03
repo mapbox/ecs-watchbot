@@ -2,6 +2,9 @@
     "us-east-1": {
         "Region": "us-east-1"
     },
+    "us-west-1": {
+        "Region": "us-west-1"
+    },
     "us-west-2": {
         "Region": "us-west-2"
     },
