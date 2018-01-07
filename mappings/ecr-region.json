@@ -17,12 +17,6 @@
     "ca-central-1": {
         "Region": "us-east-1"
     },
-    "cn-north-1": {
-        "Region": "cn-north-1"
-    },
-    "cn-northwest-1": {
-        "Region": "cn-northwest-1"
-    },
     "eu-central-1": {
         "Region": "eu-west-1"
     },
@@ -43,9 +37,6 @@
     },
     "us-east-2": {
         "Region": "us-east-1"
-    },
-    "us-gov-west-1": {
-        "Region": "us-gov-west-1"
     },
     "us-west-1": {
         "Region": "us-west-2"
