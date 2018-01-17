@@ -1,3 +1,7 @@
+### 3.5.1
+
+- Clearer error messages from the CLI tool for bad user input.
+
 ### 3.5.0
 
 - Adds a log message if the watcher receives an SQS message that it has already launched a task for, and is still waiting to learn whether that task succeeded or failed.
