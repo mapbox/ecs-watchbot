@@ -24,10 +24,15 @@ var cli = meow({
 });
 
 var command = cli.input[0];
+if (!command) {
+  console.error('ERROR: You must specify a command');
+  cli.showHelp(1);
+}
+
 var fn;
 try { fn = require(`../lib/${command}`); }
 catch(err) {
-  console.error(err.message);
+  console.error('"' + command + '" is not a valid command');
   cli.showHelp(1);
 }
 
