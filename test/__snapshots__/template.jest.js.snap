@@ -1,0 +1,1005 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`[template]: all-properties 1`] = `
+Object {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": Object {},
+  "Mappings": Object {},
+  "Metadata": Object {},
+  "Outputs": Object {},
+  "Parameters": Object {},
+  "Resources": Object {
+    "SoupDeadLetterQueue": Object {
+      "Description": "List of messages that failed to process 14 times",
+      "Properties": Object {
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "SoupDeadLetterQueue",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "SoupLogs": Object {
+      "Properties": Object {
+        "LogGroupName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              Object {
+                "Ref": "AWS::Region",
+              },
+              "soup",
+            ],
+          ],
+        },
+        "RetentionInDays": 14,
+      },
+      "Type": "AWS::Logs::LogGroup",
+    },
+    "SoupQueue": Object {
+      "Properties": Object {
+        "MessageRetentionPeriod": 1096,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "SoupQueue",
+            ],
+          ],
+        },
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SoupDeadLetterQueue",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 10,
+        },
+        "VisibilityTimeout": 300,
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "SoupQueuePolicy": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Id": "SoupWatchbotQueue",
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sqs:SendMessage",
+              ],
+              "Condition": Object {
+                "ArnEquals": Object {
+                  "aws:SourceArn": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": "*",
+              },
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SoupQueue",
+                  "Arn",
+                ],
+              },
+              "Sid": "SendSomeMessages",
+            },
+          ],
+          "Version": "2008-10-17",
+        },
+        "Queues": Array [
+          Object {
+            "Ref": "SoupQueue",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::QueuePolicy",
+    },
+    "SoupRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "ecs-tasks.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:ChangeMessageVisibility",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "logs:FilterLogEvents",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "SoupLogs",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Action": "kms:Decrypt",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::ImportValue": "cloudformation-kms-production",
+                  },
+                },
+              ],
+            },
+            "PolicyName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-default-worker",
+                ],
+              ],
+            },
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:s3:::bucket/*",
+                },
+              ],
+            },
+            "PolicyName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-user-defined-worker",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "SoupScaleDown": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-down",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "SoupScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "PercentChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalLowerBound": 0,
+              "ScalingAdjustment": -100,
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "SoupScaleDownTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupScaleDown",
+          },
+        ],
+        "AlarmDescription": "Scale down workers due to lack of in-flight messages in queue",
+        "AlarmName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-down",
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SoupQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "Period": 600,
+        "Statistic": "Maximum",
+        "Threshold": 1,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupScaleUp": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-up",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "SoupScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "ChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalLowerBound": 0,
+              "ScalingAdjustment": 9,
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "SoupScaleUpTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupScaleUp",
+          },
+        ],
+        "AlarmDescription": "Scale up workers due to visible messages in queue",
+        "AlarmName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-up",
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SoupQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": 300,
+        "Statistic": "Maximum",
+        "Threshold": 0,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "application-autoscaling.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Path": "/",
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "application-autoscaling:*",
+                    "cloudwatch:DescribeAlarms",
+                    "cloudwatch:PutMetricAlarm",
+                    "ecs:UpdateService",
+                    "ecs:DescribeServices",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+              ],
+            },
+            "PolicyName": "watchbot-autoscaling",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "SoupScalingTarget": Object {
+      "Properties": Object {
+        "MaxCapacity": 90,
+        "MinCapacity": 0,
+        "ResourceId": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "service/",
+              "processing",
+              "/",
+              Object {
+                "Fn::GetAtt": Array [
+                  "SoupService",
+                  "Name",
+                ],
+              },
+            ],
+          ],
+        },
+        "RoleARN": Object {
+          "Fn::GetAtt": Array [
+            "SoupScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "ecs:service:DesiredCount",
+        "ServiceNamespace": "ecs",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    },
+    "SoupService": Object {
+      "Properties": Object {
+        "Cluster": "processing",
+        "DesiredCount": 0,
+        "TaskDefinition": Object {
+          "Ref": "SoupTask",
+        },
+      },
+      "Type": "AWS::ECS::Service",
+    },
+    "SoupTask": Object {
+      "Properties": Object {
+        "ContainerDefinitions": Array [
+          Object {
+            "Command": Array [
+              "watchbot",
+              "listen",
+              "echo hello world",
+            ],
+            "Cpu": 4096,
+            "Environment": Array [
+              Object {
+                "Name": "WorkTopic",
+                "Value": Object {
+                  "Ref": "SoupTopic",
+                },
+              },
+              Object {
+                "Name": "QueueUrl",
+                "Value": Object {
+                  "Ref": "SoupQueue",
+                },
+              },
+              Object {
+                "Name": "MyKey",
+                "Value": "MyValue",
+              },
+            ],
+            "Image": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::AccountId",
+                  },
+                  ".dkr.ecr.us-east-1.amazonaws.com/",
+                  "example",
+                  ":",
+                  "1",
+                ],
+              ],
+            },
+            "LogConfiguration": Object {
+              "LogDriver": "awslogs",
+              "Options": Object {
+                "awslogs-group": Object {
+                  "Ref": "SoupLogs",
+                },
+                "awslogs-region": Object {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "1",
+              },
+            },
+            "Memory": 512,
+            "MemoryReservation": 128,
+            "MountPoints": Array [
+              Object {
+                "ContainerPath": "/data",
+                "SourceVolume": "mnt-0",
+              },
+              Object {
+                "ContainerPath": "/ephemeral",
+                "SourceVolume": "mnt-1",
+              },
+            ],
+            "Name": "soup-example",
+            "Privileged": true,
+            "Ulimits": Array [
+              Object {
+                "HardLimit": 10240,
+                "Name": "nofile",
+                "SoftLimit": 10240,
+              },
+            ],
+          },
+        ],
+        "Family": "abc-123",
+        "TaskRoleArn": Object {
+          "Ref": "SoupRole",
+        },
+        "Volumes": Array [
+          Object {
+            "Host": Object {
+              "SourcePath": "/mnt/data",
+            },
+            "Name": "mnt-0",
+          },
+          Object {
+            "Host": Object {},
+            "Name": "mnt-1",
+          },
+        ],
+      },
+      "Type": "AWS::ECS::TaskDefinition",
+    },
+    "SoupTopic": Object {
+      "Properties": Object {
+        "Subscription": Array [
+          Object {
+            "Endpoint": Object {
+              "Fn::GetAtt": Array [
+                "SoupQueue",
+                "Arn",
+              ],
+            },
+            "Protocol": "sqs",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+  },
+}
+`;
+
+exports[`[template]: defaults 1`] = `
+Object {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": Object {},
+  "Mappings": Object {},
+  "Metadata": Object {},
+  "Outputs": Object {},
+  "Parameters": Object {},
+  "Resources": Object {
+    "WatchbotDeadLetterQueue": Object {
+      "Description": "List of messages that failed to process 14 times",
+      "Properties": Object {
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "WatchbotDeadLetterQueue",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "WatchbotLogs": Object {
+      "Properties": Object {
+        "LogGroupName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              Object {
+                "Ref": "AWS::Region",
+              },
+              "watchbot",
+            ],
+          ],
+        },
+        "RetentionInDays": 14,
+      },
+      "Type": "AWS::Logs::LogGroup",
+    },
+    "WatchbotQueue": Object {
+      "Properties": Object {
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "WatchbotQueue",
+            ],
+          ],
+        },
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "WatchbotDeadLetterQueue",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 10,
+        },
+        "VisibilityTimeout": 600,
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "WatchbotQueuePolicy": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Id": "WatchbotWatchbotQueue",
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sqs:SendMessage",
+              ],
+              "Condition": Object {
+                "ArnEquals": Object {
+                  "aws:SourceArn": Object {
+                    "Ref": "WatchbotTopic",
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": "*",
+              },
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotQueue",
+                  "Arn",
+                ],
+              },
+              "Sid": "SendSomeMessages",
+            },
+          ],
+          "Version": "2008-10-17",
+        },
+        "Queues": Array [
+          Object {
+            "Ref": "WatchbotQueue",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::QueuePolicy",
+    },
+    "WatchbotRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "ecs-tasks.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "WatchbotTopic",
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:ChangeMessageVisibility",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "logs:FilterLogEvents",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "WatchbotLogs",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Action": "kms:Decrypt",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::ImportValue": "cloudformation-kms-production",
+                  },
+                },
+              ],
+            },
+            "PolicyName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-default-worker",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WatchbotScaleDown": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-down",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "WatchbotScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "PercentChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalLowerBound": 0,
+              "ScalingAdjustment": -100,
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "WatchbotScaleDownTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotScaleDown",
+          },
+        ],
+        "AlarmDescription": "Scale down workers due to lack of in-flight messages in queue",
+        "AlarmName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-down",
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "Period": 600,
+        "Statistic": "Maximum",
+        "Threshold": 1,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotScaleUp": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-up",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "WatchbotScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "ChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalLowerBound": 0,
+              "ScalingAdjustment": 1,
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "WatchbotScaleUpTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotScaleUp",
+          },
+        ],
+        "AlarmDescription": "Scale up workers due to visible messages in queue",
+        "AlarmName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-up",
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": 300,
+        "Statistic": "Maximum",
+        "Threshold": 0,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "application-autoscaling.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Path": "/",
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "application-autoscaling:*",
+                    "cloudwatch:DescribeAlarms",
+                    "cloudwatch:PutMetricAlarm",
+                    "ecs:UpdateService",
+                    "ecs:DescribeServices",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+              ],
+            },
+            "PolicyName": "watchbot-autoscaling",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WatchbotScalingTarget": Object {
+      "Properties": Object {
+        "MaxCapacity": 1,
+        "MinCapacity": 0,
+        "ResourceId": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "service/",
+              "processing",
+              "/",
+              Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotService",
+                  "Name",
+                ],
+              },
+            ],
+          ],
+        },
+        "RoleARN": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "ecs:service:DesiredCount",
+        "ServiceNamespace": "ecs",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    },
+    "WatchbotService": Object {
+      "Properties": Object {
+        "Cluster": "processing",
+        "DesiredCount": 0,
+        "TaskDefinition": Object {
+          "Ref": "WatchbotTask",
+        },
+      },
+      "Type": "AWS::ECS::Service",
+    },
+    "WatchbotTask": Object {
+      "Properties": Object {
+        "ContainerDefinitions": Array [
+          Object {
+            "Command": Array [
+              "watchbot",
+              "listen",
+              "echo hello world",
+            ],
+            "Cpu": undefined,
+            "Environment": Array [
+              Object {
+                "Name": "WorkTopic",
+                "Value": Object {
+                  "Ref": "WatchbotTopic",
+                },
+              },
+              Object {
+                "Name": "QueueUrl",
+                "Value": Object {
+                  "Ref": "WatchbotQueue",
+                },
+              },
+            ],
+            "Image": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::AccountId",
+                  },
+                  ".dkr.ecr.us-east-1.amazonaws.com/",
+                  "example",
+                  ":",
+                  "1",
+                ],
+              ],
+            },
+            "LogConfiguration": Object {
+              "LogDriver": "awslogs",
+              "Options": Object {
+                "awslogs-group": Object {
+                  "Ref": "WatchbotLogs",
+                },
+                "awslogs-region": Object {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "1",
+              },
+            },
+            "MountPoints": undefined,
+            "Name": "watchbot-example",
+            "Privileged": false,
+            "Ulimits": Array [
+              Object {
+                "HardLimit": 10240,
+                "Name": "nofile",
+                "SoftLimit": 10240,
+              },
+            ],
+          },
+        ],
+        "Family": "example",
+        "TaskRoleArn": Object {
+          "Ref": "WatchbotRole",
+        },
+        "Volumes": undefined,
+      },
+      "Type": "AWS::ECS::TaskDefinition",
+    },
+    "WatchbotTopic": Object {
+      "Properties": Object {
+        "Subscription": Array [
+          Object {
+            "Endpoint": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotQueue",
+                "Arn",
+              ],
+            },
+            "Protocol": "sqs",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+  },
+}
+`;

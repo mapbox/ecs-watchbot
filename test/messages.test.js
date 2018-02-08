@@ -1,662 +1,234 @@
-var util = require('./util');
-var watchbot = require('..');
-var d3 = require('d3-queue');
-var cwlogs = require('cwlogs');
-var stream = require('stream');
-var sinon = require('sinon');
+'use strict';
 
-util.mock('[messages] poll - more than max messages to receive', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName);
-  var context = this;
+const test = require('tape');
+const AWS = require('@mapbox/mock-aws-sdk-js');
+const stubber = require('./stubber');
+const Messages = require('../lib/messages');
+const Message = require('../lib/message');
 
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '2', ReceiptHandle: '2', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '3', ReceiptHandle: '3', Body: JSON.stringify({ Subject: 'subject3', Message: 'message3' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } }
-  ];
+test('[messages] constructor', (assert) => {
+  AWS.stub('SQS', 'receiveMessage');
 
-  messages.poll(2, function(err, envs) {
-    if (err) return assert.end(err);
-    assert.deepEqual(context.sqs.config, {
+  assert.throws(
+    () => new Messages(),
+    /Missing options: queueUrl/,
+    'queueUrl is required'
+  );
+
+  const messages = new Messages({
+    queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+  });
+
+  assert.ok(messages.sqs, 'sets .sqs');
+  assert.ok(
+    AWS.SQS.calledWith({
       region: 'us-east-1',
-      params: { QueueUrl: queueUrl }
-    }, 'sqs client initialized properly');
-    assert.deepEqual(context.sqs.receiveMessage, [
-      {
-        AttributeNames: [
-          'SentTimestamp',
-          'ApproximateFirstReceiveTimestamp',
-          'ApproximateReceiveCount'
-        ],
-        WaitTimeSeconds: 20,
-        MaxNumberOfMessages: 2
+      params: {
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
       }
-    ], 'expected receiveMessage request');
-    assert.deepEqual(envs, [
-      {
-        MessageId: '1',
-        Subject: 'subject1',
-        Message: 'message1',
-        SentTimestamp: '10',
-        ApproximateFirstReceiveTimestamp: '20',
-        ApproximateReceiveCount: '1'
-      },
-      {
-        MessageId: '2',
-        Subject: 'subject2',
-        Message: 'message2',
-        SentTimestamp: '10',
-        ApproximateFirstReceiveTimestamp: '20',
-        ApproximateReceiveCount: '1'
-      }
-    ], 'found expected messages and converted to task envs');
-    assert.end();
-  });
+    }),
+    'created SQS client correctly'
+  );
+
+  AWS.SQS.restore();
+  assert.end();
 });
 
-util.mock('[messages] poll - no messages to receive', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName);
-  var context = this;
+test('[messages] factory', (assert) => {
+  const messages = Messages.create({
+    queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+  });
+  assert.ok(messages instanceof Messages, 'returns Messages object');
+  assert.end();
+});
 
-  messages.poll(1, function(err, envs) {
-    if (err) return assert.end(err);
-    assert.deepEqual(context.sqs.config, {
-      region: 'us-east-1',
-      params: { QueueUrl: queueUrl }
-    }, 'sqs client initialized properly');
-    assert.deepEqual(context.sqs.receiveMessage, [
-      {
-        AttributeNames: [
-          'SentTimestamp',
-          'ApproximateFirstReceiveTimestamp',
-          'ApproximateReceiveCount'
-        ],
-        WaitTimeSeconds: 20,
-        MaxNumberOfMessages: 1
+test('[messages] waitFor polls enpty queue until you stop it', async (assert) => {
+  const receive = AWS.stub('SQS', 'receiveMessage');
+
+  const messages = Messages.create({
+    queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+  });
+
+  const empty = { promise: () => Promise.resolve({ Messages: [] }) };
+  receive.onCall(0).returns(empty);
+  receive.onCall(1).callsFake(() => {
+    messages.stop = true;
+    return empty;
+  });
+
+  try {
+    await messages.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  assert.pass('polling stopped');
+  assert.equal(receive.callCount, 2, 'called sqs.receiveMessage twice');
+
+  AWS.SQS.restore();
+  assert.end();
+});
+
+test('[messages] waitFor gets message', async (assert) => {
+  const message = stubber(Message).setup();
+
+  const msgs = [
+    {
+      MessageId: '1',
+      ReceiptHandle: 'a',
+      Body: JSON.stringify({ Subject: 'one', Message: '1' }),
+      Attributes: {
+        SentTimestamp: 1518027533772,
+        ApproximateFirstReceiveTimestamp: 1518027533772,
+        ApproximateReceiveCount: 1
       }
-    ], 'expected receiveMessage requests');
-    assert.deepEqual(envs, [], 'empty envs array returned');
-    assert.end();
-  });
-});
-
-util.mock('[messages] poll - message still processing', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName);
-  var context = this;
-  var msg = { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } };
-  context.sqs.messages = [JSON.parse(JSON.stringify(msg))];
-
-  // receive the message once
-  messages.poll(1, function(err) {
-    if (err) return assert.end(err);
-
-    // receive the same message again, with a new handle
-    context.sqs.messages = [JSON.parse(JSON.stringify(msg))];
-    context.sqs.messages[0].ReceiptHandle = '2';
-    messages.poll(1, function(err, envs, skips) {
-      if (err) return assert.end(err);
-
-      assert.deepEqual(skips, [
-        {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        }
-      ], 'provides a record of skipped message');
-      
-      // complete the message
-      messages.complete({ reason: 'success', env: { MessageId: '1' }, outcome: 'delete' }, function(err) {
-        if (err) return assert.end(err);
-
-        // complete the message a second time
-        messages.complete({ reason: 'success', env: { MessageId: '1' }, outcome: 'delete' }, function(err) {
-          if (err) return assert.end(err);
-
-          assert.deepEqual(context.sqs.deleteMessage, [
-            { ReceiptHandle: '2' }
-          ], 'deleted the message using most recent handle');
-
-          assert.end();
-        });
-      });
-    });
-  });
-
-});
-
-util.mock('[messages] poll - receiveMessage error', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName);
-  var context = this;
-
-  context.sqs.messages = [
-    { MessageId: 'error', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } }
+    }
   ];
 
-  messages.poll(4, function(err) {
-    if (!err) return assert.end('should have failed');
-    assert.equal(err.message, 'Mock SQS error', 'sqs.receiveMessage error passed to callback');
-    assert.end();
+  const receive = AWS.stub('SQS', 'receiveMessage', function() {
+    this.request.promise.returns(Promise.resolve({ Messages: msgs }));
   });
+
+  const messages = Messages.create({
+    queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+  });
+
+  let data;
+  try {
+    data = await messages.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  assert.equal(receive.callCount, 1, 'resolves after receiving a message');
+  assert.ok(
+    receive.calledWith({
+      AttributeNames: [
+        'SentTimestamp',
+        'ApproximateFirstReceiveTimestamp',
+        'ApproximateReceiveCount'
+      ],
+      WaitTimeSeconds: 20,
+      MaxNumberOfMessages: 1
+    }),
+    'called SQS.receiveMessage with expected parameters'
+  );
+
+  assert.equal(data.length, 1, 'one message returned');
+  assert.ok(data[0] instanceof Message, 'returned as a Message object');
+  assert.ok(
+    Message.create.calledWith(msgs[0], {
+      queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+    }),
+    'created Message object correctly'
+  );
+
+  message.teardown();
+  AWS.SQS.restore();
+  assert.end();
 });
 
-util.mock('[messages] complete', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
-  var context = this;
+test('[messages] waitFor gets multiple messages', async (assert) => {
+  const message = stubber(Message).setup();
 
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '2', ReceiptHandle: '2', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '3', ReceiptHandle: '3', Body: JSON.stringify({ Subject: 'subject3', Message: 'message3' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '4', ReceiptHandle: '4', Body: JSON.stringify({ Subject: 'subject4', Message: 'message4' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } }
+  const msgs = [
+    {
+      MessageId: '1',
+      ReceiptHandle: 'a',
+      Body: JSON.stringify({ Subject: 'one', Message: '1' }),
+      Attributes: {
+        SentTimestamp: 1518027533772,
+        ApproximateFirstReceiveTimestamp: 1518027533772,
+        ApproximateReceiveCount: 1
+      }
+    },
+    {
+      MessageId: '2',
+      ReceiptHandle: 'b',
+      Body: JSON.stringify({ Subject: 'two', Message: '2' }),
+      Attributes: {
+        SentTimestamp: 1518027533772,
+        ApproximateFirstReceiveTimestamp: 1518027533772,
+        ApproximateReceiveCount: 1
+      }
+    }
   ];
 
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
-
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'noop',
-        env: {
-          MessageId: '3',
-          Subject: 'subject3',
-          Message: 'message3',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return'
-      },
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'retry',
-        env: {
-          MessageId: '4',
-          Subject: 'subject4',
-          Message: 'message4',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return & notify'
-      }
-    ];
-
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      if (err) return assert.end(err);
-
-      // make assertions
-      util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
-        { ReceiptHandle: '3', VisibilityTimeout: 2 },
-        { ReceiptHandle: '4', VisibilityTimeout: 2 }
-      ], 'expected messages returned to queue with backoff');
-      assert.end();
-    });
+  const receive = AWS.stub('SQS', 'receiveMessage', function() {
+    this.request.promise.returns(Promise.resolve({ Messages: msgs }));
   });
+
+  const messages = Messages.create({
+    queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+  });
+
+  let data;
+  try {
+    data = await messages.waitFor(20);
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  assert.equal(receive.callCount, 1, 'resolves after receiving a message');
+  assert.ok(
+    receive.calledWith({
+      AttributeNames: [
+        'SentTimestamp',
+        'ApproximateFirstReceiveTimestamp',
+        'ApproximateReceiveCount'
+      ],
+      WaitTimeSeconds: 20,
+      MaxNumberOfMessages: 10
+    }),
+    'called SQS.receiveMessage with expected parameters'
+  );
+
+  assert.equal(data.length, 2, 'two messages returned');
+  assert.ok(
+    data.every((m) => m instanceof Message),
+    'returned as a Message objects'
+  );
+  assert.ok(
+    Message.create.calledWith(msgs[0], {
+      queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+    }),
+    'created first Message object correctly'
+  );
+  assert.ok(
+    Message.create.calledWith(msgs[1], {
+      queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
+    }),
+    'created second Message object correctly'
+  );
+
+  message.teardown();
+  AWS.SQS.restore();
+  assert.end();
 });
 
-util.mock('[messages] complete - message not found in sqs', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName);
-  var context = this;
-
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: 'missing', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } },
-    { MessageId: '2', ReceiptHandle: 'missing', Body: JSON.stringify({ Subject: 'subject2', Message: 'message2' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 0 } }
-  ];
-
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
-
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'noop',
-        env: {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return'
-      },
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'success',
-        env: {
-          MessageId: '2',
-          Subject: 'subject2',
-          Message: 'message2',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'delete'
-      }
-    ];
-
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      if (err) return assert.end(err);
-
-      // make assertions
-      util.collectionsEqual(assert, context.sqs.deleteMessage, [
-        { ReceiptHandle: 'missing' }
-      ], 'expected messages deleted');
-      util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [
-        { ReceiptHandle: 'missing', VisibilityTimeout: 2 }
-      ], 'expected messages returned to queue');
-      assert.end();
-    });
-  });
-});
-
-util.mock('[messages] complete - message cannot backoff anymore', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
-  var context = this;
-
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: 'missing', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 14, ApproximateFirstReceiveTimestamp: 20 } }
-  ];
-
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
-
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'noop',
-        env: {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '15'
-        },
-        outcome: 'return'
-      }
-    ];
-
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      if (err) return assert.end(err);
-
-      // make assertions
-      util.collectionsEqual(assert, context.sqs.changeMessageVisibility, [], 'message allowed to timeout');
-      assert.end();
-    });
-  });
-});
-
-util.mock('[messages] complete - stack name is long', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
-  var context = this;
-
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
-  ];
-
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
-
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'failed',
-        env: {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return & notify'
-      }
-    ];
-
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      if (err) return assert.end(err);
-
-      // make assertions
-      assert.equal(context.sns.publish.length, 1, 'one notification sent', 'subject was shortened');
-      assert.equal(context.sns.publish[0].Subject, stackName + ' failed task');
-      assert.end();
-    });
-  });
-});
-
-util.mock('[messages] complete - stack name is way too long', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-test-';
-  var messages = watchbot.messages(queueUrl, topic, stackName, true);
-  var context = this;
-
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
-  ];
-
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
-
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'failed',
-        env: {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return & notify'
-      }
-    ];
-
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      if (err) return assert.end(err);
-
-      // make assertions
-      assert.equal(context.sns.publish.length, 1, 'one notification sent');
-      assert.equal(context.sns.publish[0].Subject, 'Watchbot task failure: 1', 'subject was shortened');
-      assert.end();
-    });
-  });
-});
-
-util.mock('[messages] complete - notification contains log snippet', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var context = this;
-  var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
-  var logs = 'oh snap it broke!\n';
-
-  var messages = watchbot.messages(queueUrl, topic, stackName, true, logGroupArn);
-
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
-  ];
-
-  // mock the command to read logs underlaying watchbot.fetch
-  sinon.stub(cwlogs, 'readable', function(options) {
-    assert.equal(options.group, 'some-log-group', 'created cwlogs client with expected log group');
-    assert.equal(options.region, 'eu-west-1', 'created cwlogs client with expected region');
-
-    var readable = new stream.Readable();
-    readable._read = function() {
-      readable.push(logs);
-      readable.push(null);
-    };
-
-    return readable;
+test('[messages] waitFor handles SQS errors', async (assert) => {
+  AWS.stub('SQS', 'receiveMessage', function() {
+    this.request.promise.returns(Promise.reject(new Error('foo')));
   });
 
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
-
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'failed',
-        env: {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return & notify'
-      }
-    ];
-
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      if (err) return assert.end(err);
-
-      // make assertions
-      assert.equal(context.sns.publish.length, 1, 'one notification sent');
-
-      var notification = context.sns.publish[0].Message;
-      var expected = new RegExp('Recent logs:\n' + logs.trim());
-      assert.ok(expected.test(notification), 'log snippet included in notification');
-      cwlogs.readable.restore();
-      assert.end();
-    });
-  });
-});
-
-util.mock('[messages] complete - failure to read CloudWatch logs', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var context = this;
-  var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
-
-  var messages = watchbot.messages(queueUrl, topic, stackName, true, logGroupArn);
-
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
-  ];
-
-  // mock the command to read logs underlaying watchbot.fetch
-  sinon.stub(cwlogs, 'readable', function() {
-    var readable = new stream.Readable();
-    readable._read = function() {
-      readable.emit('error', new Error('oh snap!'));
-    };
-
-    return readable;
+  const messages = Messages.create({
+    queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
   });
 
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
-
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'failed',
-        env: {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return & notify'
-      }
-    ];
-
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      assert.equal(err.message, 'oh snap!', 'cwlogs error passed through to callback');
-      cwlogs.readable.restore();
-      assert.end();
-    });
-  });
-});
-
-util.mock('[messages] complete - no notification', function(assert) {
-  var queueUrl = 'https://fake.us-east-1/sqs/url';
-  var topic = 'arn:aws:sns:us-east-1:123456789:fake-topic';
-  var stackName = 'test';
-  var context = this;
-  var logGroupArn = 'arn:aws:logs:eu-west-1:123456789012:log-group:some-log-group:*';
-  var logs = 'oh snap it broke!\n';
-
-  var messages = watchbot.messages(queueUrl, topic, stackName, false, logGroupArn);
-
-  context.sqs.messages = [
-    { MessageId: '1', ReceiptHandle: '1', Body: JSON.stringify({ Subject: 'subject1', Message: 'message1' }), Attributes: { SentTimestamp: 10, ApproximateReceiveCount: 1, ApproximateFirstReceiveTimestamp: 20 } }
-  ];
-
-  // mock the command to read logs underlaying watchbot.fetch
-  sinon.stub(cwlogs, 'readable', function(options) {
-    assert.equal(options.group, 'some-log-group', 'created cwlogs client with expected log group');
-    assert.equal(options.region, 'eu-west-1', 'created cwlogs client with expected region');
-
-    var readable = new stream.Readable();
-    readable._read = function() {
-      readable.push(logs);
-      readable.push(null);
-    };
-
-    return readable;
+  let caught;
+  messages.on('error', (err) => {
+    caught = err;
+    messages.stop = true;
   });
 
-  // first poll in order to get the messages in flight
-  messages.poll(4, function(err) {
-    if (err) return assert.end(err);
+  try {
+    await messages.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
 
-    // Then generate fake finishedTask objects for each message
-    var finishedTasks = [
-      {
-        arns: {
-          cluster: 'cluster-arn',
-          instance: 'instance-arn',
-          task: 'task-arn'
-        },
-        reason: 'failed',
-        env: {
-          MessageId: '1',
-          Subject: 'subject1',
-          Message: 'message1',
-          SentTimestamp: '10',
-          ApproximateFirstReceiveTimestamp: '20',
-          ApproximateReceiveCount: '1'
-        },
-        outcome: 'return & notify'
-      }
-    ];
+  assert.equal(caught.message, 'foo', 'emitted error from SQS.receiveMessage');
 
-    // complete each finishedTask
-    var queue = d3.queue();
-    finishedTasks.forEach(function(finishedTask) {
-      queue.defer(messages.complete, finishedTask);
-    });
-    queue.awaitAll(function(err) {
-      if (err) return assert.end(err);
-
-      // make assertions
-      assert.equal(context.sns.publish.length, 0, 'no notifications sent');
-
-      cwlogs.readable.restore();
-      assert.end();
-    });
-  });
+  AWS.SQS.restore();
+  assert.end();
 });
