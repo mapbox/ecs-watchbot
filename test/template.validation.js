@@ -30,7 +30,7 @@ test('[template validation] defaults', async (assert) => {
 });
 
 test('[template validation] options set', async (assert) => {
-  const setsAllOptions = template( {
+  const setsAllOptions = template({
     service: 'example',
     serviceVersion: '1',
     command: 'echo hello world',

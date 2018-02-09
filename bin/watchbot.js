@@ -3,11 +3,13 @@
 'use strict';
 
 const Watcher = require('../lib/watcher');
+const Logger = require('../lib/logger');
 
 const main = async () => {
   if (process.argv[2] !== 'listen')
     throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
 
+  const logger = Logger.create('watcher');
   const command = process.argv.slice(3).join(' ');
 
   const options = {
@@ -16,14 +18,14 @@ const main = async () => {
   };
 
   const watcher = Watcher.create(options);
-  watcher.on('error', (err) => console.log(err));
 
-  console.log(`Launching watcher for command: ${command}`);
-
-  return await watcher.listen();
+  try {
+    await watcher.listen();
+  } catch (err) {
+    logger.log(`[error] ${err.stack}`);
+  }
 };
 
 module.exports = main;
 
-if (require.main === module) main()
-  .catch((err) => console.log(err.stack));
+if (require.main === module) main();

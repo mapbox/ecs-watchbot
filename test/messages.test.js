@@ -5,6 +5,7 @@ const AWS = require('@mapbox/mock-aws-sdk-js');
 const stubber = require('./stubber');
 const Messages = require('../lib/messages');
 const Message = require('../lib/message');
+const Logger = require('../lib/logger');
 
 test('[messages] constructor', (assert) => {
   AWS.stub('SQS', 'receiveMessage');
@@ -29,6 +30,8 @@ test('[messages] constructor', (assert) => {
     }),
     'created SQS client correctly'
   );
+
+  assert.ok(messages.logger instanceof Logger, 'sets .logger');
 
   AWS.SQS.restore();
   assert.end();
@@ -207,19 +210,17 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
 });
 
 test('[messages] waitFor handles SQS errors', async (assert) => {
+  const logger = stubber(Logger).setup();
+  const err = new Error('foo');
   AWS.stub('SQS', 'receiveMessage', function() {
-    this.request.promise.returns(Promise.reject(new Error('foo')));
+    this.request.promise.returns(Promise.reject(err));
   });
 
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
   });
 
-  let caught;
-  messages.on('error', (err) => {
-    caught = err;
-    messages.stop = true;
-  });
+  logger.queueError.callsFake(() => (messages.stop = true));
 
   try {
     await messages.waitFor();
@@ -227,8 +228,9 @@ test('[messages] waitFor handles SQS errors', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(caught.message, 'foo', 'emitted error from SQS.receiveMessage');
+  assert.ok(logger.queueError.calledWith(err), 'logged queue error');
 
+  logger.teardown();
   AWS.SQS.restore();
   assert.end();
 });
