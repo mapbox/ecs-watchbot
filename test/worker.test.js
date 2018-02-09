@@ -6,6 +6,8 @@ const test = require('tape');
 const sinon = require('sinon');
 const Worker = require('../lib/worker');
 const Message = require('../lib/message');
+const Logger = require('../lib/logger');
+const stubber = require('./stubber');
 
 test('[worker] constructor', (assert) => {
   assert.throws(
@@ -43,49 +45,73 @@ test('[worker] factory', (assert) => {
   assert.end();
 });
 
-test('[worker] fail, emits error', async (assert) => {
+test('[worker] fail', async (assert) => {
+  const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   const options = { command: 'echo hello world' };
   const worker = new Worker(message, options);
 
-  const err = new Error('foo');
-  let caught;
-  worker.on('error', (err) => (caught = err));
+  const results = { code: 124, signal: 'SIGTERM', duration: 12345 };
+  await worker.fail(results);
 
-  await worker.fail(err);
-
-  assert.equal(caught.message, 'foo', 'emits errors passed to .fail()');
+  assert.ok(logger.workerFailure.calledWith(results), 'logs worker failure');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
+
+  logger.teardown();
   assert.end();
 });
 
-test('[worker] fail, no error', async (assert) => {
+test('[worker] noop', async (assert) => {
+  const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   const options = { command: 'echo hello world' };
   const worker = new Worker(message, options);
 
-  let caught;
-  worker.on('error', (err) => (caught = err));
+  const results = { code: 4, duration: 12345 };
+  await worker.noop(results);
 
-  await worker.fail();
-
-  assert.notOk(caught, 'nothing was emitted');
+  assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
+
+  logger.teardown();
+  assert.end();
+});
+
+test('[worker] ignore', async (assert) => {
+  const logger = stubber(Logger).setup();
+  const message = sinon.createStubInstance(Message);
+  const options = { command: 'echo hello world' };
+  const worker = new Worker(message, options);
+
+  const results = { code: 3, duration: 12345 };
+  await worker.ignore(results);
+
+  assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
+  assert.equal(message.complete.callCount, 1, 'calls message.complete()');
+
+  logger.teardown();
   assert.end();
 });
 
 test('[worker] success', async (assert) => {
+  const logger = stubber(Logger).setup();
+
   const message = sinon.createStubInstance(Message);
   const options = { command: 'echo hello world' };
   const worker = new Worker(message, options);
 
-  await worker.success();
+  const results = { code: 0, duration: 12345 };
+  await worker.success(results);
 
+  assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
   assert.equal(message.complete.callCount, 1, 'calls message.complete()');
+
+  logger.teardown();
   assert.end();
 });
 
 test('[worker] waitFor, exit 0', async (assert) => {
+  const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'echo ${Message}' };
@@ -111,13 +137,19 @@ test('[worker] waitFor, exit 0', async (assert) => {
     'spawned child process properly'
   );
 
+  const results = logger.workerSuccess.args[0][0];
+  assert.equal(results.code, 0, 'logged worker success exit code');
+  assert.ok(results.duration, 'logged worker success duration');
   assert.equal(message.complete.callCount, 1, 'called message.complete()');
+
   child_process.spawn.restore();
   process.env = env;
+  logger.teardown();
   assert.end();
 });
 
 test('[worker] waitFor, exit 1', async (assert) => {
+  const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'exit 1' };
@@ -125,26 +157,24 @@ test('[worker] waitFor, exit 1', async (assert) => {
 
   sinon.spy(child_process, 'spawn');
 
-  let caught;
-  worker.on('error', (err) => caught = err);
-
   try {
     await worker.waitFor();
   } catch (err) {
     assert.ifError(err, 'failed');
   }
 
+  const results = logger.workerFailure.args[0][0];
+  assert.equal(results.code, 1, 'logged worker failure exit code');
+  assert.ok(results.duration, 'logged worker failure duration');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
-  assert.equal(caught.message, 'Unexpected worker exit code', 'emitted error has expected message');
-  assert.equal(caught.exitCode, 1, 'emitted error has expected .exitCode');
-  assert.equal(caught.signal, null, 'emitted error has expected .signal');
-
   child_process.spawn.restore();
+  logger.teardown();
   assert.end();
 });
 
 test('[worker] waitFor, exit 3', async (assert) => {
+  const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'exit 3' };
@@ -152,24 +182,24 @@ test('[worker] waitFor, exit 3', async (assert) => {
 
   sinon.spy(child_process, 'spawn');
 
-  let caught;
-  worker.on('error', (err) => caught = err);
-
   try {
     await worker.waitFor();
   } catch (err) {
     assert.ifError(err, 'failed');
   }
 
+  const results = logger.workerSuccess.args[0][0];
+  assert.equal(results.code, 3, 'logged worker success exit code');
+  assert.ok(results.duration, 'logged worker success duration');
   assert.equal(message.complete.callCount, 1, 'calls message.complete()');
 
-  assert.notOk(caught, 'no error emitted');
-
   child_process.spawn.restore();
+  logger.teardown();
   assert.end();
 });
 
 test('[worker] waitFor, exit 4', async (assert) => {
+  const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'exit 4' };
@@ -177,38 +207,35 @@ test('[worker] waitFor, exit 4', async (assert) => {
 
   sinon.spy(child_process, 'spawn');
 
-  let caught;
-  worker.on('error', (err) => caught = err);
-
   try {
     await worker.waitFor();
   } catch (err) {
     assert.ifError(err, 'failed');
   }
 
+  const results = logger.workerSuccess.args[0][0];
+  assert.equal(results.code, 4, 'logged worker success exit code');
+  assert.ok(results.duration, 'logged worker success duration');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
-  assert.notOk(caught, 'no error emitted');
-
   child_process.spawn.restore();
+  logger.teardown();
   assert.end();
 });
 
 test('[worker] waitFor, child_process.spawn failure', async (assert) => {
+  const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'echo ${Message}' };
   const worker = new Worker(message, options);
+  const err = new Error('foo');
 
-  sinon.stub(child_process, 'spawn')
-    .callsFake(() => {
-      const p = new events.EventEmitter();
-      setImmediate(() => p.emit('error', new Error('foo')));
-      return p;
-    });
-
-  let caught;
-  worker.on('error', (err) => caught = err);
+  sinon.stub(child_process, 'spawn').callsFake(() => {
+    const p = new events.EventEmitter();
+    setImmediate(() => p.emit('error', err));
+    return p;
+  });
 
   try {
     await worker.waitFor();
@@ -216,10 +243,10 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
+  assert.ok(logger.workerError.calledWith(err), 'logged worker error');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
-  assert.equal(caught.message, 'foo', 'emits error from spawn failure');
-
   child_process.spawn.restore();
+  logger.teardown();
   assert.end();
 });

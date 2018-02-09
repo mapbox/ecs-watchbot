@@ -3,6 +3,8 @@
 const test = require('tape');
 const AWS = require('@mapbox/mock-aws-sdk-js');
 const Message = require('../lib/message');
+const Logger = require('../lib/logger');
+const stubber = require('./stubber');
 
 const queueUrl = 'https://sqs.us-east-1.amazonaws.com/123456789012/fake';
 const sqsMessage = {
@@ -70,6 +72,8 @@ test('[message] constructor', (assert) => {
 
   assert.ok(message.sqs, 'sets .sqs');
 
+  assert.ok(message.logger instanceof Logger, 'sets .logger');
+
   AWS.SQS.restore();
   assert.end();
 });
@@ -134,14 +138,13 @@ test('[message] retry, too many receieves', async (assert) => {
 });
 
 test('[message] retry, SQS error', async (assert) => {
+  const logger = stubber(Logger).setup();
+  const err = new Error('foo');
   AWS.stub('SQS', 'changeMessageVisibility', function() {
-    this.request.promise.returns(Promise.reject(new Error('foo')));
+    this.request.promise.returns(Promise.reject(err));
   });
 
   const message = new Message(sqsMessage, { queueUrl });
-
-  let caught;
-  message.on('error', (err) => (caught = err));
 
   try {
     await message.retry();
@@ -149,8 +152,9 @@ test('[message] retry, SQS error', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(caught.message, 'foo', 'emits error from SQS api');
+  assert.ok(logger.queueError.calledWith(err), 'logged sqs error');
 
+  logger.teardown();
   AWS.SQS.restore();
   assert.end();
 });
@@ -168,21 +172,23 @@ test('[message] complete', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.ok(del.calledWith({ ReceiptHandle: 'a' }), 'removed message from queue');
+  assert.ok(
+    del.calledWith({ ReceiptHandle: 'a' }),
+    'removed message from queue'
+  );
 
   AWS.SQS.restore();
   assert.end();
 });
 
 test('[message] complete, SQS error', async (assert) => {
+  const logger = stubber(Logger).setup();
+  const err = new Error('foo');
   AWS.stub('SQS', 'deleteMessage', function() {
-    this.request.promise.returns(Promise.reject(new Error('foo')));
+    this.request.promise.returns(Promise.reject(err));
   });
 
   const message = new Message(sqsMessage, { queueUrl });
-
-  let caught;
-  message.on('error', (err) => (caught = err));
 
   try {
     await message.complete();
@@ -190,8 +196,9 @@ test('[message] complete, SQS error', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(caught.message, 'foo', 'emitted error from SQS api call');
+  assert.ok(logger.queueError.calledWith(err), 'logged sqs error');
 
+  logger.teardown();
   AWS.SQS.restore();
   assert.end();
 });

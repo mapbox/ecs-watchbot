@@ -1,9 +1,10 @@
 'use strict';
 
-const events = require('events');
 const test = require('tape');
+const sinon = require('sinon');
 const stubber = require('./stubber');
 const Watcher = require('../lib/watcher');
+const Message = require('../lib/message');
 const Messages = require('../lib/messages');
 const Worker = require('../lib/worker');
 
@@ -36,17 +37,8 @@ test('[watcher] constructor', (assert) => {
   assert.equal(watcher.queueUrl, options.queueUrl, 'sets .queueUrl');
   assert.ok(watcher.messages instanceof Messages, 'sets .messages');
 
-  watcher.on('error', (err) => {
-    assert.equal(
-      err.message,
-      'foo',
-      'setup listener for .messages error events'
-    );
-    messages.teardown();
-    assert.end();
-  });
-
-  messages.emit('error', new Error('foo'));
+  messages.teardown();
+  assert.end();
 });
 
 test('[watcher] listen listens until you stop it', async (assert) => {
@@ -81,8 +73,8 @@ test('[watcher] listen', async (assert) => {
     workerOptions
   });
 
-  const message1 = new events.EventEmitter();
-  const message2 = new events.EventEmitter();
+  const message1 = sinon.createStubInstance(Message);
+  const message2 = sinon.createStubInstance(Message);
 
   messages.waitFor
     .onCall(0)
@@ -91,57 +83,33 @@ test('[watcher] listen', async (assert) => {
     .returns(Promise.resolve([message1, message2]))
     .onCall(2)
     .callsFake(() => {
-      message1.emit('error', new Error('foo'));
-      worker.emit('error', new Error('bar'));
       watcher.stop = true;
       return Promise.resolve([]);
     });
 
-  worker.waitFor
-    .onCall(0)
-    .returns(Promise.resolve())
-    .onCall(1)
-    .callsFake(() => Promise.reject(new Error('baz')));
-
-  const caught = {
-    count: 0,
-    errors: []
-  };
-
-  watcher.on('error', (err) => {
-    caught.count++;
-    caught.errors.push(err.message);
-
-    if (caught.count === 4) {
-      assert.deepEqual(
-        caught.errors,
-        ['baz', 'foo', 'bar', 'bar'],
-        'sets up error handlers for workers and messages'
-      );
-
-      assert.ok(
-        Worker.create.calledWith(message1, workerOptions),
-        'creates worker for message1'
-      );
-
-      assert.ok(
-        Worker.create.calledWith(message2, workerOptions),
-        'creates worker for message2'
-      );
-
-      assert.equal(worker.waitFor.callCount, 2, 'waits for both workers');
-
-      messages.teardown();
-      worker.teardown();
-      assert.end();
-    }
-  });
+  worker.waitFor.returns(Promise.resolve());
 
   try {
     await watcher.listen();
   } catch (err) {
     assert.ifError(err, 'failed');
   }
+
+  assert.ok(
+    Worker.create.calledWith(message1, workerOptions),
+    'creates worker for message1'
+  );
+
+  assert.ok(
+    Worker.create.calledWith(message2, workerOptions),
+    'creates worker for message2'
+  );
+
+  assert.equal(worker.waitFor.callCount, 2, 'waits for both workers');
+
+  messages.teardown();
+  worker.teardown();
+  assert.end();
 });
 
 test('[watcher] factory', (assert) => {
