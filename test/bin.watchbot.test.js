@@ -1,10 +1,10 @@
 'use strict';
 
 const test = require('tape');
-const sinon = require('sinon');
 const stubber = require('./stubber');
 const watchbot = require('../bin/watchbot');
 const Watcher = require('../lib/watcher');
+const Logger = require('../lib/logger');
 
 test('[bin.watchbot] success', async (assert) => {
   const watcher = stubber(Watcher).setup();
@@ -27,11 +27,6 @@ test('[bin.watchbot] success', async (assert) => {
     'watcher created with expected arguments'
   );
 
-  assert.ok(
-    watcher.on.calledWith('error', sinon.match.func),
-    'setup error listener on watcher'
-  );
-
   assert.equal(watcher.listen.callCount, 1, 'called watcher.listen()');
 
   delete process.env.QueueUrl;
@@ -42,10 +37,9 @@ test('[bin.watchbot] success', async (assert) => {
 
 test('[bin.watchbot] error handling', async (assert) => {
   const watcher = stubber(Watcher).setup();
+  const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  watcher.listen.callsFake(() => watcher.emit('error', err));
-
-  sinon.spy(console, 'log');
+  watcher.listen.returns(Promise.reject(err));
 
   const argv = process.argv;
   process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
@@ -58,13 +52,13 @@ test('[bin.watchbot] error handling', async (assert) => {
   }
 
   assert.ok(
-    console.log.calledWith(err),
+    logger.log.calledWith(`[error] ${err.stack}`),
     'logged error from watcher to console'
   );
 
   delete process.env.QueueUrl;
   process.argv = argv;
-  console.log.restore();
+  logger.teardown();
   watcher.teardown();
   assert.end();
 });

@@ -5,5 +5,6 @@ module.exports = {
   Messages: require('./lib/messages'),
   Message: require('./lib/message'),
   Worker: require('./lib/worker'),
-  Watcher: require('./lib/watcher')
+  Watcher: require('./lib/watcher'),
+  Logger: require('./lib/logger')
 };
