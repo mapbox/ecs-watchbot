@@ -1,5 +1,6 @@
 'use strict';
 
+const stream = require('stream');
 const events = require('events');
 const child_process = require('child_process');
 const test = require('tape');
@@ -111,9 +112,20 @@ test('[worker] success', async (assert) => {
 });
 
 test('[worker] waitFor, exit 0', async (assert) => {
+  sinon
+    .stub(Date.prototype, 'toGMTString')
+    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+
   const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
+  message.id = '895ab607-3767-4bbb-bd45-2a3b341cbc46';
   message.env = { Message: 'banana' };
+
+  logger.log.restore();
+  logger.stream.restore();
+  logger.type = 'worker';
+  logger.message = message;
+
   const options = { command: 'echo ${Message}' };
   const worker = new Worker(message, options);
 
@@ -121,6 +133,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
   process.env = { fake: 'environment' };
 
   sinon.spy(child_process, 'spawn');
+  sinon.spy(process.stdout, 'write');
 
   try {
     await worker.waitFor();
@@ -128,11 +141,20 @@ test('[worker] waitFor, exit 0', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
+  const data = process.stdout.write.args[0][0];
+  process.stdout.write.restore();
+
+  assert.equal(
+    data,
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [worker] [895ab607-3767-4bbb-bd45-2a3b341cbc46] banana\n',
+    'prefixed worker output'
+  );
+
   assert.ok(
     child_process.spawn.calledWith('echo ${Message}', {
       env: Object.assign(message.env, process.env),
       shell: true,
-      stdio: 'inherit'
+      stdio: [process.stdin, 'pipe', 'pipe']
     }),
     'spawned child process properly'
   );
@@ -142,6 +164,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
   assert.ok(results.duration, 'logged worker success duration');
   assert.equal(message.complete.callCount, 1, 'called message.complete()');
 
+  Date.prototype.toGMTString.restore();
   child_process.spawn.restore();
   process.env = env;
   logger.teardown();
@@ -150,6 +173,8 @@ test('[worker] waitFor, exit 0', async (assert) => {
 
 test('[worker] waitFor, exit 1', async (assert) => {
   const logger = stubber(Logger).setup();
+  logger.log.restore();
+  logger.stream.restore();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'exit 1' };
@@ -175,6 +200,8 @@ test('[worker] waitFor, exit 1', async (assert) => {
 
 test('[worker] waitFor, exit 3', async (assert) => {
   const logger = stubber(Logger).setup();
+  logger.log.restore();
+  logger.stream.restore();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'exit 3' };
@@ -200,6 +227,8 @@ test('[worker] waitFor, exit 3', async (assert) => {
 
 test('[worker] waitFor, exit 4', async (assert) => {
   const logger = stubber(Logger).setup();
+  logger.log.restore();
+  logger.stream.restore();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'exit 4' };
@@ -225,6 +254,8 @@ test('[worker] waitFor, exit 4', async (assert) => {
 
 test('[worker] waitFor, child_process.spawn failure', async (assert) => {
   const logger = stubber(Logger).setup();
+  logger.log.restore();
+  logger.stream.restore();
   const message = sinon.createStubInstance(Message);
   message.env = { Message: 'banana' };
   const options = { command: 'echo ${Message}' };
@@ -233,6 +264,8 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
 
   sinon.stub(child_process, 'spawn').callsFake(() => {
     const p = new events.EventEmitter();
+    p.stdout = new stream.Readable({ read: function() { this.push(null); } });
+    p.stderr = new stream.Readable({ read: function() { this.push(null); } });
     setImmediate(() => p.emit('error', err));
     return p;
   });
