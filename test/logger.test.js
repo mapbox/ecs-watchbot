@@ -42,8 +42,10 @@ test('[logger] constructor', (assert) => {
 });
 
 test('[logger] factory', (assert) => {
-  const logger = Logger.create('watcher');
+  const message = sinon.createStubInstance(Message);
+  const logger = Logger.create('watcher', message);
   assert.ok(logger instanceof Logger, 'returns a Logger object');
+  assert.equal(logger.message, message, 'sets .message');
   assert.end();
 });
 
