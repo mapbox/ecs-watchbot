@@ -233,7 +233,7 @@ Object {
           "MetricAggregationType": "Average",
           "StepAdjustments": Array [
             Object {
-              "MetricIntervalLowerBound": 0,
+              "MetricIntervalLowerBound": -1.1,
               "ScalingAdjustment": -100,
             },
           ],
@@ -737,7 +737,7 @@ Object {
           "MetricAggregationType": "Average",
           "StepAdjustments": Array [
             Object {
-              "MetricIntervalLowerBound": 0,
+              "MetricIntervalLowerBound": -1.1,
               "ScalingAdjustment": -100,
             },
           ],
