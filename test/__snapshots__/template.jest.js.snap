@@ -468,6 +468,10 @@ Object {
             "MemoryReservation": 128,
             "MountPoints": Array [
               Object {
+                "ContainerPath": "/tmp",
+                "SourceVolume": "tmp",
+              },
+              Object {
                 "ContainerPath": "/data",
                 "SourceVolume": "mnt-0",
               },
@@ -492,6 +496,9 @@ Object {
           "Ref": "SoupRole",
         },
         "Volumes": Array [
+          Object {
+            "Name": "tmp",
+          },
           Object {
             "Host": Object {
               "SourcePath": "/mnt/data",
@@ -964,7 +971,12 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
-            "MountPoints": undefined,
+            "MountPoints": Array [
+              Object {
+                "ContainerPath": "/tmp",
+                "SourceVolume": "tmp",
+              },
+            ],
             "Name": "watchbot-example",
             "Privileged": false,
             "Ulimits": Array [
@@ -980,7 +992,11 @@ Object {
         "TaskRoleArn": Object {
           "Ref": "WatchbotRole",
         },
-        "Volumes": undefined,
+        "Volumes": Array [
+          Object {
+            "Name": "tmp",
+          },
+        ],
       },
       "Type": "AWS::ECS::TaskDefinition",
     },
