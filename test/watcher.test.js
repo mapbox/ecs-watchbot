@@ -1,3 +1,4 @@
+
 'use strict';
 
 const test = require('tape');
@@ -7,7 +8,6 @@ const Watcher = require('../lib/watcher');
 const Message = require('../lib/message');
 const Messages = require('../lib/messages');
 const Worker = require('../lib/worker');
-
 test('[watcher] constructor', (assert) => {
   const messages = stubber(Messages).setup();
 
@@ -41,29 +41,35 @@ test('[watcher] constructor', (assert) => {
   assert.end();
 });
 
-test('[watcher] listen listens until you stop it', async (assert) => {
+test('[watcher] listens exactly once', async (assert) => {
   const messages = stubber(Messages).setup();
-  messages.waitFor.returns(Promise.resolve([]));
+  const message1 = sinon.createStubInstance(Message);
+  const message2 = sinon.createStubInstance(Message);
+
+  messages.waitFor
+    .onCall(0)
+    .returns(Promise.resolve([message1]))
+    .onCall(1)
+    .returns(Promise.resolve([message2]));
 
   const watcher = new Watcher({
     queueUrl: 'https://faker',
     workerOptions: { command: 'echo hello world' }
   });
 
-  setTimeout(() => (watcher.stop = true), 1000);
-
   await watcher.listen();
 
-  assert.pass('listened until .stop was set to true');
-  assert.ok(
-    messages.waitFor.callCount > 2,
-    'as evidenced by repeated calls to messages.waitFor'
+  assert.equals(
+    messages.waitFor.callCount, 1,
+    'messages.waitFor is called once.'
   );
   messages.teardown();
   assert.end();
 });
 
 test('[watcher] listen', async (assert) => {
+  let count = 0;
+
   const messages = stubber(Messages).setup();
   const worker = stubber(Worker).setup();
   const workerOptions = { command: 'echo hello world' };
@@ -78,21 +84,14 @@ test('[watcher] listen', async (assert) => {
 
   messages.waitFor
     .onCall(0)
-    .returns(Promise.resolve([]))
-    .onCall(1)
-    .returns(Promise.resolve([message1, message2]))
-    .onCall(2)
-    .callsFake(() => {
-      watcher.stop = true;
-      return Promise.resolve([]);
-    });
+    .returns(Promise.resolve([message1, message2]));
 
   worker.waitFor.returns(Promise.resolve());
 
   try {
     await watcher.listen();
   } catch (err) {
-    assert.ifError(err, 'failed');
+    assert.ifError(err, 'blahblah');
   }
 
   assert.ok(
@@ -110,6 +109,7 @@ test('[watcher] listen', async (assert) => {
   messages.teardown();
   worker.teardown();
   assert.end();
+
 });
 
 test('[watcher] factory', (assert) => {
