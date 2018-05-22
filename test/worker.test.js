@@ -3,6 +3,7 @@
 const stream = require('stream');
 const events = require('events');
 const child_process = require('child_process');
+const fs = require('fs');
 const test = require('tape');
 const sinon = require('sinon');
 const Worker = require('../lib/worker');
@@ -134,6 +135,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
 
   sinon.spy(child_process, 'spawn');
   sinon.spy(process.stdout, 'write');
+  sinon.spy(process.stderr, 'write');
 
   try {
     await worker.waitFor();
@@ -143,6 +145,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
 
   const data = process.stdout.write.args[0][0];
   process.stdout.write.restore();
+  process.stderr.write.restore();
 
   assert.equal(
     data,
@@ -154,7 +157,8 @@ test('[worker] waitFor, exit 0', async (assert) => {
     child_process.spawn.calledWith('echo ${Message}', {
       env: Object.assign(message.env, process.env),
       shell: true,
-      stdio: [process.stdin, 'pipe', 'pipe']
+      stdio: [process.stdin, 'pipe', 'pipe'],
+      uid: 200
     }),
     'spawned child process properly'
   );
@@ -163,6 +167,135 @@ test('[worker] waitFor, exit 0', async (assert) => {
   assert.equal(results.code, 0, 'logged worker success exit code');
   assert.ok(results.duration, 'logged worker success duration');
   assert.equal(message.complete.callCount, 1, 'called message.complete()');
+
+  Date.prototype.toGMTString.restore();
+  child_process.spawn.restore();
+  process.env = env;
+  logger.teardown();
+  assert.end();
+});
+
+test('[worker] waitFor, write to /tmp, exit 0', async (assert) => {
+  sinon
+    .stub(Date.prototype, 'toGMTString')
+    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+
+  const logger = stubber(Logger).setup();
+  const message = sinon.createStubInstance(Message);
+  message.id = '895ab607-3767-4bbb-bd45-2a3b341cbc46';
+  message.env = { Message: 'banana' };
+
+  logger.log.restore();
+  logger.stream.restore();
+  logger.type = 'worker';
+  logger.message = message;
+
+  const options = { command: 'echo ${Message} > /tmp/banana.txt && cat /tmp/banana.txt' };
+  const worker = new Worker(message, options);
+
+  const env = process.env;
+  process.env = { fake: 'environment' };
+
+  sinon.spy(child_process, 'spawn');
+  sinon.spy(process.stdout, 'write');
+  sinon.spy(process.stderr, 'write');
+
+  try {
+    await worker.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  const data = process.stdout.write.args[0][0];
+  process.stdout.write.restore();
+  process.stderr.write.restore();
+
+  assert.equal(
+    data,
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [worker] [895ab607-3767-4bbb-bd45-2a3b341cbc46] banana\n',
+    'prefixed worker output'
+  );
+
+  assert.ok(
+    child_process.spawn.calledWith('echo ${Message} > /tmp/banana.txt && cat /tmp/banana.txt', {
+      env: Object.assign(message.env, process.env),
+      shell: true,
+      stdio: [process.stdin, 'pipe', 'pipe'],
+      uid: 200
+    }),
+    'spawned child process properly'
+  );
+
+  const results = logger.workerSuccess.args[0][0];
+  assert.equal(results.code, 0, 'logged worker success exit code');
+  assert.ok(results.duration, 'logged worker success duration');
+  assert.equal(message.complete.callCount, 1, 'called message.complete()');
+
+  const tmpFiles = fs.readdirSync('/tmp');
+  assert.equal(tmpFiles.length, 0, 'all files in /tmp are cleared out after the worker complets');
+
+  Date.prototype.toGMTString.restore();
+  child_process.spawn.restore();
+  process.env = env;
+  logger.teardown();
+  assert.end();
+});
+
+test('[worker] waitFor, attempt to write to root, exit 2', async (assert) => {
+  sinon
+    .stub(Date.prototype, 'toGMTString')
+    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+
+  const logger = stubber(Logger).setup();
+  const message = sinon.createStubInstance(Message);
+  message.id = '895ab607-3767-4bbb-bd45-2a3b341cbc46';
+  message.env = { Message: 'banana' };
+
+  logger.log.restore();
+  logger.stream.restore();
+  logger.type = 'worker';
+  logger.message = message;
+
+  const options = { command: 'echo ${Message} > /banana.txt && cat /banana.txt' };
+  const worker = new Worker(message, options);
+
+  const env = process.env;
+  process.env = { fake: 'environment' };
+
+  sinon.spy(child_process, 'spawn');
+  sinon.spy(process.stdout, 'write');
+  sinon.spy(process.stderr, 'write');
+
+  try {
+    await worker.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  const data = process.stdout.write.args[0][0];
+  process.stdout.write.restore();
+  process.stderr.write.restore();
+
+  assert.equal(
+    data,
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [worker] [895ab607-3767-4bbb-bd45-2a3b341cbc46] /bin/sh: 1: cannot create /banana.txt: Permission denied\n',
+    'prefixed worker output'
+  );
+
+  assert.ok(
+    child_process.spawn.calledWith('echo ${Message} > /banana.txt && cat /banana.txt', {
+      env: Object.assign(message.env, process.env),
+      shell: true,
+      stdio: [process.stdin, 'pipe', 'pipe'],
+      uid: 200
+    }),
+    'spawned child process properly'
+  );
+
+  const results = logger.workerFailure.args[0][0];
+  assert.equal(results.code, 2, 'logged worker failure exit code');
+  assert.ok(results.duration, 'logged worker failure duration');
+  assert.equal(message.retry.callCount, 1, 'called message.retry()');
 
   Date.prototype.toGMTString.restore();
   child_process.spawn.restore();

@@ -11,7 +11,8 @@
   },
   "scripts": {
     "lint": "eslint bin lib test index.js",
-    "test": "tape test/*.test.js | tap-spec && jest test/*.jest.js",
+    "test": "docker build -q -t ecs-watchbot -f test/Dockerfile ./ && docker run -t ecs-watchbot npm run test-container",
+    "test-container": "tape test/*.test.js | tap-spec && jest test/*.jest.js",
     "validate-templates": "tape test/template.validation.js | tap-spec",
     "update-jest-snapshots": "jest -u test/*.jest.js",
     "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html"
@@ -41,6 +42,7 @@
     "@mapbox/cloudfriend": "^1.9.0",
     "aws-sdk": "^2.188.0",
     "binary-split": "^1.0.3",
+    "fs-extra": "^6.0.1",
     "stream-combiner2": "^1.1.1"
   }
 }
