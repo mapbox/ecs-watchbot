@@ -8,6 +8,7 @@ const Watcher = require('../lib/watcher');
 const Message = require('../lib/message');
 const Messages = require('../lib/messages');
 const Worker = require('../lib/worker');
+
 test('[watcher] constructor', (assert) => {
   const messages = stubber(Messages).setup();
 
@@ -68,7 +69,6 @@ test('[watcher] listens exactly once', async (assert) => {
 });
 
 test('[watcher] listen', async (assert) => {
-  let count = 0;
 
   const messages = stubber(Messages).setup();
   const worker = stubber(Worker).setup();
@@ -91,7 +91,7 @@ test('[watcher] listen', async (assert) => {
   try {
     await watcher.listen();
   } catch (err) {
-    assert.ifError(err, 'blahblah');
+    assert.ifError(err, 'failed');
   }
 
   assert.ok(
