@@ -134,6 +134,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
 
   sinon.spy(child_process, 'spawn');
   sinon.spy(process.stdout, 'write');
+  sinon.spy(process.stderr, 'write');
 
   try {
     await worker.waitFor();
@@ -154,7 +155,8 @@ test('[worker] waitFor, exit 0', async (assert) => {
     child_process.spawn.calledWith('echo ${Message}', {
       env: Object.assign(message.env, process.env),
       shell: true,
-      stdio: [process.stdin, 'pipe', 'pipe']
+      stdio: [process.stdin, 'pipe', 'pipe'],
+      uid: 200
     }),
     'spawned child process properly'
   );
