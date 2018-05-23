@@ -24,7 +24,7 @@ const main = async () => {
   } catch (err) {
     logger.log(`[error] ${err.stack}`);
   }
-  console.log('exiting now. bye!');
+  logger.log('exiting now. bye!');
 };
 
 module.exports = main;
