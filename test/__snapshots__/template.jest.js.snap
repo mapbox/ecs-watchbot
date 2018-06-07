@@ -60,63 +60,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
-    "SoupFailedWorkerPlacementMetric": Object {
-      "Properties": Object {
-        "FilterPattern": "{ $.failedPlacement = true }",
-        "LogGroupName": Object {
-          "Ref": "SoupLogs",
-        },
-        "MetricTransformations": Array [
-          Object {
-            "MetricName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  "SoupFailedWorkerPlacement-",
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                ],
-              ],
-            },
-            "MetricNamespace": "Mapbox/ecs-watchbot",
-            "MetricValue": 1,
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-    "SoupFailedworkerPlacementAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v3.5.1/docs/alarms.md#failedworkerplacement",
-        "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-failed-worker-placement",
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
-        "MetricName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "SoupFailedWorkerPlacement-",
-              Object {
-                "Ref": "AWS::StackName",
-              },
-            ],
-          ],
-        },
-        "Namespace": "Mapbox/ecs-watchbot",
-        "Period": "60",
-        "Statistic": "Sum",
-        "Threshold": 5,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
     "SoupLogs": Object {
       "Properties": Object {
         "LogGroupName": Object {
@@ -763,63 +706,6 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "WatchbotFailedWorkerPlacementMetric": Object {
-      "Properties": Object {
-        "FilterPattern": "{ $.failedPlacement = true }",
-        "LogGroupName": Object {
-          "Ref": "WatchbotLogs",
-        },
-        "MetricTransformations": Array [
-          Object {
-            "MetricName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  "WatchbotFailedWorkerPlacement-",
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                ],
-              ],
-            },
-            "MetricNamespace": "Mapbox/ecs-watchbot",
-            "MetricValue": 1,
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-    "WatchbotFailedworkerPlacementAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "WatchbotNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v3.5.1/docs/alarms.md#failedworkerplacement",
-        "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-failed-worker-placement",
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
-        "MetricName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "WatchbotFailedWorkerPlacement-",
-              Object {
-                "Ref": "AWS::StackName",
-              },
-            ],
-          ],
-        },
-        "Namespace": "Mapbox/ecs-watchbot",
-        "Period": "60",
-        "Statistic": "Sum",
-        "Threshold": 5,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
     },
     "WatchbotLogs": Object {
       "Properties": Object {
