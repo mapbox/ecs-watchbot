@@ -4,21 +4,6 @@ This document describes CloudWatch alarms that Watchbot configures. If one of th
 
 **In all cases**, SQS messages that failed and led to these alarms are put back into SQS to be retried. [See the worker retry documentation](./worker-retry-cycle.md) for more info.
 
-## FailedWorkerPlacement
-
-### Why?
-
-There were more than 5 attempts to place a worker container in 60 seconds that could not be placed. The failed placement could be due to:
-
-- insufficient CPU or memory was available on the cluster
-- failure to start a docker container on a host EC2 because of disk I/O exhaustion
-- any other scenario that may have caused the worker not to be placed
-
-### What to do
-
-Most of the time, this is due to a lack of available cluster resources. Use [the provided CLI command](./command-line-utilities.md#assessing-worker-capacity-in-your-service's cluster) to get a sense of how much space is free in your cluster. If necessary, increase available resources on your cluster by removing other tasks or launching new EC2s.
-
-If resource availability on the cluster does not appear to be the problem, then you'll need to dig into logs in order to understand what the problem is. Check watcher logs for any indication of the reason for job placement failure by searching for `failedPlacement`.
 
 ## WorkerErrors
 
@@ -53,4 +38,3 @@ There are visible messages in the dead letter queue. SQS messages are received b
 These messages consistently failed processing attempts. It is possible that these messages represent an edge case in your worker's processing code. In this case, you should investigate your system's logs to try and determine how the workers failed.
 
 It is also possible that this represents failure to successfully place workers in your cluster. If this is the case, then you will also have seen alarms on FailedWorkerPlacement (see above).
-
