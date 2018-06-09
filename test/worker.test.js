@@ -57,6 +57,7 @@ test('[worker] fail', async (assert) => {
 
   assert.ok(logger.workerFailure.calledWith(results), 'logs worker failure');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
+	assert.ok(logger.workerFailure.callCount, '1', 'calls workerFailure once');
 
   logger.teardown();
   assert.end();
@@ -74,6 +75,7 @@ test('[worker] noop', async (assert) => {
   console.log(logger.workerSuccess.args[0][0]);
   assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
+	assert.ok(logger.workerSuccess.callCount, 1, 'calls workerSuccess once');
 
   logger.teardown();
   assert.end();
