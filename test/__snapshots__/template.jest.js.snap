@@ -436,7 +436,7 @@ Object {
     "SoupScalingTarget": Object {
       "Properties": Object {
         "MaxCapacity": 1,
-        "MinCapacity": 1,
+        "MinCapacity": 0,
         "ResourceId": Object {
           "Fn::Join": Array [
             "",
@@ -1061,7 +1061,7 @@ Object {
     "WatchbotScalingTarget": Object {
       "Properties": Object {
         "MaxCapacity": 1,
-        "MinCapacity": 1,
+        "MinCapacity": 0,
         "ResourceId": Object {
           "Fn::Join": Array [
             "",
