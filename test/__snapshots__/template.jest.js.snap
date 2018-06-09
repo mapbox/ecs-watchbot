@@ -353,7 +353,7 @@ Object {
           "StepAdjustments": Array [
             Object {
               "MetricIntervalLowerBound": 0,
-              "ScalingAdjustment": 9,
+              "ScalingAdjustment": 1,
             },
           ],
         },
@@ -435,8 +435,8 @@ Object {
     },
     "SoupScalingTarget": Object {
       "Properties": Object {
-        "MaxCapacity": 90,
-        "MinCapacity": 0,
+        "MaxCapacity": 1,
+        "MinCapacity": 1,
         "ResourceId": Object {
           "Fn::Join": Array [
             "",
@@ -1061,7 +1061,7 @@ Object {
     "WatchbotScalingTarget": Object {
       "Properties": Object {
         "MaxCapacity": 1,
-        "MinCapacity": 0,
+        "MinCapacity": 1,
         "ResourceId": Object {
           "Fn::Join": Array [
             "",
