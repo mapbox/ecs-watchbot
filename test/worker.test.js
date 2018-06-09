@@ -71,6 +71,7 @@ test('[worker] noop', async (assert) => {
   const results = { code: 4, duration: 12345 };
   await worker.noop(results);
 
+  console.log(logger.workerSuccess.args[0][0]);
   assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
@@ -252,7 +253,7 @@ test('[worker] waitFor, exit 4', async (assert) => {
   assert.end();
 });
 
-test('[worker] waitFor, child_process.spawn failure', async (assert) => {
+test.only('[worker] waitFor, child_process.spawn failure', async (assert) => {
   const logger = stubber(Logger).setup();
   logger.log.restore();
   logger.stream.restore();
@@ -262,6 +263,7 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
   const worker = new Worker(message, options);
   const err = new Error('foo');
 
+	sinon.spy(process.stdout, 'write');
   sinon.stub(child_process, 'spawn').callsFake(() => {
     const p = new events.EventEmitter();
     p.stdout = new stream.Readable({ read: function() { this.push(null); } });
@@ -275,8 +277,13 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
   } catch (err) {
     assert.ifError(err, 'failed');
   }
-
-  assert.ok(logger.workerError.calledWith(err), 'logged worker error');
+const data = process.stdout.write.args[0][0];                                 
+    process.stdout.write.restore();
+  console.log('logger.workerError.calledWith(err)');
+  //console.log(err);
+	console.log(logger.workerError.args[0]);
+	assert.ok(logger.workerError.calledWith(err), 'called with error');
+  assert.ok(logger.workerError.callCount, 1,  'logged worker error');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
   child_process.spawn.restore();
