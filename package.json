@@ -10,6 +10,7 @@
     "watchbot": "./bin/watchbot.js"
   },
   "scripts": {
+    "pretest": "npm run lint && npm run validate-templates",
     "lint": "eslint bin lib test index.js",
     "test": "tape test/*.test.js | tap-spec && jest test/*.jest.js",
     "validate-templates": "tape test/template.validation.js | tap-spec",
