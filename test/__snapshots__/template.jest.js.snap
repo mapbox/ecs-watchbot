@@ -80,6 +80,18 @@ Object {
       },
       "Type": "AWS::Logs::LogGroup",
     },
+    "SoupNotificationTopic": Object {
+      "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
+      "Properties": Object {
+        "Subscription": Array [
+          Object {
+            "Endpoint": "hello@mapbox.pagerduty.com",
+            "Protocol": "email",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
+    },
     "SoupQueue": Object {
       "Properties": Object {
         "MessageRetentionPeriod": 1096,
@@ -726,6 +738,18 @@ Object {
         "RetentionInDays": 14,
       },
       "Type": "AWS::Logs::LogGroup",
+    },
+    "WatchbotNotificationTopic": Object {
+      "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
+      "Properties": Object {
+        "Subscription": Array [
+          Object {
+            "Endpoint": "hello@mapbox.pagerduty.com",
+            "Protocol": "email",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
     },
     "WatchbotQueue": Object {
       "Properties": Object {

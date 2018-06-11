@@ -13,7 +13,8 @@ test('[template validation] defaults', async (assert) => {
     service: 'example',
     serviceVersion: '1',
     command: 'echo hello world',
-    cluster: 'processing'
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com'
   });
 
   const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
@@ -56,7 +57,8 @@ test('[template validation] options set', async (assert) => {
     },
     privileged: true,
     messageTimeout: 300,
-    messageRetention: 1096
+    messageRetention: 1096,
+    notificationEmail: 'hello@mapbox.pagerduty.com'
   });
 
   const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
