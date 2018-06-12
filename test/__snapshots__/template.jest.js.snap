@@ -365,7 +365,7 @@ Object {
           "StepAdjustments": Array [
             Object {
               "MetricIntervalLowerBound": 0,
-              "ScalingAdjustment": 9,
+              "ScalingAdjustment": 1,
             },
           ],
         },
@@ -447,7 +447,7 @@ Object {
     },
     "SoupScalingTarget": Object {
       "Properties": Object {
-        "MaxCapacity": 90,
+        "MaxCapacity": 1,
         "MinCapacity": 0,
         "ResourceId": Object {
           "Fn::Join": Array [
