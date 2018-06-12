@@ -4,6 +4,7 @@
 
 const assert = require('assert');
 const template = require('../lib/template');
+const cf = require('@mapbox/cloudfriend');
 
 test('[template]', () => {
   assert.throws(
@@ -12,17 +13,17 @@ test('[template]', () => {
     'throws when missing required options'
   );
 
-  const builtWithDefaults = template({
+  const builtWithDefaults = cf.merge(template({
     service: 'example',
     serviceVersion: '1',
     command: 'echo hello world',
     cluster: 'processing',
     notificationEmail: 'hello@mapbox.pagerduty.com'
-  });
+  }));
 
   expect(builtWithDefaults).toMatchSnapshot('defaults');
 
-  const setsAllOptions = template({
+  const setsAllOptions = cf.merge(template({
     service: 'example',
     serviceVersion: '1',
     command: 'echo hello world',
@@ -40,7 +41,7 @@ test('[template]', () => {
     prefix: 'Soup',
     family: 'abc-123',
     maxSize: 90,
-    mounts: '/mnt/data:/data,/ephemeral',
+    mounts: '/data,/ephemeral',
     reservation: {
       memory: 512,
       softMemory: 128,
@@ -50,7 +51,7 @@ test('[template]', () => {
     messageTimeout: 300,
     messageRetention: 1096,
     notificationEmail: 'hello@mapbox.pagerduty.com'
-  });
+  }));
 
   expect(setsAllOptions).toMatchSnapshot('all-properties');
 });

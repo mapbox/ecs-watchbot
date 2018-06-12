@@ -8,6 +8,7 @@ const Watcher = require('../lib/watcher');
 const Message = require('../lib/message');
 const Messages = require('../lib/messages');
 const Worker = require('../lib/worker');
+const fs = require('fs');
 
 test('[watcher] constructor', (assert) => {
   const messages = stubber(Messages).setup();
@@ -26,7 +27,10 @@ test('[watcher] constructor', (assert) => {
 
   const options = {
     queueUrl: 'https://faker',
-    workerOptions: { command: 'echo hello world' }
+    workerOptions: {
+      command: 'echo hello world',
+      volumes: ['/tmp']
+    }
   };
   const watcher = new Watcher(options);
 
@@ -55,8 +59,11 @@ test('[watcher] listens exactly once', async (assert) => {
 
   const watcher = new Watcher({
     queueUrl: 'https://faker',
-    workerOptions: { command: 'echo hello world' },
-    fresh: true
+    fresh: true,
+    workerOptions: {
+      command: 'echo hello world',
+      volumes: ['/tmp']
+    }
   });
 
   await watcher.listen();
@@ -73,7 +80,10 @@ test('[watcher] listen', async (assert) => {
 
   const messages = stubber(Messages).setup();
   const worker = stubber(Worker).setup();
-  const workerOptions = { command: 'echo hello world' };
+  const workerOptions = {
+    command: 'echo hello world',
+    volumes: ['/tmp','/mnt']
+  };
 
   const watcher = new Watcher({
     queueUrl: 'https://faker',
@@ -113,6 +123,9 @@ test('[watcher] listen', async (assert) => {
 
   assert.equal(worker.waitFor.callCount, 2, 'waits for both workers');
 
+  assert.equal((fs.statSync('/tmp').mode & parseInt('777', 8)).toString(8), '777', 'calls chmod on /tmp');
+  assert.equal((fs.statSync('/mnt').mode & parseInt('777', 8)).toString(8), '777', 'calls chmod on /mnt');
+
   messages.teardown();
   worker.teardown();
   assert.end();
@@ -122,7 +135,10 @@ test('[watcher] listen', async (assert) => {
 test('[watcher] factory', (assert) => {
   const watcher = Watcher.create({
     queueUrl: 'https://faker',
-    workerOptions: { command: 'echo hello world' }
+    workerOptions: {
+      command: 'echo hello world',
+      volumes: ['/tmp']
+    }
   });
 
   assert.ok(watcher instanceof Watcher, 'creates a Watcher object');

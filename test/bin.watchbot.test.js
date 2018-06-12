@@ -12,6 +12,7 @@ test('[bin.watchbot] success', async (assert) => {
   const argv = process.argv;
   process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
   process.env.QueueUrl = 'https://faker';
+  process.env.Volumes = '/tmp,/mnt';
 
   try {
     await watchbot();
@@ -22,8 +23,11 @@ test('[bin.watchbot] success', async (assert) => {
   assert.ok(
     Watcher.create.calledWith({
       queueUrl: 'https://faker',
-      workerOptions: { command: 'echo hello world' },
-      fresh: false
+      fresh: false,
+      workerOptions: {
+        command: 'echo hello world',
+        volumes: ['/tmp', '/mnt']
+      }
     }),
     'watcher created with expected arguments'
   );
@@ -31,6 +35,7 @@ test('[bin.watchbot] success', async (assert) => {
   assert.equal(watcher.listen.callCount, 1, 'called watcher.listen()');
 
   delete process.env.QueueUrl;
+  delete process.env.Volumes;
   process.argv = argv;
   watcher.teardown();
   assert.end();
@@ -45,6 +50,7 @@ test('[bin.watchbot] error handling', async (assert) => {
   const argv = process.argv;
   process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
   process.env.QueueUrl = 'https://faker';
+  process.env.Volumes = '/tmp,/mnt';
 
   try {
     await watchbot();
@@ -58,6 +64,7 @@ test('[bin.watchbot] error handling', async (assert) => {
   );
 
   delete process.env.QueueUrl;
+  delete process.env.Volumes;
   process.argv = argv;
   logger.teardown();
   watcher.teardown();
@@ -68,6 +75,7 @@ test('[bin.watchbot] bad arguments', async (assert) => {
   const argv = process.argv;
   process.argv = ['', '', 'watch', 'echo', 'hello', 'world'];
   process.env.QueueUrl = 'https://faker';
+  process.env.Volumes = '/tmp,/mnt';
 
   try {
     await watchbot();
@@ -80,6 +88,7 @@ test('[bin.watchbot] bad arguments', async (assert) => {
   }
 
   delete process.env.QueueUrl;
+  delete process.env.Volumes;
   process.argv = argv;
   assert.end();
 });
