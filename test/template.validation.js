@@ -48,7 +48,7 @@ test('[template validation] options set', async (assert) => {
     },
     prefix: 'Soup',
     family: 'abc-123',
-    workers: 90,
+    maxSize: 90,
     mounts: '/mnt/data:/data,/ephemeral',
     reservation: {
       memory: 512,
