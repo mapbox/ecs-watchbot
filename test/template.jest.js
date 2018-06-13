@@ -16,7 +16,8 @@ test('[template]', () => {
     service: 'example',
     serviceVersion: '1',
     command: 'echo hello world',
-    cluster: 'processing'
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com'
   });
 
   expect(builtWithDefaults).toMatchSnapshot('defaults');
@@ -38,7 +39,7 @@ test('[template]', () => {
     },
     prefix: 'Soup',
     family: 'abc-123',
-    workers: 90,
+    maxSize: 90,
     mounts: '/mnt/data:/data,/ephemeral',
     reservation: {
       memory: 512,
@@ -47,7 +48,8 @@ test('[template]', () => {
     },
     privileged: true,
     messageTimeout: 300,
-    messageRetention: 1096
+    messageRetention: 1096,
+    notificationEmail: 'hello@mapbox.pagerduty.com'
   });
 
   expect(setsAllOptions).toMatchSnapshot('all-properties');
