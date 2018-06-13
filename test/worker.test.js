@@ -270,6 +270,10 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
     return p;
   });
 
+	sinon.stub(child_process, 'write').callsFake(() => {
+		return '[worker]';
+	});
+
   try {
     await worker.waitFor();
   } catch (err) {
