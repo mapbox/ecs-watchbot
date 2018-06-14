@@ -84,8 +84,14 @@ test('[watcher] listen', async (assert) => {
   const message2 = sinon.createStubInstance(Message);
 
   messages.waitFor
-    .onCall(0)
-    .returns(Promise.resolve([message1, message2]));
+    .returns(Promise.resolve([]))
+    .onCall(1)
+    .returns(Promise.resolve([message1, message2]))
+    .onCall(2)
+    .callsFake(() => {
+      watcher.stop = true;
+      return Promise.resolve([]);
+    });
 
   worker.waitFor.returns(Promise.resolve());
 
