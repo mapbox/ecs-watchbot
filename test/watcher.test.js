@@ -55,7 +55,8 @@ test('[watcher] listens exactly once', async (assert) => {
 
   const watcher = new Watcher({
     queueUrl: 'https://faker',
-    workerOptions: { command: 'echo hello world' }
+    workerOptions: { command: 'echo hello world' },
+    fresh: true
   });
 
   await watcher.listen();
