@@ -14,7 +14,7 @@ const main = async () => {
 
   const options = {
     queueUrl: process.env.QueueUrl,
-    fresh: process.env.fresh,
+    fresh: process.env.fresh === 'true' ? true : false,
     workerOptions: { command }
   };
 
