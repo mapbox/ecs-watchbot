@@ -22,7 +22,8 @@ test('[bin.watchbot] success', async (assert) => {
   assert.ok(
     Watcher.create.calledWith({
       queueUrl: 'https://faker',
-      workerOptions: { command: 'echo hello world' }
+      workerOptions: { command: 'echo hello world' },
+      fresh: false
     }),
     'watcher created with expected arguments'
   );
