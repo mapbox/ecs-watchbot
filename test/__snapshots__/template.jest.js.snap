@@ -510,6 +510,10 @@ Object {
                 },
               },
               Object {
+                "Name": "fresh",
+                "Value": false,
+              },
+              Object {
                 "Name": "MyKey",
                 "Value": "MyValue",
               },
@@ -1145,6 +1149,10 @@ Object {
                 "Value": Object {
                   "Ref": "WatchbotQueue",
                 },
+              },
+              Object {
+                "Name": "fresh",
+                "Value": false,
               },
             ],
             "Image": Object {
