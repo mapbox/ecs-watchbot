@@ -566,7 +566,7 @@ Object {
             ],
             "Name": "soup-example",
             "Privileged": true,
-            "ReadOnlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": true,
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -1201,7 +1201,7 @@ Object {
             ],
             "Name": "watchbot-example",
             "Privileged": false,
-            "ReadOnlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": true,
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
