@@ -1,3 +1,10 @@
+### 4.0.0
+
+- Major revamp of watchbot internals. (refs #184). The system now:
+  - Relies on an ECS service for scaling
+  - Provides users metrics on cpu and memory utilization of all containers
+  - Re-uses the same containers to process multiple jobs, reducing overhead
+
 ### 3.5.1
 
 - Clearer error messages from the CLI tool for bad user input.
