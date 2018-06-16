@@ -1,34 +1,33 @@
 #!/usr/bin/env node
 
-var fastlog = require('fastlog')('watchbot');
-var _ = require('underscore');
-var sendNotification = require('../lib/notifications')(process.env.NotificationTopic).send;
-var watchbot = require('..');
+'use strict';
 
-var required = [
-  'Cluster',
-  'TaskDefinition',
-  'Concurrency',
-  'QueueUrl',
-  'TaskEventQueueUrl',
-  'NotificationTopic',
-  'StackName',
-  'LogGroupArn',
-  'AlarmOnEachFailure'
-];
+const Watcher = require('../lib/watcher');
+const Logger = require('../lib/logger');
 
-var missing = _.difference(required, Object.keys(process.env));
-if (missing.length) {
-  var err = new Error('Missing from environment: ' + missing.join(', '));
-  fastlog.error(err);
-  sendNotification('[watchbot] config error', err.message);
-  process.exit(1);
-}
+const main = async () => {
+  if (process.argv[2] !== 'listen')
+    throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
 
-/**
- * The main Watchbot loop. This function runs continuously on one or more containers,
- * each of which is responsible for polling SQS and spawning tasks to process
- * messages, while maintaining a predefined task concurrency and reporting any failed
- * processing tasks.
- */
-watchbot.main(process.env);
+  const logger = Logger.create('watcher');
+  const command = process.argv.slice(3).join(' ');
+  const volumes = process.env.Volumes.split(',');
+
+  const options = {
+    queueUrl: process.env.QueueUrl,
+    fresh: process.env.fresh === 'true' ? true : false,
+    workerOptions: { command, volumes }
+  };
+
+  const watcher = Watcher.create(options);
+
+  try {
+    await watcher.listen();
+  } catch (err) {
+    logger.log(`[error] ${err.stack}`);
+  }
+};
+
+module.exports = main;
+
+if (require.main === module) main();

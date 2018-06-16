@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 /**
  * watchbot-log "something that you want logged"
@@ -6,15 +7,13 @@
  * echo "somehing that you want logged" | watchbot-log
  */
 
-var watchbot = require('..');
-var args = process.argv.slice(2);
+const Logger = require('..').Logger;
+const args = process.argv.slice(2);
+
+const logger = new Logger('worker');
 
 if (args[0]) {
-  return watchbot.log(args[0]);
+  return logger.log(args[0]);
 }
 
-process.stdin.on('data', function(d) {
-  d.toString().trim().split('\n').forEach(function(line) {
-    watchbot.log(line);
-  });
-});
+process.stdin.pipe(logger.stream());
