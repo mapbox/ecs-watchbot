@@ -26,7 +26,10 @@ test('[watcher] constructor', (assert) => {
 
   const options = {
     queueUrl: 'https://faker',
-    workerOptions: { command: 'echo hello world' }
+    workerOptions: {
+      command: 'echo hello world',
+      volumes: ['/tmp']
+    }
   };
   const watcher = new Watcher(options);
 
@@ -55,8 +58,11 @@ test('[watcher] listens exactly once', async (assert) => {
 
   const watcher = new Watcher({
     queueUrl: 'https://faker',
-    workerOptions: { command: 'echo hello world' },
-    fresh: true
+    fresh: true,
+    workerOptions: {
+      command: 'echo hello world',
+      volumes: ['/tmp']
+    }
   });
 
   await watcher.listen();
@@ -73,7 +79,10 @@ test('[watcher] listen', async (assert) => {
 
   const messages = stubber(Messages).setup();
   const worker = stubber(Worker).setup();
-  const workerOptions = { command: 'echo hello world' };
+  const workerOptions = {
+    command: 'echo hello world',
+    volumes: ['/tmp','/mnt']
+  };
 
   const watcher = new Watcher({
     queueUrl: 'https://faker',
@@ -122,7 +131,10 @@ test('[watcher] listen', async (assert) => {
 test('[watcher] factory', (assert) => {
   const watcher = Watcher.create({
     queueUrl: 'https://faker',
-    workerOptions: { command: 'echo hello world' }
+    workerOptions: {
+      command: 'echo hello world',
+      volumes: ['/tmp']
+    }
   });
 
   assert.ok(watcher instanceof Watcher, 'creates a Watcher object');

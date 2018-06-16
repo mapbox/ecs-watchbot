@@ -9,13 +9,13 @@ const cf = require('@mapbox/cloudfriend');
 const template = require('../lib/template');
 
 test('[template validation] defaults', async (assert) => {
-  const builtWithDefaults = template({
+  const builtWithDefaults = cf.merge(template({
     service: 'example',
     serviceVersion: '1',
     command: 'echo hello world',
     cluster: 'processing',
     notificationEmail: 'hello@mapbox.pagerduty.com'
-  });
+  }));
 
   const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
   fs.writeFileSync(tmp, JSON.stringify(builtWithDefaults));
@@ -31,7 +31,7 @@ test('[template validation] defaults', async (assert) => {
 });
 
 test('[template validation] options set', async (assert) => {
-  const setsAllOptions = template({
+  const setsAllOptions = cf.merge(template({
     service: 'example',
     serviceVersion: '1',
     command: 'echo hello world',
@@ -59,7 +59,7 @@ test('[template validation] options set', async (assert) => {
     messageTimeout: 300,
     messageRetention: 1096,
     notificationEmail: 'hello@mapbox.pagerduty.com'
-  });
+  }));
 
   const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
   fs.writeFileSync(tmp, JSON.stringify(setsAllOptions));

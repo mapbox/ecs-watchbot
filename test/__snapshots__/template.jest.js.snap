@@ -60,7 +60,7 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
-    "SoupLogs": Object {
+    "SoupLogGroup": Object {
       "Properties": Object {
         "LogGroupName": Object {
           "Fn::Join": Array [
@@ -242,7 +242,7 @@ Object {
                   "Effect": "Allow",
                   "Resource": Object {
                     "Fn::GetAtt": Array [
-                      "SoupLogs",
+                      "SoupLogGroup",
                       "Arn",
                     ],
                   },
@@ -324,7 +324,7 @@ Object {
             "Ref": "SoupScaleDown",
           },
         ],
-        "AlarmDescription": "Scale down workers due to lack of in-flight messages in queue",
+        "AlarmDescription": "Scale down due to lack of in-flight messages in queue",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-scale-down",
         },
@@ -379,7 +379,7 @@ Object {
             "Ref": "SoupScaleUp",
           },
         ],
-        "AlarmDescription": "Scale up workers due to visible messages in queue",
+        "AlarmDescription": "Scale up due to visible messages in queue",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-scale-up",
         },
@@ -514,6 +514,10 @@ Object {
                 "Value": false,
               },
               Object {
+                "Name": "Volumes",
+                "Value": "/tmp,/data,/ephemeral",
+              },
+              Object {
                 "Name": "MyKey",
                 "Value": "MyValue",
               },
@@ -536,7 +540,7 @@ Object {
               "LogDriver": "awslogs",
               "Options": Object {
                 "awslogs-group": Object {
-                  "Ref": "SoupLogs",
+                  "Ref": "SoupLogGroup",
                 },
                 "awslogs-region": Object {
                   "Ref": "AWS::Region",
@@ -548,6 +552,10 @@ Object {
             "MemoryReservation": 128,
             "MountPoints": Array [
               Object {
+                "ContainerPath": "/tmp",
+                "SourceVolume": "tmp",
+              },
+              Object {
                 "ContainerPath": "/data",
                 "SourceVolume": "mnt-0",
               },
@@ -558,6 +566,7 @@ Object {
             ],
             "Name": "soup-example",
             "Privileged": true,
+            "ReadonlyRootFilesystem": true,
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -573,13 +582,12 @@ Object {
         },
         "Volumes": Array [
           Object {
-            "Host": Object {
-              "SourcePath": "/mnt/data",
-            },
+            "Name": "tmp",
+          },
+          Object {
             "Name": "mnt-0",
           },
           Object {
-            "Host": Object {},
             "Name": "mnt-1",
           },
         ],
@@ -637,7 +645,7 @@ Object {
       "Properties": Object {
         "FilterPattern": "\\"[failure]\\"",
         "LogGroupName": Object {
-          "Ref": "SoupLogs",
+          "Ref": "SoupLogGroup",
         },
         "MetricTransformations": Array [
           Object {
@@ -723,7 +731,7 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
-    "WatchbotLogs": Object {
+    "WatchbotLogGroup": Object {
       "Properties": Object {
         "LogGroupName": Object {
           "Fn::Join": Array [
@@ -905,7 +913,7 @@ Object {
                   "Effect": "Allow",
                   "Resource": Object {
                     "Fn::GetAtt": Array [
-                      "WatchbotLogs",
+                      "WatchbotLogGroup",
                       "Arn",
                     ],
                   },
@@ -965,7 +973,7 @@ Object {
             "Ref": "WatchbotScaleDown",
           },
         ],
-        "AlarmDescription": "Scale down workers due to lack of in-flight messages in queue",
+        "AlarmDescription": "Scale down due to lack of in-flight messages in queue",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-scale-down",
         },
@@ -1020,7 +1028,7 @@ Object {
             "Ref": "WatchbotScaleUp",
           },
         ],
-        "AlarmDescription": "Scale up workers due to visible messages in queue",
+        "AlarmDescription": "Scale up due to visible messages in queue",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-scale-up",
         },
@@ -1154,6 +1162,10 @@ Object {
                 "Name": "fresh",
                 "Value": false,
               },
+              Object {
+                "Name": "Volumes",
+                "Value": "/tmp",
+              },
             ],
             "Image": Object {
               "Fn::Join": Array [
@@ -1173,7 +1185,7 @@ Object {
               "LogDriver": "awslogs",
               "Options": Object {
                 "awslogs-group": Object {
-                  "Ref": "WatchbotLogs",
+                  "Ref": "WatchbotLogGroup",
                 },
                 "awslogs-region": Object {
                   "Ref": "AWS::Region",
@@ -1181,9 +1193,15 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
-            "MountPoints": undefined,
+            "MountPoints": Array [
+              Object {
+                "ContainerPath": "/tmp",
+                "SourceVolume": "tmp",
+              },
+            ],
             "Name": "watchbot-example",
             "Privileged": false,
+            "ReadonlyRootFilesystem": true,
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -1197,7 +1215,11 @@ Object {
         "TaskRoleArn": Object {
           "Ref": "WatchbotRole",
         },
-        "Volumes": undefined,
+        "Volumes": Array [
+          Object {
+            "Name": "tmp",
+          },
+        ],
       },
       "Type": "AWS::ECS::TaskDefinition",
     },
@@ -1252,7 +1274,7 @@ Object {
       "Properties": Object {
         "FilterPattern": "\\"[failure]\\"",
         "LogGroupName": Object {
-          "Ref": "WatchbotLogs",
+          "Ref": "WatchbotLogGroup",
         },
         "MetricTransformations": Array [
           Object {

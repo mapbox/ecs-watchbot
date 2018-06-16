@@ -11,11 +11,12 @@ const main = async () => {
 
   const logger = Logger.create('watcher');
   const command = process.argv.slice(3).join(' ');
+  const volumes = process.env.Volumes.split(',');
 
   const options = {
     queueUrl: process.env.QueueUrl,
     fresh: process.env.fresh === 'true' ? true : false,
-    workerOptions: { command }
+    workerOptions: { command, volumes }
   };
 
   const watcher = Watcher.create(options);
