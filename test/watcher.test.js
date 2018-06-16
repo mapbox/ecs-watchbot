@@ -8,7 +8,6 @@ const Watcher = require('../lib/watcher');
 const Message = require('../lib/message');
 const Messages = require('../lib/messages');
 const Worker = require('../lib/worker');
-const fs = require('fs');
 
 test('[watcher] constructor', (assert) => {
   const messages = stubber(Messages).setup();
@@ -122,9 +121,6 @@ test('[watcher] listen', async (assert) => {
   );
 
   assert.equal(worker.waitFor.callCount, 2, 'waits for both workers');
-
-  assert.equal((fs.statSync('/tmp').mode & parseInt('777', 8)).toString(8), '777', 'calls chmod on /tmp');
-  assert.equal((fs.statSync('/mnt').mode & parseInt('777', 8)).toString(8), '777', 'calls chmod on /mnt');
 
   messages.teardown();
   worker.teardown();
