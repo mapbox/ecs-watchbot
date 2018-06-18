@@ -79,7 +79,7 @@ errorThreshold | 10 | number of failed workers to trigger alarm
 failedPlacementAlarmPeriods | 1 | number of 1-min intervals for which failed placements exceeds the threshold of 5 in order to alarm
 logAggregationFunction | | the ARN of the log collection Lambda function
 messageRetention | 1209600 | max seconds a message can remain in SQS
-messageTimeout | 600 | max seconds it takes to process a job
+messageTimeout | 600 | max seconds it takes to process a job. Note that the worker is not going to exit after this timeout but the message will be available again to be processed by worker as the messageTimeout actually refers to [visibility timeout](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
 mounts | | defines persistent container mount points from host EC2s or ephemeral mount points on the container
 permissions | [] | permissions to any AWS resources that the worker will need to perform a task. Be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
 placementConstraints | false | Add any [ECS task placement constraints](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html)
