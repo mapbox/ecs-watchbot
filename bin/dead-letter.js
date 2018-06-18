@@ -9,50 +9,49 @@ var Spinner = require('cli-spinner').Spinner;
 
 
 class DeadLetter {
-	constructor(options = {}) {
-		if (!options.queueUrl)
-			throw new Error('queueUrl is undefined');
-		this.options = options;
+  constructor(options = {}) {
+    if (!options.queueUrl)
+      throw new Error('queueUrl is undefined');
+    this.options = options;
+    this.sqs = new AWS.SQS({
+      region: url.parse(options.queueUrl).host.split('.')[1],
+      params: { QueueUrl: options.queueUrl }
+    });
 
-		this.sqs = new AWS.SQS({
-			region: url.parse(options.queueUrl).host.split('.')[1],
-			params: { QueueUrl: options.queueUrl }
-		});
-		this.cfn = new AWS.CloudFormation({
-			region: url.parse(options.queueUrl).host.split('.')[1],
-		});
+    this.cfn = new AWS.CloudFormation({
+      region: url.parse(options.queueUrl).host.split('.')[1],
+    });
 
-		const actions = { purse, writeOut, replay, triage };
+    const actions = { purse, writeOut, replay, triage };
 
-		findQueues(options);
-		const queues = selectQueue(queues);
-		const queue = triageSelection(queue);
-		const data = actions[data.action](sqs, data.queue);
-		}
-	}
+    findQueues(this.cfn, options);
+    const queues = await selectQueue(queues);
+    const queue = await triageSelection(queue);
+    const data = await actions[data.action](sqs, data.queue);
+  }
 
-	async findQueues(options) {
-		return new Promise((resolve) => {
-			let res = await this.cfn.describeStacks({ StackName: options.stackName}).promise();
+  async findQueues(options) {
+    return new Promise((resolve) => {
+      let res = await this.cfn.describeStacks({ StackName: options.stackName}).promise();
 
-			if (!res.Stacks[0])
-				return Promise.reject(new Error(`Could not find ${options.stackName} in ${options.region}`));
+      if (!res.Stacks[0])
+        return Promise.reject(new Error(`Could not find ${options.stackName} in ${options.region}`));
 
-			const deadLetterQueues = res.Stacks[0].Outputs
-			.filter((o) => /DeadLetterQueueUrl/.test(o.OutputKey))
-			.map((o) => ({
-				prefix: o.OutputKey.replace('DeadLetterQueueUrl', ''),
-				url: o.OutputValue
-			}));
+      const deadLetterQueues = res.Stacks[0].Outputs
+      .filter((o) => /DeadLetterQueueUrl/.test(o.OutputKey))
+      .map((o) => ({
+        prefix: o.OutputKey.replace('DeadLetterQueueUrl', ''),
+        url: o.OutputValue
+       }));
 
-			const workQueues = res.Stacks[0].Outputs
-			.filter((o) => /QueueUrl/.test(o.OutputKey) && !/DeadLetterQueueUrl/.test(o.OutputKey))
-			.map((o) => ({
-				prefix: o.OutputKey.replace('QueueUrl', ''),
-				url: o.OutputValue
-			}));
+      const workQueues = res.Stacks[0].Outputs
+      .filter((o) => /QueueUrl/.test(o.OutputKey) && !/DeadLetterQueueUrl/.test(o.OutputKey))
+      .map((o) => ({
+        prefix: o.OutputKey.replace('QueueUrl', ''),
+        url: o.OutputValue
+      }));
 
-			var logGroups = res.Stacks[0].Outputs
+      var logGroups = res.Stacks[0].Outputs
       .filter((o) => /Logs/.test(o.OutputKey))
       .map((o) => ({
         prefix: o.OutputKey.replace('Logs', ''),
