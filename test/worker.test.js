@@ -145,13 +145,11 @@ test('[worker] waitFor, exit 0', async (assert) => {
   }
 
   const data = process.stdout.write.args[0][0];
-  console.log('process.stdout.write.args[0][0]');
-  console.log(data);
   process.stdout.write.restore();
 
   assert.equal(
     data,
-    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] banana\n',
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [worker] [895ab607-3767-4bbb-bd45-2a3b341cbc46] banana\n',
     'prefixed worker output'
   );
 
