@@ -29,7 +29,11 @@ const main = async () => {
       break;
     case 'log': {
       const logger = new Logger('worker');
-      return logger.log(process.argv[3]);
+      if (process.argv[3]) {
+        return logger.log(process.argv[3]);
+      }
+
+      process.stdin.pipe(logger.stream());
     }
     default: throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
   }
