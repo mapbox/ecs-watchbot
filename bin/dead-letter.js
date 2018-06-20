@@ -3,39 +3,39 @@
 
 /* eslint-disable no-console */
 
-var AWS = require('aws-sdk');
-var inquirer = require('inquirer');
-var stream = require('stream');
-var Queue = require('p-queue');
-var logs = require('./logger');
-var Spinner = require('cli-spinner').Spinner;
+const AWS = require('aws-sdk');
+const inquirer = require('inquirer');
+const stream = require('stream');
+const Queue = require('p-queue');
+const logs = require('..').Logger;
+const Spinner = require('cli-spinner').Spinner;
 
+const main = async() => {
 
-class DeadLetter {
-  constructor(options = {}) {
-    if (!options.queueUrl)
-      throw new Error('queueUrl is undefined');
-    this.options = options;
-    this.sqs = new AWS.SQS({
-      region: url.parse(options.queueUrl).host.split('.')[1],
-      params: { QueueUrl: options.queueUrl }
-    });
-
-    this.cfn = new AWS.CloudFormation({
-      region: url.parse(options.queueUrl).host.split('.')[1],
-    });
-
-    const actions = { purse, writeOut, replay, triage };
-
-    findQueues(this.cfn, options);
-    const queues = await selectQueue(queues);
-    const queue = await triageSelection(queue);
-    const data = await actions[data.action](sqs, data.queue);
+  const options = {
+    queueUrl: process.env.QueueUrl
   }
+  if (!options.queueUrl)
+    throw new Error('queueUrl is undefined');
+  const sqs = new AWS.SQS({
+    region: options.queueUrl.parse(options.queueUrl).host.split('.')[1],
+    params: { QueueUrl: options.queueUrl }
+  });
 
-  async findQueues(options) {
-    return new Promise((resolve) => {
-      let res = await this.cfn.describeStacks({ StackName: options.stackName}).promise();
+  const cfn = new AWS.CloudFormation({
+    region: options.queueUrl.parse(options.queueUrl).host.split('.')[1]
+  });
+
+  const actions = { purge, writeOut, replay, triage };
+
+  findQueues(cfn, options);
+  const queues = await selectQueue(queues);
+  const queue = await triageSelection(queue);
+  const data = await actions[data.action](sqs, data.queue);
+}
+
+async function findQueues(cfn, options) {
+      let res = await cfn.describeStacks({ StackName: options.stackName}).promise();
 
       if (!res.Stacks[0])
         return Promise.reject(new Error(`Could not find ${options.stackName} in ${options.region}`));
@@ -62,10 +62,9 @@ class DeadLetter {
       }));
 
       return { deadLetterQueues, workQueues, logGroups };
-    });
-  }
+}
 
-  async selectQueue(queues) {
+async function selectQueue(queues) {
     if (queues.deadLetterQueues.length === 1) return Promise.resolve({
       deadLetter: queues.deadLetterQueues[0].url,
       work: queues.workQueues.find((queue) => queue.prefix === queues.deadLetterQueues[0].prefix).url,
@@ -86,7 +85,7 @@ class DeadLetter {
     };
   }
 
-  async triageSelection(queue) {
+async function triageSelection(queue) {
     const answers = await inquirer.prompt({
       type: 'list',
       name: 'action',
@@ -108,17 +107,17 @@ class DeadLetter {
     return { queue, action: mapping[answers.action] };
   }
 
-  async purge(queue) {
+async function purge(sqs, queue) {
     const answers = await inquirer.prompt({
       type: 'confirm',
       name: 'purge',
       message: 'You are about to remove all jobs from the dead letter queue permanently. Are you sure?'
     });
     if (answers.purge)
-      return await this.sqs.purgeQueue({ QueueUrl: queue.deadLetter }).promise();
+      return await sqs.purgeQueue({ QueueUrl: queue.deadLetter }).promise();
   }
 
-  async writeOut(queue) {
+async function writeOut(queue) {
     var reciever = receiveAll(queue.deadLetter);
     var stringifier = new stream.Transform({
       objectMode: true,
@@ -143,7 +142,7 @@ class DeadLetter {
     });
   }
 
-  async replay(queue) {
+async function replay(queue) {
     const answers = await inquirer.prompt({
       type: 'confirm',
       name: 'replayAll',
@@ -178,20 +177,16 @@ class DeadLetter {
     return await spinner.stop(true);
   }
 
-  async triage(queue) {
+async function triage(sqs, queue) {
     return new Promise((resolve, reject) => {
-      (function recurse() {
-        triageOne(this.sqs, queue)
+      (async function recurse() {
+        triageOne(sqs, queue)
         await recurse();
-        .catch((err) => {
-          if (err.finished) return resolve();
-          reject(err);
-        });
       })();
     });
-  }
+}
 
-  async triagePrompts(queue, message) {
+async function triagePrompts(queue, message) {
     var actions = { replayOne, returnOne, deleteOne };
     const answers = await inquirer.prompt({
       type: 'list',
@@ -216,18 +211,18 @@ class DeadLetter {
     var choice = mapping[answers.action];
     var queueUrl = choice === 'replayOne' ? queue.work : queue.deadLetter;
 
-    if (choice === 'logs') return getLogs(this.sqs, queue, message);
-    if (choice === 'stop') return returnOne(this.sqs, queueUrl, message)
+    if (choice === 'logs') return getLogs(sqs, queue, message);
+    if (choice === 'stop') return returnOne(sqs, queueUrl, message)
       .then(() => Promise.reject({ finished: true }));
 
-    if (choice === 'replayOne') return replayOne(this.sqs, queueUrl, message)
-       .then(() => deleteOne(this.sqs, queue.deadLetter, message));
+    if (choice === 'replayOne') return replayOne(sqs, queueUrl, message)
+       .then(() => deleteOne(sqs, queue.deadLetter, message));
 
-    return actions[choice](this.sqs, queueUrl, message);
+    return actions[choice](sqs, queueUrl, message);
   }
 
-  async triageOne(queue) {
-    return receive(this.sqs, 1, queue.deadLetter)
+async function triageOne(queue) {
+    return receive(sqs, 1, queue.deadLetter)
     .then((messages) => {
       var message = messages[0];
       if (!message) return Promise.reject({ finished: true });
@@ -240,8 +235,8 @@ class DeadLetter {
     });
   }
 
-  async receive(count, queueUrl) {
-    await data = this.sqs.receiveMessage({
+async function receive(count, queueUrl) {
+    const data = await sqs.receiveMessage({
       QueueUrl: queueUrl,
       WaitTimeSeconds: 1,
       MaxNumberOfMessages: count,
@@ -254,50 +249,50 @@ class DeadLetter {
         body: message.Body,
         subject: JSON.parse(message.Body).Subject,
         message: JSON.parse(message.Body).Message,
-        handle: message.ReceiptHandle;
+        handle: message.ReceiptHandle
       }));
     }
   }
 
-  async returnOne(queueUrl, message) {
+async function returnOne(queueUrl, message) {
     var handle = typeof message === 'string' ? message : message.handle;
-    await this.sqs.changeMessageVisibility({
+    await sqs.changeMessageVisibility({
       QueueUrl: queueUrl,
       ReceiptHandle: handle,
       VisibilityTimeout: 0
     }).promise();
   }
 
-  async returnMany(queueUrl, handles) {
+async function returnMany(queueUrl, handles) {
     var spinner = new Spinner(`Returning ${handles.length} jobs to the queue...`);
     spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
     spinner.start();
     var queue = new Queue({ concurrency: 10 });
-    var returns = handles.map((handle) => queue.add(() => returnOne(this.sqs, queueUrl, handle)));
+    var returns = handles.map((handle) => queue.add(() => returnOne(sqs, queueUrl, handle)));
     return await Promise.all(returns)
     spinner.stop(true);
   }
 
-  async replayOne(queueUrl, message) {
-    return await this.sqs.sendMessage({
+async function replayOne(queueUrl, message) {
+    return await sqs.sendMessage({
       QueueUrl: queueUrl,
       MessageBody: message.body
     }).promise();
   }
 
-  async deleteOne(queueUrl, message) {
-    return await this.sqs.deleteMessage({
+async function deleteOne(queueUrl, message) {
+    return await sqs.deleteMessage({
       QueueUrl: queueUrl,
       ReceiptHandle: message.handle
     }).promise();
   }
 
-  async receiveAll(queueUrl) {
+async function receiveAll(queueUrl) {
     var messages = [];
     var pending = false;
-    var next = function() {
+    var next = async function() {
       pending = true;
-      msgs = await receive(this.sqs, 10, queueUrl)
+      var msgs = await receive(sqs, 10, queueUrl);
       if (msgs) {
         pending = false;
         msgs.forEach((msg) => messages.push(msg));
@@ -308,18 +303,18 @@ class DeadLetter {
 
     return new stream.Readable({
       objectMode: true,
-      read: function() {
+      read: async function() {
         var status = true;
         while (status && messages.length) status = this.push(messages.shift());
         if (messages.length)  return;
-        if (!next) return this.push(null);
+        if (!next) return push(null);
         if (status && !pending) return next()
         await this._read();
       }
     });
   }
 
-  async getLogs(queue, message) {
+async function getLogs(queue, message) {
     var spinner = new Spinner('Searching CloudWatch logs...');
     spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
     spinner.start();
@@ -341,6 +336,7 @@ class DeadLetter {
     console.log(data);
     return triagePrompts(this.sqs, queue, message);
   }
-};
 
-module.exports = DeadLetter;
+module.exports = main;
+
+if (require.main === module) main();
