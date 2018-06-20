@@ -33,7 +33,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.0.0",
+    "EcsWatchbotVersion": "4.5.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -956,7 +956,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.0.0",
+    "EcsWatchbotVersion": "4.5.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
