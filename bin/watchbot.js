@@ -6,37 +6,25 @@ const Watcher = require('../lib/watcher');
 const Logger = require('../lib/logger');
 
 const main = async () => {
-  switch (process.argv[2]) {
-    case 'listen': {
-      const logger = Logger.create('watcher');
-      const command = process.argv.slice(3).join(' ');
-      const volumes = process.env.Volumes.split(',');
+  if (process.argv[2] !== 'listen')
+    throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
 
-      const options = {
-        queueUrl: process.env.QueueUrl,
-        fresh: process.env.fresh === 'true' ? true : false,
-        workerOptions: { command, volumes }
-      };
+  const logger = Logger.create('watcher');
+  const command = process.argv.slice(3).join(' ');
+  const volumes = process.env.Volumes.split(',');
 
-      const watcher = Watcher.create(options);
+  const options = {
+    queueUrl: process.env.QueueUrl,
+    fresh: process.env.fresh === 'true' ? true : false,
+    workerOptions: { command, volumes }
+  };
 
-      try {
-        await watcher.listen();
-      } catch (err) {
-        logger.log(`[error] ${err.stack}`);
-      }
-    }
-      break;
-    case 'log': {
-      const logger = new Logger('worker');
-      if (process.argv[3]) {
-        return logger.log(process.argv[3]);
-      }
+  const watcher = Watcher.create(options);
 
-      process.stdin.pipe(logger.stream());
-    }
-      break;
-    default: throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
+  try {
+    await watcher.listen();
+  } catch (err) {
+    logger.log(`[error] ${err.stack}`);
   }
 };
 
