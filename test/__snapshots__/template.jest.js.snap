@@ -594,7 +594,9 @@ Object {
                 "-",
                 Array [
                   "Soup",
-                  "example",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
                 ],
               ],
             },
@@ -1262,7 +1264,9 @@ Object {
                 "-",
                 Array [
                   "Watchbot",
-                  "example",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
                 ],
               ],
             },
