@@ -169,10 +169,16 @@ async function replay(sqs, queue) {
 }
 
 async function triage(sqs, queue) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     (async function recurse() {
-      await triageOne(sqs, queue);
-      await recurse();
+      try {
+        await triageOne(sqs, queue);
+        await recurse();
+      }
+      catch (err) {
+        if (err.finished) return resolve();
+        reject(err);
+      }
     })();
   });
 }
