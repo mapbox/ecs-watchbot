@@ -35,6 +35,7 @@ const main = async () => {
 
       process.stdin.pipe(logger.stream());
     }
+    break;
     default: throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
   }
 };
