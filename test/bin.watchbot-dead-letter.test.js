@@ -25,7 +25,6 @@ test('[bin.watchbot-dead-letter] success', async (assert) => {
 
 
 test('[bin.watchbot-dead-letter test] error handling', async (assert) => {
-  const err = new Error('foo');
   const argv = process.argv;
   process.argv = ['', '', 'watchbot-dead-letter'];
   process.env.QueueUrl = 'https://some-url';
