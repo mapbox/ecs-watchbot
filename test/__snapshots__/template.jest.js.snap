@@ -589,7 +589,17 @@ Object {
                 "SourceVolume": "mnt-1",
               },
             ],
-            "Name": "soup-example",
+            "Name": Object {
+              "Fn::Join": Array [
+                "-",
+                Array [
+                  "Soup",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
             "Privileged": true,
             "ReadonlyRootFilesystem": true,
             "Ulimits": Array [
@@ -1249,7 +1259,17 @@ Object {
                 "SourceVolume": "tmp",
               },
             ],
-            "Name": "watchbot-example",
+            "Name": Object {
+              "Fn::Join": Array [
+                "-",
+                Array [
+                  "Watchbot",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
             "Privileged": false,
             "ReadonlyRootFilesystem": true,
             "Ulimits": Array [
