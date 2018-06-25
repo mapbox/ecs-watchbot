@@ -2,6 +2,15 @@
 
 - Add CPUUtilization and MemoryUtilization alarms: https://github.com/mapbox/ecs-watchbot/pull/231
 
+### 4.2.0
+
+- Remove watchbot-log binary: https://github.com/mapbox/ecs-watchbot/pull/227
+- Use stackName in the `Name` property of the ContainerDefinition: https://github.com/mapbox/ecs-watchbot/pull/226
+
+### 4.1.0
+
+- Add cloudwatch dashboard: https://github.com/mapbox/ecs-watchbot/pull/222
+
 ### 4.0.0
 
 - Major revamp of watchbot internals. (refs #184). The system now:
