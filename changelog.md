@@ -1,3 +1,7 @@
+### 4.3.0
+
+- Add CPUUtilization and MemoryUtilization alarms: https://github.com/mapbox/ecs-watchbot/pull/231
+
 ### 4.0.0
 
 - Major revamp of watchbot internals. (refs #184). The system now:
