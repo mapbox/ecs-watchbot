@@ -1,11 +1,10 @@
 ## Building a Watchbot template
 
-Watchbot provides two important methods to help you build a CloudFormation template:
+Watchbot provides a method to build a CloudFormation template:
 
 - **watchbot.template(options)** creates CloudFormation JSON objects for the various Resources that Watchbot needs in order to do its job.
-- **watchbot.merge(...templates)** takes multiple CloudFormation templates and merges them together into a single JSON template.
 
-With those two tools in hand, creating a Watchbot stack will generally involve:
+With that tool in hand, creating a Watchbot stack will generally involve:
 - determine the appropriate `options` to provide to `watchbot.template` for your situation. See the table below for more details on the various required options, optional ones, and default values.
 - write a CloudFormation template that defines the configuration parameters, stack outputs, permissions required by your worker containers, and any additional resources that are required in order to process jobs.
 - write a script which merges the two templates, adding Watchbot's resources to your template.
@@ -15,6 +14,7 @@ As an example, consider a service where the workers are expected to manipulate o
 
 ```js
 var watchbot = require('@mapbox/watchbot');
+var cloudfriend = require('@mapobx/cloudfriend');
 
 // Build the parameters, resources, and outputs that your service needs
 var myTemplate = {
@@ -40,7 +40,7 @@ var watch = watchbot.template({
   service: 'my-repo-name',
   serviceVersion: { Ref: 'GitSha' },
   env: { BucketName: 'my-bucket' },
-  workers: 5,
+  maxSize: 5,
   reservation: { memory: 512 },
   notificationEmail: { Ref: 'AlarmEmail' },
   permissions: [
@@ -54,50 +54,52 @@ var watch = watchbot.template({
   ]
 });
 
-module.exports = watchbot.merge(myTemplate, watch);
+module.exports = cloudfriend.merge(myTemplate, watch);
 ```
 
-### watchbot.template options
 
-Use the following configuration options to adjust the resources that Watchbot will provide. Bold options must be provided.
+## Full API Definition
 
-Name | Default | Description
---- | --- | ---
-**cluster** | | the ARN for an ECS cluster
-**service** | | the name of the worker service
-**serviceVersion** | | the version of the worker service to use
-**notificationEmail** | | the email address to receive failure notifications. Should not be provided if notificationTopic exists.
-**notificationTopic** | | the ARN of an SNS topic to receive failure notifications. Should not be provided if notificationEmail exists.
-alarmOnEachFailure | false | send a notification email each time a worker errors
-alarmPeriods | 24 | number of 5-min intervals SQS must be above threshold to alarm
-alarmThreshold | 40 | number of jobs in SQS to trigger alarm
-command | | overrides a Dockerfile's `CMD`
-debugLogs | false | enable verbose watcher logging
-env | {} | environment variables to set on worker containers
-family | service name | the name of the the task definition family that watchbot will create revisions of
-errorThreshold | 10 | number of failed workers to trigger alarm
-failedPlacementAlarmPeriods | 1 | number of 1-min intervals for which failed placements exceeds the threshold of 5 in order to alarm
-logAggregationFunction | | the ARN of the log collection Lambda function
-messageRetention | 1209600 | max seconds a message can remain in SQS
-messageTimeout | 600 | max seconds it takes to process a job
-mounts | | defines persistent container mount points from host EC2s or ephemeral mount points on the container
-permissions | [] | permissions to any AWS resources that the worker will need to perform a task. Be sure to unwrap any `PolicyDocument` objects. The use of `PolicyDocument` here will pass `aws cloudformation validate-template`, but will prevent your stack from being created successfully.
-placementConstraints | false | Add any [ECS task placement constraints](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html)
-prefix | `Watchbot` | a prefix for logical resource names
-privileged | false | give the worker container elevated privileges on the host EC2
-reduce | false | enable reduce-mode (see below)
-readCapacityUnits | 30 | approximate reads per second to progress table in reduce-mode
-reservation | {} | specify desired memory/cpu reservations for worker containers
-reservation.cpu | | specify a soft CPU limit
-reservation.memory | 64 | specify a hard memory limit
-reservation.softMemory | | specify a soft memory limit
-user | false | create an IAM user with permission to publish
-watchbotVersion | installed version | the version of watchbot to use
-watchers | 1 | number of watcher containers
-webhook | false | create an HTTPS endpoint to accept jobs
-webbhookKey | false | require an access token on the webhook endpoint
-workers | 1 | number of concurrent worker containers per watcher
-writeCapacityUnits | 30 | approximate writes per second to progress table in reduce-mode
+When creating your watchbot stacks with the `watchbot.template()` method, you now have the following options:
+
+
+ Key | Description | Type | Required | Default 
+----------|----------------|--------------|------------ |---------
+**cluster** | The cluster on which your watchbot service will run. | String/Ref | Yes | -
+**service** | The name of your service. This is usually the same as your GitHub repository. It **must** match the name of the ECR repository where your images are stored. | String/Ref | Yes | -
+**serviceVersion** | The version of your image to deploy. This should reference a specific image in ECR. | String/Ref | Yes | -
+**family** | The name of the task definition family that watchbot will create revisions of. | String/Ref | Yes | -
+**command** | The shell command to be run by the subprocess worker. The working directory for the subprocess is determined in your Dockerfile by the `WORKDIR` missive. | String | Yes | -
+**workers** | The maximum number of workers to run for your service. Must be a number, not a reference to a number, since one tenth of this number will be used as the scaling adjustment for the scaling policy. | Number | Yes | -
+**fresh** | Whether you want a fresh container for every job. See below for more details. | Boolean | No | false
+**mounts** | If your worker containers need to write files or folders inside its file system, specify those locations with this parameter. A single ephemeral mount point can be specified as `{container location}`, e.g. /mnt/tmp. Separate multiple mount strings with commas if you need to mount more than one location. You can also specify mounts as an arrays of paths. Every mounted volume will be cleaned after each job. By default, the `/tmp` directory is added as an ephemeral mount. | String/Object | No | `/tmp`
+**env** | Key-value pairs that will be provided to the worker containers as environment variables. Keys must be strings, and values can either be strings or references to other CloudFormation resources via `{"Ref": "..."}`. | Object | No | `{}`
+**prefix** | a prefix that will be applied to the logical names of all the resources Watchbot creates. If you're building a template that includes more than one Watchbot system, you'll need to specify this in order to differentiate the resources. | String/Ref | No | none
+**reservation.hardMemory** | The number of MB of RAM to reserve as a hard limit. If your worker container tries to utilize more than this much RAM, it will be shut down. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | none
+**reservation.softMemory** | The number of MB of RAM to reserve as a soft limit. Your worker container will be able to utilize more than this much RAM if it happens to be available on the host. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | none 
+**reservation.cpu** | The number of CPU units to reserve for your worker container. This will only impact the placement of your container on an EC2 with sufficient CPU capacity, but will not limit your container's utilization. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | Yes | -
+**privileged** | Give the container elevated privileges on the host container instance | Boolean | No | false
+**messageRetention** | The number of seconds that a message will exist in SQS until it is deleted. The default value is the maximum time that SQS allows, 14 days. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 1209600 (14 days)
+**maxJobDuration** | The maximum number of seconds that a job is allowed to run. After this time period, the worker will be stopped and the job will be returned to the queue. | Number/Ref | No | No | -
+**notificationEmail** | The email to send alarm notifications to | String/Ref | No. Must specify either a `notificationTopic` or `notificationEmail` | -
+**notificationTopic** | An SNS topic to send alarms to | String/Ref | No. Must specify either a `notificationTopic` or `notificationEmail` | -
+**alarmPeriods** | Use this parameter to control the duration that the SQS queue must be over the message threshold before triggering an alarm. You specify the number of 5-minute periods before an alarm is triggered. The default is 24 periods, or 2 hours. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | String/Ref | No | 24
+**alarmThreshold** | Watchbot creates a CloudWatch alarm that will go off when there have been too many messages in SQS for a certain period of time. Use this parameter to adjust the Threshold number of messages to trigger the alarm. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 40
+**errorThreshold** | Watchbot creates a CloudWatch alarm that will fire if there have been more than this number of failed worker invocations in a 60 second period. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 10
+
+### Fresh Mode Explained
+
+**Default behavior**
+
+By default, containers are re-used from one job to the next, and file system is set to read-only for most of the filesystem. Workers can only write to the `/tmp` directory or any ephemeral volumes added to the `mounts` property in the cloudformation template. All of the mounts, including `/tmp`, are cleaned after every job completes.
+
+Since containers are only started once during scale up and then left on for long durations, users can expect to see very few failed task placements. Combined with the low overhead of not needing to start containers for every job, watchbot is ideal for workloads that are potentially very short-lived and require high throughput. During initial benchmarks, watchbot was able to achieve a throughput of 50 tasks per second when run at 500 workers for jobs that ran 10 seconds each. There were no signs showing that it would slow down, and seemed to be able to handle as much throughput as you were willing to add workers.
+
+**Fresh mode** 
+
+In fresh mode, containers are stopped after every job. This refreshing of containers allows users to confidently expect their work to run in a fresh container every time, and allow them to write to anywhere on the filesystem. Fresh mode throughput values have not been confirmed yet, but it can be guaranteed to be slower than the default mode, due to the overhead of starting a new container after every job.
+
+Fresh mode has no restrictions to the file system: workers can write anywhere and read from anywhere, their files being instantly deleted after the job finishes and the container dies.
 
 ### watchbot.template references
 
@@ -111,10 +113,6 @@ Name | Description
 .ref.queueArn | the ARN of the SQS Queue Watchbot built
 .ref.queueName | the name of the SQS Queue Watchbot built
 .ref.notificationTopic | the SNS topic that receives notifications when processing fails
-.ref.webhookEnpoint | [conditional] if requested, the URL for the webhook endpoint
-.ref.webhookKey | [conditional] if requested, the access token for making webhook requests
-.ref.accessKeyId | [conditional] if requested, an AccessKeyId with permission to publish to Watchbot's SNS topic
-.ref.secretAccessKey | [conditional] if requested, a SecretAccessKey with permission to publish to Watchbot's SNS topic
 .ref.progressTable | [conditional] if running in reduce-mode, the name of the DynamoDB table that tracks job progress
 
 These properties each return CloudFormation references (i.e. `{ "Ref": "..." }` objects) that can be used in your template. In the above example, if I wanted my stack to output the SNS topic built by Watchbot, I could:
@@ -124,5 +122,5 @@ var outputs = {
   Outputs: { SnsTopic: { Value: watcher.ref.topic } }
 };
 
-module.exports.watchbot.merge(myTemplate, watcher, outputs);
+cloudfriend.merge(myTemplate, watcher, outputs);
 ```

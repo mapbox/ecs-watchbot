@@ -1,31 +1,15 @@
 ## Command-line utilities
 
 ```
-> watchbot --help
+> watchbot-dead-letter --help
 
-  Build an AWS stack to do your work for you
-
-  USAGE: watchbot <command> [OPTIONS]
-
-  Commands:
-    worker-capacity     assess available resources on the cluster
-    dead-letter         triage messages in dead letter queue
+  USAGE: watchbot-dead-letter <command> [OPTIONS]
 
   Options:
     -h, --help          show this help message
     -s, --stack-name    the full name of a watchbot stack
     -r, --region        the region of the stack (default us-east-1)
 ```
-
-### worker-capacity
-
-`worker-capacity` helps estimate how many additional workers can be placed in
-your service's cluster at its current capacity using the CPU and memory
-reservations provided in your `watchbot.template`.
-
-You must provide both a service region and stack name to execute this command. Note
-that your stack will need to expose the cluster ARN in your Watchbot stack `Outputs`
-property. Pre-2.0 versions of Watchbot do not expose these outputs.
 
 ### dead-letter
 
