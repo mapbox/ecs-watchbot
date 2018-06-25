@@ -64,105 +64,27 @@ module.exports = cloudfriend.merge(myTemplate, watch);
 When creating your watchbot stacks with the `watchbot.template()` method, you now have the following options:
 
 
-- **cluster**
-  - The cluster on which your watchbot service will run.
-  - Type: String/Ref
-  - Required: Yes
-- **service**
-  - The name of your service. This is usually the same as your GitHub repository. It **must** match the name of the ECR repository where your images are stored.
-  - Type: String/Ref
-  - Required: Yes
-- **serviceVersion**
-  - The version of your image to deploy. This should reference a specific image in ECR.
-  - Type: String/Ref
-  - Required: Yes
-- **family**
-  - The name of the task definition family that watchbot will create revisions of.
-  - Type: String/Ref
-  - Required: Yes
-- **command**
-  - The shell command to be run by the subprocess worker. The working directory for the subprocess is determined in your Dockerfile by the `WORKDIR` missive.
-  - Type: String
-  - Required: Yes
-- **workers**
-  - The maximum number of workers to run for your service. Must be a number, not a reference to a number, since one tenth of this number will be used as the scaling adjustment for the scaling policy.
-  - Type: Number
-  - Required: Yes
-- **fresh**
-  - Whether you want a fresh container for every job. See below for more details.
-  - Type: Boolean
-  - Required: No
-  - Default: false
-- **mounts**
-  - If your worker containers need to write files or folders inside its file system, specify those locations with this parameter. A single ephemeral mount point can be specified as `{container location}`, e.g. /mnt/tmp. Separate multiple mount strings with commas if you need to mount more than one location. You can also specify mounts as an arrays of paths. Every mounted volume will be cleaned after each job. By default, the `/tmp` directory is added as an ephemeral mount.
-  - Type: String/Object
-  - Required: No
-  - Default: `'``/tmp``'`
-- **env**
-  - Key-value pairs that will be provided to the worker containers as environment variables. Keys must be strings, and values can either be strings or references to other CloudFormation resources via `{"Ref": "..."}`.
-  - Type: Object
-  - Required: No
-  - Default: `{}`
-- **prefix**
-  - a prefix that will be applied to the logical names of all the resources Watchbot creates. If you're building a template that includes more than one Watchbot system, you'll need to specify this in order to differentiate the resources.
-  - Type: String/Ref
-  - Required: No
-  - Default: none
-- **reservation**
-  - worker container resource reservations
-  - Type: Object
-  - **reservation.hardMemory**
-    - The number of MB of RAM to reserve as a hard limit. If your worker container tries to utilize more than this much RAM, it will be shut down. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`.
-    - Type: Number/Ref
-    - Required: No
-    - Default: none
-  - **reservation.softMemory**
-    - The number of MB of RAM to reserve as a soft limit. Your worker container will be able to utilize more than this much RAM if it happens to be available on the host. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`.
-    - Type: Number/Ref
-    - Required: No
-    - Default: none
-  - **reservation.cpu**
-    - The number of CPU units to reserve for your worker container. This will only impact the placement of your container on an EC2 with sufficient CPU capacity, but will not limit your container's utilization. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`.
-    - Type: Number/Ref
-    - Required: Yes
-- **privileged**
-  - Give the container elevated privileges on the host container instance
-  - Type: Boolean
-  - Required: No
-  - Default: false
-- **messageRetention**
-  - The number of seconds that a message will exist in SQS until it is deleted. The default value is the maximum time that SQS allows, 14 days. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`.
-  - Type: Number/Ref
-  - Required: No
-  - Default: 1209600 (14 days)
-- **maxJobDuration**
-  - The maximum number of seconds that a job is allowed to run. After this time period, the worker will be stopped and the job will be returned to the queue.
-  - Type: Number/Ref
-  - Required: No
-  - Default: No
-- **notificationEmail**
-  - The email to send alarm notifications to
-  - Type: String/Ref
-  - Required: No. Must specify either a `notificationTopic` or `notificationEmail`
-- **notificationTopic**
-  - An SNS topic to send alarms to
-  - Type: String/Ref
-  - Required: No. Must specify either a `notificationTopic` or `notificationEmail`
-- **alarmPeriods**
-  - Use this parameter to control the duration that the SQS queue must be over the message threshold before triggering an alarm. You specify the number of 5-minute periods before an alarm is triggered. The default is 24 periods, or 2 hours. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`.
-  - Type: String/Ref
-  - Required: No
-  - Default: 24
-- **alarmThreshold**
-  - Watchbot creates a CloudWatch alarm that will go off when there have been too many messages in SQS for a certain period of time. Use this parameter to adjust the Threshold number of messages to trigger the alarm. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`.
-  - Type: Number/Ref
-  - Required: No
-  - Default: 40
-- **errorThreshold**
-  - Watchbot creates a CloudWatch alarm that will fire if there have been more than this number of failed worker invocations in a 60 second period. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`.
-  - Type: Number/Ref
-  - Required: No
-  - Default: 10
+ Key | Description | Type | Required | Default 
+----------|----------------|--------------|------------ |---------
+**cluster** | The cluster on which your watchbot service will run. | String/Ref | Yes | -
+**service** | The name of your service. This is usually the same as your GitHub repository. It **must** match the name of the ECR repository where your images are stored. | String/Ref | Yes | -
+**serviceVersion** | The version of your image to deploy. This should reference a specific image in ECR. | String/Ref | Yes | -
+**family** | The name of the task definition family that watchbot will create revisions of. | String/Ref | Yes | -
+**command** | The shell command to be run by the subprocess worker. The working directory for the subprocess is determined in your Dockerfile by the `WORKDIR` missive. | String | Yes | -
+**workers** | The maximum number of workers to run for your service. Must be a number, not a reference to a number, since one tenth of this number will be used as the scaling adjustment for the scaling policy. | Number | Yes | -
+**fresh** | Whether you want a fresh container for every job. See below for more details. | Boolean | No | false
+**mounts** | If your worker containers need to write files or folders inside its file system, specify those locations with this parameter. A single ephemeral mount point can be specified as `{container location}`, e.g. /mnt/tmp. Separate multiple mount strings with commas if you need to mount more than one location. You can also specify mounts as an arrays of paths. Every mounted volume will be cleaned after each job. By default, the `/tmp` directory is added as an ephemeral mount. | String/Object | No | `/tmp`
+**env** | Key-value pairs that will be provided to the worker containers as environment variables. Keys must be strings, and values can either be strings or references to other CloudFormation resources via `{"Ref": "..."}`. | Object | No | `{}`
+**prefix** | a prefix that will be applied to the logical names of all the resources Watchbot creates. If you're building a template that includes more than one Watchbot system, you'll need to specify this in order to differentiate the resources. | String/Ref | No | none
+**reservation** | worker container resource reservations | Object | **reservation.hardMemory** | The number of MB of RAM to reserve as a hard limit. If your worker container tries to utilize more than this much RAM, it will be shut down. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | none | **reservation.softMemory** | The number of MB of RAM to reserve as a soft limit. Your worker container will be able to utilize more than this much RAM if it happens to be available on the host. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | none | **reservation.cpu** | The number of CPU units to reserve for your worker container. This will only impact the placement of your container on an EC2 with sufficient CPU capacity, but will not limit your container's utilization. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | Yes | -
+**privileged** | Give the container elevated privileges on the host container instance | Boolean | No | false
+**messageRetention** | The number of seconds that a message will exist in SQS until it is deleted. The default value is the maximum time that SQS allows, 14 days. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 1209600 (14 days)
+**maxJobDuration** | The maximum number of seconds that a job is allowed to run. After this time period, the worker will be stopped and the job will be returned to the queue. | Number/Ref | No | No | -
+**notificationEmail** | The email to send alarm notifications to | String/Ref | No. Must specify either a `notificationTopic` or `notificationEmail` | -
+**notificationTopic** | An SNS topic to send alarms to | String/Ref | No. Must specify either a `notificationTopic` or `notificationEmail` | -
+**alarmPeriods** | Use this parameter to control the duration that the SQS queue must be over the message threshold before triggering an alarm. You specify the number of 5-minute periods before an alarm is triggered. The default is 24 periods, or 2 hours. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | String/Ref | No | 24
+**alarmThreshold** | Watchbot creates a CloudWatch alarm that will go off when there have been too many messages in SQS for a certain period of time. Use this parameter to adjust the Threshold number of messages to trigger the alarm. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 40
+**errorThreshold** | Watchbot creates a CloudWatch alarm that will fire if there have been more than this number of failed worker invocations in a 60 second period. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 10
 
 ### Fresh Mode Explained
 
