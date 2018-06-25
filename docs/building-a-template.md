@@ -57,7 +57,6 @@ var watch = watchbot.template({
 module.exports = cloudfriend.merge(myTemplate, watch);
 ```
 
-### watchbot.template options
 
 ## Full API Definition
 
@@ -92,9 +91,9 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 
 **Default behavior**
 
-By default, containers are re-used from one job to the next, and file system permissions of the workers are very restricted. Workers can only write to the `/tmp` directory or any ephemeral volumes added to the `mounts` property in the cloudformation template. All of the mounts, including `/tmp`, are cleaned after every job completes.
+By default, containers are re-used from one job to the next, and file system is set to read-only for most of the filesystem. Workers can only write to the `/tmp` directory or any ephemeral volumes added to the `mounts` property in the cloudformation template. All of the mounts, including `/tmp`, are cleaned after every job completes.
 
-Since containers are only started once during scale up and then left on for long durations, users can expect to see very few failed task placements. Combined with the low overhead of not needing to start containers for every job, watchbot 4 is ideal for workloads that are potentially very short-lived and require high throughput. During initial benchmarks, watchbot 4 was able to achieve a throughput of 50 tasks per second when run at 500 workers for jobs that ran 10 seconds each. There were no signs showing that it would slow down, and seemed to be able to handle as much throughput as you were willing to add workers.
+Since containers are only started once during scale up and then left on for long durations, users can expect to see very few failed task placements. Combined with the low overhead of not needing to start containers for every job, watchbot is ideal for workloads that are potentially very short-lived and require high throughput. During initial benchmarks, watchbot was able to achieve a throughput of 50 tasks per second when run at 500 workers for jobs that ran 10 seconds each. There were no signs showing that it would slow down, and seemed to be able to handle as much throughput as you were willing to add workers.
 
 **Fresh mode** 
 
