@@ -202,3 +202,50 @@ test('[message] complete, SQS error', async (assert) => {
   AWS.SQS.restore();
   assert.end();
 });
+
+test('[message] heartbeat', async (assert) => {
+  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
+    this.request.promise.returns(Promise.resolve());
+  });
+
+  const message = new Message(sqsMessage, { queueUrl });
+
+  try {
+    await message.heartbeat();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  assert.ok(
+    cmv.calledWith({
+      ReceiptHandle: 'a',
+      VisibilityTimeout: 180
+    }),
+    'heartbeat sets message visibilityTimeout to 3 minutes'
+  );
+
+  AWS.SQS.restore();
+  assert.end();
+});
+
+test('[message] heartbeat, SQS error', async (assert) => {
+  const logger = stubber(Logger).setup();
+  const err = new Error('foo');
+  AWS.stub('SQS', 'changeMessageVisibility', function() {
+    this.request.promise.returns(Promise.reject(err));
+  });
+
+  const message = new Message(sqsMessage, { queueUrl });
+
+  try {
+    await message.heartbeat();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  assert.ok(logger.queueError.calledWith(err), 'logged sqs error');
+
+  logger.teardown();
+  AWS.SQS.restore();
+  assert.end();
+});
