@@ -24,28 +24,6 @@ test('[bin.watchbot-dead-letter] success', async (assert) => {
 });
 
 
-test('[bin.watchbot-dead-letter test] error handling', async (assert) => {
-  const argv = process.argv;
-  process.argv = ['', '', 'watchbot-dead-letter'];
-  process.env.QueueUrl = 'https://some-url';
-
-  try {
-    await watchbotDeadletter();
-  } catch (err) {
-    assert.ifError(err, 'failed');
-  }
-
-  assert.ok(
-    logs.log.calledWith('[error] ${err.stack}'),
-    'logger error from dead-letter to console'
-  );
-
-  delete process.env.QueueUrl;
-  logs.teardown();
-  process.argv = argv;
-  assert.end();
-});
-
 test('[bin.watchbot-dead-letter ] proper client setup & stack description', (assert) => {
   const argv = process.argv;
   process.env.QueueUrl = 'https://some-url';

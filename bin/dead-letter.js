@@ -12,25 +12,25 @@ const Spinner = require('cli-spinner').Spinner;
 
 const main = async() => {
 
-  const options = {
-    queueUrl: process.env.QueueUrl
+  var options = {
+    stackName: process.argv[2],
+    region: process.argv[3] || 'us-east-1'
   };
-  if (!options.queueUrl)
-    throw new Error('queueUrl is undefined');
-  const sqs = new AWS.SQS({
-    region: options.queueUrl.parse(options.queueUrl).host.split('.')[1],
-    params: { QueueUrl: options.queueUrl }
-  });
 
-  const cfn = new AWS.CloudFormation({
-    region: options.queueUrl.parse(options.queueUrl).host.split('.')[1]
-  });
+  const sqs = new AWS.SQS({ region: options.region });
+  const cfn = new AWS.CloudFormation({ region: options.region });
 
   const actions = { purge, writeOut, replay, triage };
 
   const queues = await findQueues(cfn, options);
+	console.log('queues');
+	console.log(queues);
   const queue = await selectQueue(queues);
+	console.log('queue');
+	console.log(queue);
   const data = await triageSelection(queue);
+	console.log('data');
+	console.log(data);
   await actions[data.action](sqs, data.queue);
 };
 
@@ -52,9 +52,9 @@ async function findQueues(cfn, options) {
       url: o.OutputValue
     }));
   const logGroups = res.Stacks[0].Outputs
-    .filter((o) => /Logs/.test(o.OutputKey))
+    .filter((o) => /LogGroup/.test(o.OutputKey))
     .map((o) => ({
-      prefix: o.OutputKey.replace('Logs', ''),
+      prefix: o.OutputKey.replace('LogGroup', ''),
       arn: o.OutputValue
     }));
 
@@ -112,8 +112,8 @@ async function purge(sqs, queue) {
     return await sqs.purgeQueue({ QueueUrl: queue.deadLetter }).promise();
 }
 
-async function writeOut(queue) {
-  const reciever = receiveAll(queue.deadLetter);
+function writeOut(sqs, queue) {
+  const reciever = receiveAll(sqs, queue.deadLetter);
   const stringifier = new stream.Transform({
     objectMode: true,
     transform: function(msg, _, callback) {
@@ -125,7 +125,7 @@ async function writeOut(queue) {
   });
   stringifier.handles = [];
   return new Promise((resolve, reject) => {
-    const done = () => returnMany(this.sqs, queue.deadLetter, stringifier.handles)
+    const done = returnMany(sqs, queue.deadLetter, stringifier.handles)
       .then(() => resolve())
       .catch((err) => reject(err));
     reciever
@@ -170,16 +170,10 @@ async function replay(sqs, queue) {
 
 async function triage(sqs, queue) {
   return new Promise((resolve, reject) => {
-    (async function recurse() {
-      try {
-        await triageOne(sqs, queue);
-        await recurse();
-      }
-      catch (err) {
-        if (err.finished) return resolve();
-        reject(err);
-      }
-    })();
+    async function recurse() {
+    await triageOne(sqs, queue);
+    await recurse();
+  }
   });
 }
 
@@ -218,16 +212,13 @@ async function triagePrompts(sqs, queue, message) {
 }
 
 async function triageOne(sqs, queue) {
-  return receive(sqs, 1, queue.deadLetter)
-    .then((messages) => {
-      const message = messages[0];
-      if (!message) return Promise.reject({ finished: true });
-      console.log('');
-      console.log(`Subject: ${message.subject}`);
-      console.log(`Message: ${message.message}`);
-
-      return triagePrompts(sqs, queue, message);
-    });
+  const messages = await receive(sqs, 1, queue.deadLetter);
+  const message = messages[0];
+  if (!message) return Promise.reject({ finished: true });
+  console.log('');
+  console.log(`Subject: ${message.subject}`);
+  console.log(`Message: ${message.message}`);
+  return triagePrompts(sqs, queue, message);
 }
 
 async function receive(sqs, count, queueUrl) {
@@ -239,7 +230,7 @@ async function receive(sqs, count, queueUrl) {
   }).promise();
 
   if (data.Messages) {
-    data.map((message) => ({
+    data.Messages.map((message) => ({
       id: message.MessageId,
       body: message.Body,
       subject: JSON.parse(message.Body).Subject,
@@ -247,6 +238,7 @@ async function receive(sqs, count, queueUrl) {
       handle: message.ReceiptHandle
     }));
   }
+  return data;
 }
 
 async function returnOne(sqs, queueUrl, message) {
