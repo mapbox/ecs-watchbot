@@ -42,13 +42,13 @@ const uploadBundle = async () => {
   if (version) {
     console.log(`Tag ${version} found for ${sha}. Creating a tag specific watchbot binary in S3.`);
     prefix.forEach(async (pre) => {
+      console.log(`Uploaded bundle to s3://${Bucket}/${pre}/${version}/watchbot`);
       await s3.putObject({
         Bucket,
         Key: `${pre}/${version}/watchbot`,
         Body: fs.createReadStream(`${__dirname}/ecs-watchbot/${pkgNames[pre]}`),
         ACL: 'public-read'
       }).promise();
-      console.log(`Uploaded bundle to s3://${Bucket}/${pre}/${version}/watchbot`);
     });
   }
   console.log('Fin.');
@@ -61,4 +61,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-
