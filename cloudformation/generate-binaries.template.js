@@ -29,7 +29,7 @@ const Resources = {
       },
       Policies: [
         {
-          PolicyName: cf.ref('GitSha'),
+          PolicyName: cf.sub('BundlerPolicy${GitSha}'),
           PolicyDocument: {
             Statement: [
               {
@@ -103,7 +103,7 @@ const Resources = {
       },
       Policies: [
         {
-          PolicyName: 'main',
+          PolicyName: cf.sub('PipelinePolicy${GitSha}'),
           PolicyDocument: {
             Statement: [
               {
