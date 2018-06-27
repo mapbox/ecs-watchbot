@@ -623,7 +623,7 @@ Object {
                 },
               },
               Object {
-                "Name": "fresh",
+                "Name": "writableFilesystem",
                 "Value": false,
               },
               Object {
@@ -1395,7 +1395,7 @@ Object {
                 },
               },
               Object {
-                "Name": "fresh",
+                "Name": "writableFilesystem",
                 "Value": false,
               },
               Object {

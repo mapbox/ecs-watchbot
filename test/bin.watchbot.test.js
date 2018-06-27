@@ -23,7 +23,7 @@ test('[bin.watchbot] success', async (assert) => {
   assert.ok(
     Watcher.create.calledWith({
       queueUrl: 'https://faker',
-      fresh: false,
+      writableFilesystem: false,
       workerOptions: {
         command: 'echo hello world',
         volumes: ['/tmp', '/mnt']

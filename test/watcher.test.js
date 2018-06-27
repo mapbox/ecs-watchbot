@@ -58,7 +58,7 @@ test('[watcher] listens exactly once', async (assert) => {
 
   const watcher = new Watcher({
     queueUrl: 'https://faker',
-    fresh: true,
+    writableFilesystem: true,
     workerOptions: {
       command: 'echo hello world',
       volumes: ['/tmp']
