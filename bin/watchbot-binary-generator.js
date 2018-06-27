@@ -22,7 +22,11 @@ const uploadBundle = async () => {
   await exec('npm ci --production');
   await exec('npm install -g pkg');
   await exec('pkg .');
-  console.log(await exec('pwd').stdout.trim());
+
+  let dir = await exec('ls');
+  console.log(dir.stdout);
+  dir = await exec('ls ../');
+  console.log(dir.stdout);
 
   let sha = await exec('git rev-parse HEAD');
   sha = sha.stdout.trim();
