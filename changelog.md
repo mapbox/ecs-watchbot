@@ -1,3 +1,7 @@
+### 4.4.0
+
+- Change `fresh` mode to `writableFilesystem` mode: https://github.com/mapbox/ecs-watchbot/pull/234
+
 ### 4.3.0
 
 - Add CPUUtilization and MemoryUtilization alarms: https://github.com/mapbox/ecs-watchbot/pull/231
