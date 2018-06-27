@@ -1,3 +1,7 @@
+### 4.4.2
+
+- Remove node 8 engine requirement: https://github.com/mapbox/ecs-watchbot/pull/237
+
 ### 4.4.1
 
 - Only expose `./lib/template` through `index.js` so people can run node 6 locally: https://github.com/mapbox/ecs-watchbot/pull/236
