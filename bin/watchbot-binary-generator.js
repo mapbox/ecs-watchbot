@@ -17,35 +17,25 @@ const uploadBundle = async () => {
     macosx: 'watchbot-macos',
     windows: 'watchbot-win.exe'
   };
-  const options = { cwd: '.' };
+
   console.log('Generating the binaries from ecs-watchbot');
-  let dir = await exec('ls -a');
-  console.log('ls only', dir.stdout);
-  dir = await exec('ls -a ../');
-  console.log('ls ../', dir.stdout);
+  await exec('./generate-binaries', { cwd: __dirname });
 
-  console.log('npm ci --production');
-  await exec('npm ci --production', options);
-  console.log('npm install -g pkg');
-  await exec('npm install -g pkg', options);
-  console.log('pkg .');
-  await exec('pkg .', options);
-
-  let sha = await exec('git rev-parse HEAD', options);
+  let sha = await exec('git rev-parse HEAD', { cwd: `${__dirname}/ecs-watchbot` });
   sha = sha.stdout.trim();
   prefix.forEach(async (pre) => {
     console.log(`Uploading bundle to s3://${Bucket}/${pre}/${sha}/watchbot`);
     await s3.putObject({
       Bucket,
       Key: `${pre}/${sha}/watchbot`,
-      Body: fs.createReadStream(pkgNames[pre]),
+      Body: fs.createReadStream(`${__dirname}/ecs-watchbot/${pkgNames[pre]}`),
       ACL: 'public-read'
     }).promise();
   });
 
   let version;
   try {
-    version = (await exec('git describe --tags --exact-match', options)).stdout.trim();
+    version = (await exec('git describe --tags --exact-match'), { cwd: `${__dirname}/ecs-watchbot` }).stdout.trim();
   } catch (err) {
     console.log(`No tag found for ${sha}. Not creating a tag specific watchbot binary on S3.`);
     version = false;
@@ -56,7 +46,7 @@ const uploadBundle = async () => {
       await s3.putObject({
         Bucket,
         Key: `${pre}/${version}/watchbot`,
-        Body: fs.createReadStream(pkgNames[pre]),
+        Body: fs.createReadStream(`${__dirname}/ecs-watchbot/${pkgNames[pre]}`),
         ACL: 'public-read'
       }).promise();
       console.log(`Uploaded bundle to s3://${Bucket}/${pre}/${version}/watchbot`);
@@ -72,3 +62,4 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
