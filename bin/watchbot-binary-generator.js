@@ -22,7 +22,6 @@ const uploadBundle = async () => {
   await exec('npm ci --production');
   await exec('npm install -g pkg');
   await exec('pkg .');
-
   let dir = await exec('ls');
   console.log(dir.stdout);
   dir = await exec('ls ../');
