@@ -15,7 +15,7 @@ const main = async () => {
 
   const options = {
     queueUrl: process.env.QueueUrl,
-    fresh: process.env.fresh === 'true' ? true : false,
+    writableFilesystem: process.env.writableFilesystem === 'true' ? true : false,
     workerOptions: { command, volumes }
   };
 

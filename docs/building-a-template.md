@@ -71,7 +71,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **family** | The name of the task definition family that watchbot will create revisions of. | String/Ref | Yes | -
 **command** | The shell command to be run by the subprocess worker. The working directory for the subprocess is determined in your Dockerfile by the `WORKDIR` missive. | String | Yes | -
 **workers** | The maximum number of workers to run for your service. Must be a number, not a reference to a number, since one tenth of this number will be used as the scaling adjustment for the scaling policy. | Number | Yes | -
-**fresh** | Whether you want a fresh container for every job. See below for more details. | Boolean | No | false
+**writableFilesystem** | Whether you want a fresh container for every job with a writable filesystem. See below for more details. | Boolean | No | false
 **mounts** | If your worker containers need to write files or folders inside its file system, specify those locations with this parameter. A single ephemeral mount point can be specified as `{container location}`, e.g. /mnt/tmp. Separate multiple mount strings with commas if you need to mount more than one location. You can also specify mounts as an arrays of paths. Every mounted volume will be cleaned after each job. By default, the `/tmp` directory is added as an ephemeral mount. | String/Object | No | `/tmp`
 **env** | Key-value pairs that will be provided to the worker containers as environment variables. Keys must be strings, and values can either be strings or references to other CloudFormation resources via `{"Ref": "..."}`. | Object | No | `{}`
 **prefix** | a prefix that will be applied to the logical names of all the resources Watchbot creates. If you're building a template that includes more than one Watchbot system, you'll need to specify this in order to differentiate the resources. | String/Ref | No | none
@@ -95,9 +95,9 @@ By default, containers are re-used from one job to the next, and file system is 
 
 Since containers are only started once during scale up and then left on for long durations, users can expect to see very few failed task placements. Combined with the low overhead of not needing to start containers for every job, watchbot is ideal for workloads that are potentially very short-lived and require high throughput. During initial benchmarks, watchbot was able to achieve a throughput of 50 tasks per second when run at 500 workers for jobs that ran 10 seconds each. There were no signs showing that it would slow down, and seemed to be able to handle as much throughput as you were willing to add workers.
 
-**Fresh mode** 
+**writableFilesystem mode** 
 
-In fresh mode, containers are stopped after every job. This refreshing of containers allows users to confidently expect their work to run in a fresh container every time, and allow them to write to anywhere on the filesystem. Fresh mode throughput values have not been confirmed yet, but it can be guaranteed to be slower than the default mode, due to the overhead of starting a new container after every job.
+In writableFilesystem mode, the whole file system is writable and containers are stopped after every job. This refreshing of containers allows users to confidently expect their work to run in a fresh container every time, and allow them to write to anywhere on the filesystem. Fresh mode throughput values have not been confirmed yet, but it can be guaranteed to be slower than the default mode, due to the overhead of starting a new container after every job.
 
 Fresh mode has no restrictions to the file system: workers can write anywhere and read from anywhere, their files being instantly deleted after the job finishes and the container dies.
 
