@@ -7,7 +7,6 @@ const cp = require('child_process');
 const util = require('util');
 const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
-const path = require('path');
 
 const uploadBundle = async () => {
   const s3 = new AWS.S3();
@@ -18,11 +17,11 @@ const uploadBundle = async () => {
     macosx: 'watchbot-macos',
     windows: 'watchbot-win.exe'
   };
-  const options = { cwd: `${__dirname}/..` };
+  const options = { cwd: '.' };
   console.log('Generating the binaries from ecs-watchbot');
-  let dir = await exec('ls');
+  let dir = await exec('ls -a');
   console.log('ls only', dir.stdout);
-  dir = await exec('ls ../');
+  dir = await exec('ls -a ../');
   console.log('ls ../', dir.stdout);
 
   console.log('npm ci --production');
