@@ -7,6 +7,7 @@ const cp = require('child_process');
 const util = require('util');
 const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
+const path = require('path');
 
 const uploadBundle = async () => {
   const s3 = new AWS.S3();
@@ -19,14 +20,17 @@ const uploadBundle = async () => {
   };
   const options = { cwd: `${__dirname}/..` };
   console.log('Generating the binaries from ecs-watchbot');
-  await exec('npm ci --production', options);
-  await exec('npm install -g pkg', options);
-  await exec('pkg .', options);
-
   let dir = await exec('ls');
   console.log('ls only', dir.stdout);
   dir = await exec('ls ../');
   console.log('ls ../', dir.stdout);
+
+  console.log('npm ci --production');
+  await exec('npm ci --production', options);
+  console.log('npm install -g pkg');
+  await exec('npm install -g pkg', options);
+  console.log('pkg .');
+  await exec('pkg .', options);
 
   let sha = await exec('git rev-parse HEAD', options);
   sha = sha.stdout.trim();
