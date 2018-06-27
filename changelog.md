@@ -1,3 +1,7 @@
+### 4.4.1
+
+- Only expose `./lib/template` through `index.js` so people can run node 6 locally: https://github.com/mapbox/ecs-watchbot/pull/236
+
 ### 4.4.0
 
 - Change `fresh` mode to `writableFilesystem` mode: https://github.com/mapbox/ecs-watchbot/pull/234
