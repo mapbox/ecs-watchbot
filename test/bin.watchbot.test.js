@@ -13,6 +13,7 @@ test('[bin.watchbot] success', async (assert) => {
   process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
+  process.env.maxJobDuration = 180;
 
   try {
     await watchbot();
@@ -26,7 +27,8 @@ test('[bin.watchbot] success', async (assert) => {
       fresh: false,
       workerOptions: {
         command: 'echo hello world',
-        volumes: ['/tmp', '/mnt']
+        volumes: ['/tmp', '/mnt'],
+        maxJobDuration: 180
       }
     }),
     'watcher created with expected arguments'
@@ -92,3 +94,30 @@ test('[bin.watchbot] bad arguments', async (assert) => {
   process.argv = argv;
   assert.end();
 });
+
+
+test('[bin.watchbot] invalid maxJobDuration', async (assert) => {
+  const argv = process.argv;
+  process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
+  process.env.QueueUrl = 'https://faker';
+  process.env.Volumes = '/tmp,/mnt';
+  process.env.maxJobDuration = 'not a number here';
+
+
+  try {
+    await watchbot();
+  } catch (err) {
+    assert.equal(
+      err.message,
+      'maxJobDuration: not a number',
+      'throws error on invalid arguments'
+    );
+  }
+
+  delete process.env.QueueUrl;
+  delete process.env.Volumes;
+  delete process.env.maxJobDuration;
+  process.argv = argv;
+  assert.end();
+});
+

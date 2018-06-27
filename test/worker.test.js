@@ -358,3 +358,65 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
   logger.teardown();
   assert.end();
 });
+
+test('[worker] waitFor, 5 second task completes', async (assert) => {
+  const logger = stubber(Logger).setup();
+  logger.log.restore();
+  logger.stream.restore();
+  const message = sinon.createStubInstance(Message);
+  message.env = { Message: 'banana' };
+
+  const options = {
+    command: 'sleep 2; exit 0',
+    volumes: ['/tmp'],
+    maxJobDuration: 6 };
+  const worker = new Worker(message, options);
+
+  sinon.spy(child_process, 'spawn');
+
+  try {
+    await worker.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  const results = logger.workerSuccess.args[0][0];
+  assert.equal(results.code, 0, 'Success!');
+  assert.ok(results.duration, 'logged worker failure duration');
+  assert.equal(message.retry.callCount, 0, 'does not call message.retry()');
+
+  child_process.spawn.restore();
+  logger.teardown();
+  assert.end();
+});
+
+test('[worker] waitFor, timeout error', async (assert) => {
+  const logger = stubber(Logger).setup();
+  logger.log.restore();
+  logger.stream.restore();
+  const message = sinon.createStubInstance(Message);
+  message.env = { Message: 'banana' };
+
+  const options = {
+    command: 'while true; do echo ${Message}; sleep 1; done;',
+    volumes: ['/tmp'],
+    maxJobDuration: 3 };
+  const worker = new Worker(message, options);
+
+  sinon.spy(child_process, 'spawn');
+
+  try {
+    await worker.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  const results = logger.workerFailure.args[0][0];
+  assert.equal(results.code, null, 'Timeout has null result code');
+  assert.ok(results.duration, 'logged worker failure duration');
+  assert.equal(message.retry.callCount, 1, 'calls message.retry()');
+
+  child_process.spawn.restore();
+  logger.teardown();
+  assert.end();
+});

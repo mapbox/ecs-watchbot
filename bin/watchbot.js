@@ -12,11 +12,14 @@ const main = async () => {
   const logger = Logger.create('watcher');
   const command = process.argv.slice(3).join(' ');
   const volumes = process.env.Volumes.split(',');
+  const maxJobDuration = parseInt(process.env.maxJobDuration);
+
+  if (isNaN(maxJobDuration)) throw new Error('maxJobDuration: not a number');
 
   const options = {
     queueUrl: process.env.QueueUrl,
     fresh: process.env.fresh === 'true' ? true : false,
-    workerOptions: { command, volumes }
+    workerOptions: { command, volumes , maxJobDuration }
   };
 
   const watcher = Watcher.create(options);
