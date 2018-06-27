@@ -16,7 +16,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -60,7 +60,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -279,7 +279,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-queue-size",
         },
@@ -740,7 +740,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-worker-errors",
         },
@@ -810,7 +810,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -854,7 +854,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1073,7 +1073,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-queue-size",
         },
@@ -1492,7 +1492,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.4.1/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Sub": "\${AWS::StackName}-worker-errors",
         },
