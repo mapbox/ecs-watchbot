@@ -23,6 +23,11 @@ const uploadBundle = async () => {
   await exec('npm install -g pkg', options);
   await exec('pkg .', options);
 
+  let dir = await exec('ls');
+  console.log('ls only', dir.stdout);
+  dir = await exec('ls ../');
+  console.log('ls ../', dir.stdout);
+
   let sha = await exec('git rev-parse HEAD', options);
   sha = sha.stdout.trim();
   prefix.forEach(async (pre) => {
