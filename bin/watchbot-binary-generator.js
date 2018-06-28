@@ -22,16 +22,6 @@ const uploadBundle = async () => {
   await exec('./generate-binaries', { cwd: __dirname });
 
   const sha = (await exec('git rev-parse HEAD', { cwd: `${__dirname}/ecs-watchbot` })).stdout.trim();
-  prefix.forEach(async (pre) => {
-    console.log(`Uploading bundle to s3://${Bucket}/${pre}/${sha}/watchbot`);
-    await s3.putObject({
-      Bucket,
-      Key: `${pre}/${sha}/watchbot`,
-      Body: fs.createReadStream(`${__dirname}/ecs-watchbot/${pkgNames[pre]}`),
-      ACL: 'public-read'
-    }).promise();
-  });
-
   let version;
   try {
     version = (await exec('git describe --tags --exact-match'), { cwd: `${__dirname}/ecs-watchbot` }).stdout.trim();
