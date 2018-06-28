@@ -8,7 +8,7 @@ const util = require('util');
 const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
 const path = require('path');
-const pkg = require(path.resolve(__dirname, 'package.json'));
+const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 const uploadBundle = async () => {
   const s3 = new AWS.S3();
