@@ -29,7 +29,7 @@ const Resources = {
       },
       Policies: [
         {
-          PolicyName: cf.sub('BundlerPolicy${GitSha}'),
+          PolicyName: cf.sub('BundlerPolicy'),
           PolicyDocument: {
             Statement: [
               {
@@ -101,7 +101,7 @@ const Resources = {
       },
       Policies: [
         {
-          PolicyName: cf.sub('PipelinePolicy${GitSha}'),
+          PolicyName: cf.sub('PipelinePolicy'),
           PolicyDocument: {
             Statement: [
               {
@@ -136,6 +136,7 @@ const Resources = {
   Pipeline: {
     Type: 'Custom::CodePipelineHelper',
     Properties: {
+      RestartExecutionOnUpdate: true,
       ServiceToken: cf.importValue('code-pipeline-helper-production-custom-resource'),
       Owner: 'mapbox',
       Repo: 'ecs-watchbot',
