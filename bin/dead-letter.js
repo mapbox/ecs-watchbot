@@ -7,12 +7,12 @@ const AWS = require('aws-sdk');
 const inquirer = require('inquirer');
 const stream = require('stream');
 const Queue = require('p-queue');
-const logs = require('..').Logger;
 const Spinner = require('cli-spinner').Spinner;
 
-const main = async() => {
+const main = async(callback) => {
+  console.log('inside async()');
 
-  var options = {
+  const options = {
     stackName: process.argv[2],
     region: process.argv[3] || 'us-east-1'
   };
@@ -21,23 +21,32 @@ const main = async() => {
   const cfn = new AWS.CloudFormation({ region: options.region });
 
   const actions = { purge, writeOut, replay, triage };
+  try {
+    const queues = await findQueues(cfn, options);
+    let queue;
+    if (queues) {
+      queue = await selectQueue(queues);
+    }
+    let data;
+    if (queue) {
+      data = await triageSelection(queue);
+    }
 
-  const queues = await findQueues(cfn, options);
-	console.log('queues');
-	console.log(queues);
-  const queue = await selectQueue(queues);
-	console.log('queue');
-	console.log(queue);
-  const data = await triageSelection(queue);
-	console.log('data');
-	console.log(data);
-  await actions[data.action](sqs, data.queue);
+    if (data) {
+      await actions[data.action](sqs, data.queue);
+    }
+  } catch (err) {
+	  throw err;
+	}
 };
 
 async function findQueues(cfn, options) {
+  console.log('inside findQueues');
   const res = await cfn.describeStacks({ StackName: options.stackName }).promise();
-  if (!res.Stacks[0])
-    return Promise.reject(new Error(`Could not find ${options.stackName} in ${options.region}`));
+  console.log(res);
+  if (!res.Stacks[0]) {
+    throw new Error(`Could not find ${options.stackName} in ${options.region}`);
+  }
   const deadLetterQueues = res.Stacks[0].Outputs
     .filter((o) => /DeadLetterQueueUrl/.test(o.OutputKey))
     .map((o) => ({
@@ -62,6 +71,7 @@ async function findQueues(cfn, options) {
 }
 
 async function selectQueue(queues) {
+	console.log('inside selectQueue');
   if (queues.deadLetterQueues.length === 1) return Promise.resolve({
     deadLetter: queues.deadLetterQueues[0].url,
     work: queues.workQueues.find((queue) => queue.prefix === queues.deadLetterQueues[0].prefix).url,
@@ -112,8 +122,8 @@ async function purge(sqs, queue) {
     return await sqs.purgeQueue({ QueueUrl: queue.deadLetter }).promise();
 }
 
-function writeOut(sqs, queue) {
-  const reciever = receiveAll(sqs, queue.deadLetter);
+async function writeOut(sqs, queue) {
+  const reciever = await receiveAll(sqs, queue.deadLetter);
   const stringifier = new stream.Transform({
     objectMode: true,
     transform: function(msg, _, callback) {
@@ -124,17 +134,11 @@ function writeOut(sqs, queue) {
     }
   });
   stringifier.handles = [];
-  return new Promise((resolve, reject) => {
-    const done = returnMany(sqs, queue.deadLetter, stringifier.handles)
-      .then(() => resolve())
-      .catch((err) => reject(err));
-    reciever
-      .on('error', reject)
-      .pipe(stringifier)
-      .on('error', reject)
-      .on('end', done)
-      .pipe(process.stdout);
-  });
+  const done = await returnMany(sqs, queue.deadLetter, stringifier.handles);
+  reciever
+    .pipe(stringifier)
+    .on('end', done)
+    .pipe(process.stdout);
 }
 
 async function replay(sqs, queue) {
@@ -149,7 +153,7 @@ async function replay(sqs, queue) {
   const spinner = new Spinner('Returning all dead messages to the work queue...');
   spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
   spinner.start();
-  const reciever = receiveAll(sqs, queue.deadLetter);
+  const reciever = await receiveAll(sqs, queue.deadLetter);
   const replayer = new stream.Writable({
     objectMode: true,
     write: async function(msg, _, callback) {
@@ -169,12 +173,10 @@ async function replay(sqs, queue) {
 }
 
 async function triage(sqs, queue) {
-  return new Promise((resolve, reject) => {
-    async function recurse() {
-    await triageOne(sqs, queue);
-    await recurse();
+  for (;;) {
+    const done = await triageOne(sqs, queue);
+    if (done) return;
   }
-  });
 }
 
 async function triagePrompts(sqs, queue, message) {
@@ -184,7 +186,6 @@ async function triagePrompts(sqs, queue, message) {
     name: 'action',
     message: 'Would you like to:',
     choices: [
-      'View this message\'s recent logs?',
       'Return this message to the work queue?',
       'Return this message to the dead letter queue?',
       'Delete this message entirely?',
@@ -192,7 +193,6 @@ async function triagePrompts(sqs, queue, message) {
     ]
   });
   const mapping = {
-    'View this message\'s recent logs?': 'logs',
     'Return this message to the work queue?': 'replayOne',
     'Return this message to the dead letter queue?': 'returnOne',
     'Delete this message entirely?': 'deleteOne',
@@ -202,19 +202,23 @@ async function triagePrompts(sqs, queue, message) {
   const choice = mapping[answers.action];
   const queueUrl = choice === 'replayOne' ? queue.work : queue.deadLetter;
 
-  if (choice === 'logs') return getLogs(sqs, queue, message);
-  if (choice === 'stop') return returnOne(sqs, queueUrl, message)
-    .then(() => Promise.reject({ finished: true }));
-
-  if (choice === 'replayOne') return replayOne(sqs, queueUrl, message)
-    .then(() => deleteOne(sqs, queue.deadLetter, message));
+  if (choice === 'stop') {
+    await returnOne(sqs, queueUrl, message);
+    return true;
+  }
+  if (choice === 'replayOne') {
+    await replayOne(sqs, queueUrl, message);
+    await deleteOne(sqs, queue.deadLetter, message);
+  }
   return actions[choice](sqs, queueUrl, message);
 }
 
 async function triageOne(sqs, queue) {
   const messages = await receive(sqs, 1, queue.deadLetter);
   const message = messages[0];
-  if (!message) return Promise.reject({ finished: true });
+  console.log('message');
+  console.log(message);
+  if (!message) return true;
   console.log('');
   console.log(`Subject: ${message.subject}`);
   console.log(`Message: ${message.message}`);
@@ -222,7 +226,7 @@ async function triageOne(sqs, queue) {
 }
 
 async function receive(sqs, count, queueUrl) {
-  const data = await sqs.receiveMessage({
+  let data = await sqs.receiveMessage({
     QueueUrl: queueUrl,
     WaitTimeSeconds: 1,
     MaxNumberOfMessages: count,
@@ -230,7 +234,7 @@ async function receive(sqs, count, queueUrl) {
   }).promise();
 
   if (data.Messages) {
-    data.Messages.map((message) => ({
+    data = data.Messages.map((message) => ({
       id: message.MessageId,
       body: message.Body,
       subject: JSON.parse(message.Body).Subject,
@@ -241,9 +245,10 @@ async function receive(sqs, count, queueUrl) {
   return data;
 }
 
+
 async function returnOne(sqs, queueUrl, message) {
   const handle = typeof message === 'string' ? message : message.handle;
-  await sqs.changeMessageVisibility({
+  return await sqs.changeMessageVisibility({
     QueueUrl: queueUrl,
     ReceiptHandle: handle,
     VisibilityTimeout: 0
@@ -256,8 +261,9 @@ async function returnMany(sqs, queueUrl, handles) {
   spinner.start();
   const queue = new Queue({ concurrency: 10 });
   const returns = handles.map((handle) => queue.add(() => returnOne(sqs, queueUrl, handle)));
-  await Promise.all(returns);
+  const returnManyResult = await Promise.all(returns);
   spinner.stop(true);
+  return returnManyResult;
 }
 
 async function replayOne(sqs, queueUrl, message) {
@@ -287,40 +293,19 @@ async function receiveAll(sqs, queueUrl) {
     }
     return msgs;
   };
+  console.log('new stream.Readable');
   return new stream.Readable({
     objectMode: true,
-    read: async function() {
+    read: function() {
       let status = true;
       while (status && messages.length) status = this.push(messages.shift());
       if (messages.length)  return;
       if (!next) return this.push(null);
-      if (status && !pending) return next();
-      await this._read();
+      if (status && !pending) return next()
+        .then(() => this._read())
+        .catch((err) => this.emit('error', err));
     }
   });
-}
-
-async function getLogs(queue, message) {
-  const spinner = new Spinner('Searching CloudWatch logs...');
-  spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
-  spinner.start();
-  const data = await Promise((resolve, reject) => {
-    logs.fetch(queue.logs, message.message, (err, data) => {
-      if (err) return reject(err);
-      const re = new RegExp(`\\[watchbot\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
-      const line = data.split('\n').find((line) => re.test(line));
-      if (!line) return Promise.resolve('Could not find any matching logs\n');
-      const id = line.match(re)[1];
-      logs.fetch(queue.logs, id, (err, data) => {
-        if (err) return reject(err);
-        resolve(data);
-      });
-    });
-  });
-  spinner.stop(true);
-  console.log();
-  console.log(data);
-  return triagePrompts(this.sqs, queue, message);
 }
 
 module.exports = main;
