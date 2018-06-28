@@ -44,6 +44,7 @@
     "aws-sdk": "^2.188.0",
     "binary-split": "^1.0.3",
     "fs-extra": "^6.0.1",
-    "stream-combiner2": "^1.1.1"
+    "stream-combiner2": "^1.1.1",
+    "tree-kill": "^1.2.0"
   }
 }
