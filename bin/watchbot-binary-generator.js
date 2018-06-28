@@ -21,9 +21,9 @@ const uploadBundle = async () => {
   };
 
   console.log('Generating the binaries from ecs-watchbot');
-  await exec('npm ci --production', { cwd: '.' });
-  await exec('npm install -g pkg', { cwd: '.' });
-  await exec('pkg .', { cwd: '.' });
+  await exec('npm ci --production');
+  await exec('npm install -g pkg');
+  await exec('pkg .');
 
   prefix.forEach(async (pre) => {
     console.log(`Uploaded bundle to s3://${Bucket}/${pre}/${pkg.version}/watchbot`);
