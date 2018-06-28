@@ -7,8 +7,20 @@ const cp = require('child_process');
 const util = require('util');
 const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
-const path = require('path');
-const pkg = require(path.resolve(__dirname, '..', 'package.json'));
+const remoteGitTags = require('remote-git-tags');
+
+const getTagForSha = (sha) => {
+  return Promise((resolve, reject) => {
+    remoteGitTags('github.com/mapbox/ecs-watchbot')
+      .then((allTags) => {
+        allTags.forEach((remoteSha, remoteTag) => {
+          if (remoteSha === sha)
+            resolve(remoteTag);
+        });
+      })
+      .catch((err) => reject(err));
+  });
+};
 
 const uploadBundle = async () => {
   const s3 = new AWS.S3();
@@ -20,20 +32,27 @@ const uploadBundle = async () => {
     windows: 'watchbot-win.exe'
   };
 
-  console.log('Generating the binaries from ecs-watchbot');
   await exec('npm ci --production');
   await exec('npm install -g pkg');
   await exec('pkg .');
+  const sha = process.env.CODEBUILD_RESOLVED_SOURCE_VERSION;
 
-  prefix.forEach(async (pre) => {
-    console.log(`Uploaded bundle to s3://${Bucket}/${pre}/${pkg.version}/watchbot`);
-    await s3.putObject({
-      Bucket,
-      Key: `${pre}/${pkg.version}/watchbot`,
-      Body: fs.createReadStream(pkgNames[pre]),
-      ACL: 'public-read'
-    }).promise();
-  });
+  getTagForSha(sha)
+    .then((tag) => {
+      if (tag) {
+        prefix.forEach(async (pre) => {
+          console.log(`Uploading the package to s3://${Bucket}/${pre}/${tag}/watchbot`);
+          await s3.putObject({
+            Bucket,
+            Key: `${pre}/${tag}/watchbot`,
+            Body: fs.createReadStream(pkgNames[pre]),
+            ACL: 'public-read'
+          }).promise();
+        });
+      } else {
+        console.log(`No tag found for ${process.env.CODEBUILD_RESOLVED_SOURCE_VERSION}`);
+      }
+    });
   console.log('Fin.');
 };
 
