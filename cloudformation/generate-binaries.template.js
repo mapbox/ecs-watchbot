@@ -41,9 +41,7 @@ const Resources = {
                 Effect: 'Allow',
                 Action: [
                   's3:ListBucket',
-                  's3:ListObjects',
                   's3:GetObject',
-                  's3:HeadObject',
                   's3:PutObject',
                   's3:PutObjectAcl'
                 ],
