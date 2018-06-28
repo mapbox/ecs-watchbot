@@ -81,7 +81,6 @@ const Resources = {
                 - npm ci --production
             build:
               commands:
-                - chmod +x bin/generate-binaries
                 - node bin/watchbot-binary-generator
         `)
       }
