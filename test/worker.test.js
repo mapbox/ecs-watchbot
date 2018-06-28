@@ -382,7 +382,7 @@ test('[worker] waitFor, 2 second task completes', async (assert) => {
 
   const results = logger.workerSuccess.args[0][0];
   assert.equal(results.code, 0, 'Success!');
-  assert.ok(results.duration, 'logged worker failure duration');
+  assert.ok(results.duration, 'logged worker success duration');
   assert.equal(message.retry.callCount, 0, 'does not call message.retry()');
 
   child_process.spawn.restore();
@@ -398,7 +398,7 @@ test('[worker] waitFor, timeout error', async (assert) => {
   message.env = { Message: 'banana' };
 
   const options = {
-    command: 'while true; do echo ${Message}; sleep 1; done;',
+    command: 'while true; do echo ${Message}; sleep 2; done;',
     volumes: ['/tmp'],
     maxJobDuration: 3 };
   const worker = new Worker(message, options);
