@@ -359,7 +359,7 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
   assert.end();
 });
 
-test('[worker] waitFor, 5 second task completes', async (assert) => {
+test('[worker] waitFor, 2 second task completes', async (assert) => {
   const logger = stubber(Logger).setup();
   logger.log.restore();
   logger.stream.restore();
@@ -369,7 +369,7 @@ test('[worker] waitFor, 5 second task completes', async (assert) => {
   const options = {
     command: 'sleep 2; exit 0',
     volumes: ['/tmp'],
-    maxJobDuration: 6 };
+    maxJobDuration: 3 };
   const worker = new Worker(message, options);
 
   sinon.spy(child_process, 'spawn');
