@@ -8,42 +8,51 @@ const inquirer = require('inquirer');
 const stream = require('stream');
 const Queue = require('p-queue');
 const Spinner = require('cli-spinner').Spinner;
+const cwlogs = require('cwlogs');
+const meow = require('meow');
+const split = require('binary-split');
 
-const main = async(callback) => {
-  console.log('inside async()');
+const main = async () => {
+  const cli = meow({
+    help: `
+      USAGE: watchbot-dead-letter [OPTIONS]
+      Commands:
+        worker-capacity     assess available resources on the cluster
+        dead-letter         triage messages in dead letter queue
+      Options:
+        -h, --help          show this help message
+        -s, --stack-name    the full name of a watchbot stack
+        -r, --region        the region of the stack (default us-east-1)
+    `,
+    description: 'Helper utilities for interacting with watchbot stacks'
+  }, {
+    flags: {
+      stackName: { alias: 's' },
+      region: { alias: 'r', default: 'us-east-1' }
+    }
+  });
 
-  const options = {
-    stackName: process.argv[2],
-    region: process.argv[3] || 'us-east-1'
-  };
-
-  const sqs = new AWS.SQS({ region: options.region });
-  const cfn = new AWS.CloudFormation({ region: options.region });
+  console.log(cli.flags);
+  const sqs = new AWS.SQS({ region: cli.flags.region });
+  const cfn = new AWS.CloudFormation({ region: cli.flags.region });
 
   const actions = { purge, writeOut, replay, triage };
-  try {
-    const queues = await findQueues(cfn, options);
-    let queue;
-    if (queues) {
-      queue = await selectQueue(queues);
-    }
-    let data;
-    if (queue) {
-      data = await triageSelection(queue);
-    }
 
-    if (data) {
-      await actions[data.action](sqs, data.queue);
-    }
+  try {
+    const queues = await findQueues(cfn, cli.flags);
+    const queue = await selectQueue(queues);
+    const data = await triageSelection(queue);
+
+    await actions[data.action](sqs, data.queue);
   } catch (err) {
-	  throw err;
-	}
+    throw err;
+  }
 };
 
 async function findQueues(cfn, options) {
   console.log('inside findQueues');
+  console.log(options);
   const res = await cfn.describeStacks({ StackName: options.stackName }).promise();
-  console.log(res);
   if (!res.Stacks[0]) {
     throw new Error(`Could not find ${options.stackName} in ${options.region}`);
   }
@@ -71,19 +80,22 @@ async function findQueues(cfn, options) {
 }
 
 async function selectQueue(queues) {
-	console.log('inside selectQueue');
-  if (queues.deadLetterQueues.length === 1) return Promise.resolve({
+  console.log('inside selectQueue');
+  if (queues.deadLetterQueues.length === 1) return {
     deadLetter: queues.deadLetterQueues[0].url,
     work: queues.workQueues.find((queue) => queue.prefix === queues.deadLetterQueues[0].prefix).url,
     logs: queues.logGroups.find((group) => group.prefix === queues.deadLetterQueues[0].prefix).arn
-  });
+  };
+
   const answers = await inquirer.prompt({
     type: 'list',
     name: 'queue',
     message: 'Which queue would you like to triage?',
     choices: queues.deadLetterQueues.map((queue) => queue.prefix)
   });
+
   const deadLetterQueue = queues.deadLetterQueues.find((queue) => queue.prefix === answers.queue);
+
   return {
     deadLetter: deadLetterQueue.url,
     work: queues.workQueues.find((queue) => queue.prefix === deadLetterQueue.prefix).url,
@@ -103,12 +115,14 @@ async function triageSelection(queue) {
       'Purge the dead letter queue?'
     ]
   });
+
   const mapping = {
     'Purge the dead letter queue?': 'purge',
     'Return all dead messages to the work queue?': 'replay',
     'Triage dead messages individually?': 'triage',
     'Print out all dead messages?': 'writeOut'
   };
+
   return { queue, action: mapping[answers.action] };
 }
 
@@ -118,12 +132,16 @@ async function purge(sqs, queue) {
     name: 'purge',
     message: 'You are about to remove all jobs from the dead letter queue permanently. Are you sure?'
   });
+
   if (answers.purge)
     return await sqs.purgeQueue({ QueueUrl: queue.deadLetter }).promise();
+
+  return Promise.resolve();
 }
 
 async function writeOut(sqs, queue) {
-  const reciever = await receiveAll(sqs, queue.deadLetter);
+  const reciever = receiveAll(sqs, queue.deadLetter);
+
   const stringifier = new stream.Transform({
     objectMode: true,
     transform: function(msg, _, callback) {
@@ -134,11 +152,22 @@ async function writeOut(sqs, queue) {
     }
   });
   stringifier.handles = [];
-  const done = await returnMany(sqs, queue.deadLetter, stringifier.handles);
-  reciever
-    .pipe(stringifier)
-    .on('end', done)
-    .pipe(process.stdout);
+
+  return new Promise((resolve, reject) => {
+    const done = async () => {
+      try {
+        await returnMany(sqs, queue.deadLetter, stringifier.handles);
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    };
+
+    reciever
+      .pipe(stringifier)
+      .on('end', done)
+      .pipe(process.stdout);
+  });
 }
 
 async function replay(sqs, queue) {
@@ -153,34 +182,44 @@ async function replay(sqs, queue) {
   const spinner = new Spinner('Returning all dead messages to the work queue...');
   spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
   spinner.start();
-  const reciever = await receiveAll(sqs, queue.deadLetter);
+
+  const reciever = receiveAll(sqs, queue.deadLetter);
+
   const replayer = new stream.Writable({
     objectMode: true,
     write: async function(msg, _, callback) {
-      await replayOne(sqs, queue.work, msg);
-      await deleteOne(sqs, queue.deadLetter, msg);
-      callback();
+      try {
+        await replayOne(sqs, queue.work, msg);
+        await deleteOne(sqs, queue.deadLetter, msg);
+        callback();
+      } catch (err) {
+        callback(err);
+      }
     }
   });
-  new Promise((resolve, reject) => {
+
+  await new Promise((resolve, reject) => {
     reciever
       .on('error', reject)
       .pipe(replayer)
       .on('error', reject)
       .on('finish', resolve);
   });
-  return await spinner.stop(true);
+
+  return spinner.stop(true);
 }
 
 async function triage(sqs, queue) {
-  for (;;) {
-    const done = await triageOne(sqs, queue);
-    if (done) return;
+  let done = false;
+  while (!done) {
+    done = await triageOne(sqs, queue);
+    console.log(done);
   }
 }
 
 async function triagePrompts(sqs, queue, message) {
   const actions = { replayOne, returnOne, deleteOne };
+
   const answers = await inquirer.prompt({
     type: 'list',
     name: 'action',
@@ -189,60 +228,76 @@ async function triagePrompts(sqs, queue, message) {
       'Return this message to the work queue?',
       'Return this message to the dead letter queue?',
       'Delete this message entirely?',
+      'View this message\'s recent logs?',
       'Stop individual triage?'
     ]
   });
   const mapping = {
     'Return this message to the work queue?': 'replayOne',
     'Return this message to the dead letter queue?': 'returnOne',
+    'View this message\'s recent logs?': 'logs',
     'Delete this message entirely?': 'deleteOne',
     'Stop individual triage?': 'stop'
   };
 
+  console.log(answers);
   const choice = mapping[answers.action];
   const queueUrl = choice === 'replayOne' ? queue.work : queue.deadLetter;
 
+  if (choice === 'logs') {
+    await getLogs(sqs, queue, message);
+    return false;
+  }
+
   if (choice === 'stop') {
     await returnOne(sqs, queueUrl, message);
+    console.log('i coulda sworn its true');
     return true;
+    console.log('ans we dont get here');
   }
+
   if (choice === 'replayOne') {
     await replayOne(sqs, queueUrl, message);
     await deleteOne(sqs, queue.deadLetter, message);
+    return false;
   }
-  return actions[choice](sqs, queueUrl, message);
+
+  console.log(choice);
+
+  return await actions[choice](sqs, queueUrl, message);
 }
 
 async function triageOne(sqs, queue) {
+  console.log('are we here?');
   const messages = await receive(sqs, 1, queue.deadLetter);
   const message = messages[0];
-  console.log('message');
-  console.log(message);
   if (!message) return true;
+
   console.log('');
   console.log(`Subject: ${message.subject}`);
   console.log(`Message: ${message.message}`);
-  return triagePrompts(sqs, queue, message);
+
+  const done = await triagePrompts(sqs, queue, message);
+  console.log('done;', done);
+  return done;
 }
 
 async function receive(sqs, count, queueUrl) {
-  let data = await sqs.receiveMessage({
+  console.log('we definitely make it here');
+  const data = await sqs.receiveMessage({
     QueueUrl: queueUrl,
     WaitTimeSeconds: 1,
     MaxNumberOfMessages: count,
     VisibilityTimeout: 10 * 60
   }).promise();
 
-  if (data.Messages) {
-    data = data.Messages.map((message) => ({
-      id: message.MessageId,
-      body: message.Body,
-      subject: JSON.parse(message.Body).Subject,
-      message: JSON.parse(message.Body).Message,
-      handle: message.ReceiptHandle
-    }));
-  }
-  return data;
+  return (data.Messages || []).map((message) => ({
+    id: message.MessageId,
+    body: message.Body,
+    subject: JSON.parse(message.Body).Subject,
+    message: JSON.parse(message.Body).Message,
+    handle: message.ReceiptHandle
+  }));
 }
 
 
@@ -259,6 +314,7 @@ async function returnMany(sqs, queueUrl, handles) {
   const spinner = new Spinner(`Returning ${handles.length} jobs to the queue...`);
   spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
   spinner.start();
+
   const queue = new Queue({ concurrency: 10 });
   const returns = handles.map((handle) => queue.add(() => returnOne(sqs, queueUrl, handle)));
   const returnManyResult = await Promise.all(returns);
@@ -280,11 +336,12 @@ async function deleteOne(sqs, queueUrl, message) {
   }).promise();
 }
 
-async function receiveAll(sqs, queueUrl) {
+function receiveAll(sqs, queueUrl) {
   const messages = [];
   let pending = false;
   let next = async function() {
     pending = true;
+    console.log('are we here?');
     const msgs = await receive(sqs, 10, queueUrl);
     if (msgs) {
       pending = false;
@@ -301,11 +358,92 @@ async function receiveAll(sqs, queueUrl) {
       while (status && messages.length) status = this.push(messages.shift());
       if (messages.length)  return;
       if (!next) return this.push(null);
-      if (status && !pending) return next()
-        .then(() => this._read())
-        .catch((err) => this.emit('error', err));
+      if (status && !pending) {
+        try {
+          next();
+          this._read();
+        } catch (err) {
+          this.emit('error', err);
+        }
+      }
     }
   });
+}
+
+function getLogs(sqs, queue, message) {
+  const spinner = new Spinner('Searching CloudWatch logs...');
+  console.log('here first');
+  spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
+  spinner.start();
+
+  return new Promise((resolve, reject) => {
+    console.log('then here');
+    fetchLogs(queue.logs, message.message, (err, data) => {
+      console.log('then down here');
+      if (err) return reject(err);
+
+      const re = new RegExp(`\\[watchbot\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
+      const line = data.split('\n').find((line) => re.test(line));
+      console.log(line);
+      if (!line) return resolve('Could not find any matching logs\n');
+
+      const id = line.match(re)[1];
+      console.log(id);
+      fetchLogs(queue.logs, id, (err, data) => {
+        console.log('here too?');
+        console.log(data);
+        if (err) return reject(err);
+        resolve(data);
+      });
+    });
+  }).then((data) => {
+    spinner.stop(true);
+    console.log();
+    console.log(data);
+    return triagePrompts(sqs, queue, message);
+  });
+}
+
+function fetchLogs(logGroup, messageId, callback) {
+  const readable = cwlogs.readable({
+    region: logGroup.split(':')[3],
+    group: logGroup.split(':')[6],
+    pattern: messageId,
+    messages: true,
+    start: Date.now() - 6 * 60 * 60 * 1000
+  }).on('error', callback);
+
+  const writable = new stream.Writable();
+  writable.buffer = [];
+  writable.buffer.current = 0;
+
+  writable.buffer.add = function(line) {
+    if (writable.buffer.current + line.length < 50 * 1024) {
+      writable.buffer.current += line.length;
+      writable.buffer.push(line);
+    } else {
+      const drop = writable.buffer.shift();
+      if (!drop) {
+        const truncate = line.substring(0, 50 * 1024 - 5) + '...';
+        writable.buffer.add(truncate);
+      } else {
+        writable.buffer.current -= drop.length;
+        writable.buffer.add(line);
+      }
+    }
+  };
+
+  writable._write = function(line, enc, callback) {
+    writable.buffer.add(line.toString());
+    callback();
+  };
+
+  writable.on('finish', () => {
+    console.log('ever here?');
+    callback(null, writable.buffer.join('\n') + '\n');
+  }).on('error', callback);
+
+  readable.pipe(split()).pipe(writable);
 }
 
 module.exports = main;

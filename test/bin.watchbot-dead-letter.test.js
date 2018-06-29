@@ -5,10 +5,11 @@ const sinon = require('sinon');
 const AWS = require('@mapbox/mock-aws-sdk-js');
 const watchbotDeadletter = require('../bin/watchbot-dead-letter');
 const inquirer = require('inquirer');
+const cwlogs = require('cwlogs');
+const stream = require('stream');
 
-test.only('[bin.watchbot-dead-letter] stack not found', async (assert) => {
-  const argv = process.argv;
-  process.argv = ['', '', 'stackName', 'regionName'];
+test('[bin.watchbot-dead-letter] stack not found', async (assert) => {
+  process.argv = ['node', 'bin/whatever', '--stack-name', 'stackName', '--region', 'regionName'];
   process.argv.QueueUrl = 'https://something';
   AWS.stub('CloudFormation', 'describeStacks', function() {
     this.request.promise.returns(Promise.resolve({
@@ -16,15 +17,19 @@ test.only('[bin.watchbot-dead-letter] stack not found', async (assert) => {
     }));
   });
 
-  watchbotDeadletter({ stackName: 'stack', region: 'region' }, (err) => {
-    assert.equal(err.message, 'Could not find stack in region', 'expected error message');
+  try {
+    await watchbotDeadletter();
+  } catch (err) {
+    assert.equal(err.message, 'Could not find stackName in regionName', 'expected error message');
     AWS.CloudFormation.restore();
     assert.end();
-  });
+  }
 });
 
-test('[dead-letter] individual message triage', (assert) => {
-  var prompt = sinon.stub(inquirer, 'prompt');
+test('[dead-letter] individual message triage', async (assert) => {
+  process.argv = ['node', 'bin/whatever', '--stack-name', 'stackName', '--region', 'regionName'];
+  process.argv.QueueUrl = 'https://something';
+  const prompt = sinon.stub(inquirer, 'prompt');
   prompt.onCall(0).returns(Promise.resolve({ action: 'Triage dead messages individually?' }));
   prompt.onCall(1).returns(Promise.resolve({ action: 'Return this message to the work queue?' }));
   prompt.onCall(2).returns(Promise.resolve({ action: 'Return this message to the dead letter queue?' }));
@@ -44,7 +49,7 @@ test('[dead-letter] individual message triage', (assert) => {
       ]
     }));
   });
-  var receive = AWS.stub('SQS', 'receiveMessage');
+  const receive = AWS.stub('SQS', 'receiveMessage');
   receive.onCall(0).returns({
     promise: () => Promise.resolve({ Messages: [{ MessageId: 'id-1', Body: JSON.stringify({ Subject: 'subject-1', Message: 'message-1' }), ReceiptHandle: 'handle-1' }] })
   });
@@ -58,27 +63,27 @@ test('[dead-letter] individual message triage', (assert) => {
     promise: () => Promise.resolve({ Messages: [{ MessageId: 'id-4', Body: JSON.stringify({ Subject: 'subject-4', Message: 'message-4' }), ReceiptHandle: 'handle-4' }] })
   });
 
-  var send = AWS.stub('SQS', 'sendMessage', function() {
+  const send = AWS.stub('SQS', 'sendMessage', function() {
     this.request.promise.returns(Promise.resolve());
   });
 
-  var del = AWS.stub('SQS', 'deleteMessage', function() {
+  const del = AWS.stub('SQS', 'deleteMessage', function() {
     this.request.promise.returns(Promise.resolve());
   });
-  var vis = AWS.stub('SQS', 'changeMessageVisibility', function() {
+  const vis = AWS.stub('SQS', 'changeMessageVisibility', function() {
     this.request.promise.returns(Promise.resolve());
   });
-  var fetch = sinon.stub(logs, 'fetch');
-  fetch.onCall(0).yields(null, [
-   '[Sun, 12 Feb 2017 00:24:41 GMT] [watchbot] [a406f47b-a0f2-49a6-a159-b0f8578104bf] {"subject":"bozo","message":"message-4","receives":"1"}',
-    '[Sun, 12 Feb 2017 00:24:42 GMT] [watchbot] [436d13dc-a666-44fd-a2df-70f1f4b3f107] {"subject":"bozo","message":"message-5","receives":"1"}'
-  ].join('\n'));
-  fetch.onCall(1).yields(null, 'final logs\n');
+  const fetch = sinon.stub(cwlogs, 'readable');
+  const mockedCwlogs = new stream.Readable({
+    read: function() {
+      this.push('final log');
+      this.push(null);
+    }
+  });
+  fetch.onCall(0).returns(mockedCwlogs);
 
-  dead({ stackName: 'stack', region: 'region' }, (err) => {
-    assert.ifError(err, 'success');
-    if (err) return assert.end();
-
+  try {
+    await watchbotDeadletter();
     assert.equal(send.callCount, 1, 'one sendMessage request');
     assert.ok(send.calledWith({
       QueueUrl: 'oneWork',
@@ -100,7 +105,7 @@ test('[dead-letter] individual message triage', (assert) => {
       QueueUrl: 'oneDead',
       ReceiptHandle: 'handle-2',
       VisibilityTimeout: 0
-}), 'returns the second message to the dead letter queue');
+    }), 'returns the second message to the dead letter queue');
     assert.ok(vis.calledWith({
       QueueUrl: 'oneDead',
       ReceiptHandle: 'handle-4',
@@ -116,9 +121,13 @@ test('[dead-letter] individual message triage', (assert) => {
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
-  });
+  } catch (err) {
+    assert.ifError(err);
+  }
+  assert.end();
 });
-test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', (assert) => {
+
+test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
   prompt.onCall(0).returns(Promise.resolve({ action: 'Purge the dead letter queue?' }));
   prompt.onCall(1).returns(Promise.resolve({ purge: true }));
@@ -141,9 +150,8 @@ test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', (asse
     this.request.promise.returns(Promise.resolve());
   });
 
-  watchbotDeadletter({ stackName: 'stack', region: 'region' }, (err) => {
-    assert.ifError(err, 'success');
-    if (err) return assert.end();
+  try {
+    await watchbotDeadletter();
 
     assert.equal(prompt.callCount, 2, 'two prompts');
 
@@ -165,11 +173,13 @@ test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', (asse
     prompt.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
-    assert.end();
-  });
+  } catch (err) {
+    assert.ifError(err, 'success');
+  }
+  assert.end();
 });
 
-test('[dead-letter] reject purge confirmation', (assert) => {
+test('[dead-letter] reject purge confirmation', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
   prompt.onCall(0).returns(Promise.resolve({ action: 'Purge the dead letter queue?' }));
   prompt.onCall(1).returns(Promise.resolve({ purge: false }));
@@ -192,20 +202,20 @@ test('[dead-letter] reject purge confirmation', (assert) => {
     this.request.promise.returns(Promise.resolve());
   });
 
-  watchbotDeadletter({ stackName: 'stack', region: 'region' }, (err) => {
-    assert.ifError(err, 'success');
-    if (err) return assert.end();
-
+  try {
+    await watchbotDeadletter();
     assert.equal(purge.callCount, 0, 'does not call purgeQueue');
 
     prompt.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
-  });
+  } catch (err) {
+    assert.ifError(err, 'success');
+  }
 });
 
-test('[dead-letter] return messages to work queue', (assert) => {
+test('[dead-letter] return messages to work queue', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
   prompt.onCall(0).returns(Promise.resolve({ action: 'Return all dead messages to the work queue?' }));
   prompt.onCall(1).returns(Promise.resolve({ replayAll: true }));
@@ -257,9 +267,8 @@ test('[dead-letter] return messages to work queue', (assert) => {
     this.request.promise.returns(Promise.resolve());
   });
 
-  watchbotDeadletter({ stackName: 'stack', region: 'region' }, (err) => {
-    assert.ifError(err, 'success');
-    if (err) return assert.end();
+  try {
+    await watchbotDeadletter();
 
     assert.equal(prompt.args[1][0].length, 1, 'second prompt one question');
     assert.equal(prompt.args[1][0][0].type, 'confirm', 'second prompt type = confirm');
@@ -296,10 +305,12 @@ test('[dead-letter] return messages to work queue', (assert) => {
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
-  });
+  } catch (err) {
+    assert.ifError(err, 'success');
+  }
 });
 
-test('[dead-letter] reject return messages confirmation', (assert) => {
+test('[dead-letter] reject return messages confirmation', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
   prompt.onCall(0).returns(Promise.resolve({ action: 'Return all dead messages to the work queue?' }));
   prompt.onCall(1).returns(Promise.resolve({ replayAll: false }));
@@ -330,10 +341,8 @@ test('[dead-letter] reject return messages confirmation', (assert) => {
     this.request.promise.returns(Promise.resolve());
   });
 
-  watchbotDeadletter({ stackName: 'stack', region: 'region' }, (err) => {
-    assert.ifError(err, 'success');
-    if (err) return assert.end();
-
+  try {
+    await watchbotDeadletter();
     assert.equal(receive.callCount, 0, 'receives no messages');
     assert.equal(send.callCount, 0, 'sends no messages');
     assert.equal(del.callCount, 0, 'deletes no messages');
@@ -342,10 +351,12 @@ test('[dead-letter] reject return messages confirmation', (assert) => {
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
-  });
+  } catch (err) {
+    assert.ifError(err, 'success');
+  }
 });
 
-test('[dead-letter] write out messages', (assert) => {
+test('[dead-letter] write out messages', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
   prompt.onCall(0).returns(Promise.resolve({ action: 'Print out all dead messages?' }));
 
@@ -380,9 +391,8 @@ test('[dead-letter] write out messages', (assert) => {
     this.request.promise.returns(Promise.resolve());
   });
 
-  watchbotDeadletter({ stackName: 'stack', region: 'region' }, (err) => {
-    assert.ifError(err, 'success');
-    if (err) return assert.end();
+  try {
+    await watchbotDeadletter();
 
     assert.equal(vis.callCount, 2, 'two changeMessageVisibility requests');
     assert.ok(vis.calledWith({
@@ -399,6 +409,9 @@ test('[dead-letter] write out messages', (assert) => {
     prompt.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
+  } catch (err) {
+    assert.ifError(err, 'success');
+  } finally {
     assert.end();
-  });
+  }
 });
