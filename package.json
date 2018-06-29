@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "4.4.2",
+  "version": "4.2.1-6",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -29,7 +29,7 @@
     "@mapbox/mock-aws-sdk-js": "0.0.5",
     "eslint": "^4.16.0",
     "eslint-plugin-node": "^5.2.1",
-    "jest": "^22.2.1",
+    "jest": "22.2.1",
     "nyc": "^11.4.1",
     "opener": "^1.4.3",
     "sinon": "^4.2.2",
@@ -41,6 +41,7 @@
     "aws-sdk": "^2.188.0",
     "binary-split": "^1.0.3",
     "fs-extra": "^6.0.1",
-    "stream-combiner2": "^1.1.1"
+    "stream-combiner2": "^1.1.1",
+    "tree-kill": "^1.2.0"
   }
 }
