@@ -32,7 +32,6 @@ const main = async () => {
     }
   });
 
-  console.log(cli.flags);
   const sqs = new AWS.SQS({ region: cli.flags.region });
   const cfn = new AWS.CloudFormation({ region: cli.flags.region });
 
@@ -50,8 +49,6 @@ const main = async () => {
 };
 
 async function findQueues(cfn, options) {
-  console.log('inside findQueues');
-  console.log(options);
   const res = await cfn.describeStacks({ StackName: options.stackName }).promise();
   if (!res.Stacks[0]) {
     throw new Error(`Could not find ${options.stackName} in ${options.region}`);
@@ -80,7 +77,6 @@ async function findQueues(cfn, options) {
 }
 
 async function selectQueue(queues) {
-  console.log('inside selectQueue');
   if (queues.deadLetterQueues.length === 1) return {
     deadLetter: queues.deadLetterQueues[0].url,
     work: queues.workQueues.find((queue) => queue.prefix === queues.deadLetterQueues[0].prefix).url,
@@ -213,7 +209,6 @@ async function triage(sqs, queue) {
   let done = false;
   while (!done) {
     done = await triageOne(sqs, queue);
-    console.log(done);
   }
 }
 
@@ -240,20 +235,16 @@ async function triagePrompts(sqs, queue, message) {
     'Stop individual triage?': 'stop'
   };
 
-  console.log(answers);
   const choice = mapping[answers.action];
   const queueUrl = choice === 'replayOne' ? queue.work : queue.deadLetter;
 
   if (choice === 'logs') {
-    await getLogs(sqs, queue, message);
-    return false;
+    return await getLogs(sqs, queue, message);
   }
 
   if (choice === 'stop') {
     await returnOne(sqs, queueUrl, message);
-    console.log('i coulda sworn its true');
     return true;
-    console.log('ans we dont get here');
   }
 
   if (choice === 'replayOne') {
@@ -262,13 +253,10 @@ async function triagePrompts(sqs, queue, message) {
     return false;
   }
 
-  console.log(choice);
-
   return await actions[choice](sqs, queueUrl, message);
 }
 
 async function triageOne(sqs, queue) {
-  console.log('are we here?');
   const messages = await receive(sqs, 1, queue.deadLetter);
   const message = messages[0];
   if (!message) return true;
@@ -277,13 +265,10 @@ async function triageOne(sqs, queue) {
   console.log(`Subject: ${message.subject}`);
   console.log(`Message: ${message.message}`);
 
-  const done = await triagePrompts(sqs, queue, message);
-  console.log('done;', done);
-  return done;
+  return await triagePrompts(sqs, queue, message);
 }
 
 async function receive(sqs, count, queueUrl) {
-  console.log('we definitely make it here');
   const data = await sqs.receiveMessage({
     QueueUrl: queueUrl,
     WaitTimeSeconds: 1,
@@ -341,7 +326,6 @@ function receiveAll(sqs, queueUrl) {
   let pending = false;
   let next = async function() {
     pending = true;
-    console.log('are we here?');
     const msgs = await receive(sqs, 10, queueUrl);
     if (msgs) {
       pending = false;
@@ -350,17 +334,17 @@ function receiveAll(sqs, queueUrl) {
     }
     return msgs;
   };
-  console.log('new stream.Readable');
+
   return new stream.Readable({
     objectMode: true,
-    read: function() {
+    read: async function() {
       let status = true;
       while (status && messages.length) status = this.push(messages.shift());
       if (messages.length)  return;
       if (!next) return this.push(null);
       if (status && !pending) {
         try {
-          next();
+          await next();
           this._read();
         } catch (err) {
           this.emit('error', err);
@@ -370,37 +354,30 @@ function receiveAll(sqs, queueUrl) {
   });
 }
 
-function getLogs(sqs, queue, message) {
+async function getLogs(sqs, queue, message) {
   const spinner = new Spinner('Searching CloudWatch logs...');
-  console.log('here first');
   spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
   spinner.start();
 
   return new Promise((resolve, reject) => {
-    console.log('then here');
     fetchLogs(queue.logs, message.message, (err, data) => {
-      console.log('then down here');
       if (err) return reject(err);
 
       const re = new RegExp(`\\[watchbot\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
       const line = data.split('\n').find((line) => re.test(line));
-      console.log(line);
       if (!line) return resolve('Could not find any matching logs\n');
 
       const id = line.match(re)[1];
-      console.log(id);
       fetchLogs(queue.logs, id, (err, data) => {
-        console.log('here too?');
-        console.log(data);
         if (err) return reject(err);
         resolve(data);
       });
     });
-  }).then((data) => {
+  }).then(async (data) => {
     spinner.stop(true);
     console.log();
     console.log(data);
-    return triagePrompts(sqs, queue, message);
+    return await triagePrompts(sqs, queue, message);
   });
 }
 
@@ -439,7 +416,6 @@ function fetchLogs(logGroup, messageId, callback) {
   };
 
   writable.on('finish', () => {
-    console.log('ever here?');
     callback(null, writable.buffer.join('\n') + '\n');
   }).on('error', callback);
 

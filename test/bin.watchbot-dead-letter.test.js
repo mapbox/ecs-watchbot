@@ -74,13 +74,20 @@ test('[dead-letter] individual message triage', async (assert) => {
     this.request.promise.returns(Promise.resolve());
   });
   const fetch = sinon.stub(cwlogs, 'readable');
+  let count = 0;
   const mockedCwlogs = new stream.Readable({
     read: function() {
-      this.push('final log');
-      this.push(null);
+      if (count === 0) {
+        this.push([
+          '[Sun, 12 Feb 2017 00:24:41 GMT] [watchbot] [a406f47b-a0f2-49a6-a159-b0f8578104bf] {"subject":"bozo","message":"message-4","receives":"1"}',
+          '[Sun, 12 Feb 2017 00:24:42 GMT] [watchbot] [436d13dc-a666-44fd-a2df-70f1f4b3f107] {"subject":"bozo","message":"message-5","receives":"1"}'
+        ].join('\n'));
+        count++;
+      }
+      if (count > 0) this.push('final log') && this.push(null);
     }
   });
-  fetch.onCall(0).returns(mockedCwlogs);
+  fetch.returns(mockedCwlogs);
 
   try {
     await watchbotDeadletter();
@@ -113,8 +120,8 @@ test('[dead-letter] individual message triage', async (assert) => {
     }), 'returns the fourth message to the dead letter queue');
 
     assert.equal(fetch.callCount, 2, 'two calls to fetch recent logs');
-    assert.ok(fetch.calledWith('oneLogs', 'message-4'), 'one fetch call based on message itself');
-    assert.ok(fetch.calledWith('oneLogs', 'a406f47b-a0f2-49a6-a159-b0f8578104bf'), 'one fetch call based on original message id');
+    assert.equals(fetch.args[0][0].pattern, 'message-4', 'one fetch call based on message itself');
+    assert.equals(fetch.args[1][0].pattern, 'a406f47b-a0f2-49a6-a159-b0f8578104bf', 'one fetch call based on message itself');
 
     prompt.restore();
     fetch.restore();
@@ -124,7 +131,6 @@ test('[dead-letter] individual message triage', async (assert) => {
   } catch (err) {
     assert.ifError(err);
   }
-  assert.end();
 });
 
 test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async (assert) => {
@@ -155,17 +161,15 @@ test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async
 
     assert.equal(prompt.callCount, 2, 'two prompts');
 
-    assert.equal(prompt.args[0][0].length, 1, 'first prompt one question');
-    assert.equal(prompt.args[0][0][0].type, 'list', 'first prompt type = list');
-    assert.deepEqual(prompt.args[0][0][0].choices, [
+    assert.equal(prompt.args[0][0].type, 'list', 'first prompt type = list');
+    assert.deepEqual(prompt.args[0][0].choices, [
       'Triage dead messages individually?',
       'Print out all dead messages?',
       'Return all dead messages to the work queue?',
       'Purge the dead letter queue?'
     ], 'first prompt expected actions');
 
-    assert.equal(prompt.args[1][0].length, 1, 'second prompt one question');
-    assert.equal(prompt.args[1][0][0].type, 'confirm', 'second prompt type = confirm');
+    assert.equal(prompt.args[1][0].type, 'confirm', 'second prompt type = confirm');
 
     assert.equal(purge.callCount, 1, 'calls purgeQueue');
     assert.ok(purge.calledWith({ QueueUrl: 'oneDead' }), 'purges the dead letter queue');
@@ -270,8 +274,7 @@ test('[dead-letter] return messages to work queue', async (assert) => {
   try {
     await watchbotDeadletter();
 
-    assert.equal(prompt.args[1][0].length, 1, 'second prompt one question');
-    assert.equal(prompt.args[1][0][0].type, 'confirm', 'second prompt type = confirm');
+    assert.equal(prompt.args[1][0].type, 'confirm', 'second prompt type = confirm');
 
     assert.equal(receive.callCount, 2, 'calls receiveMessage twice');
     assert.ok(receive.alwaysCalledWith({
