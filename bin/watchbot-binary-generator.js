@@ -54,7 +54,6 @@ const uploadBundle = async () => {
         console.log(`No tag found for ${process.env.CODEBUILD_RESOLVED_SOURCE_VERSION}`);
       }
     });
-  console.log('Fin.');
 };
 
 if (require.main === module) {
