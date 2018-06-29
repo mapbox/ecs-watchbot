@@ -11,10 +11,10 @@ const exec = util.promisify(cp.exec);
 const getTagForSha = async (sha) => {
   return new Promise(async (resolve, reject) => {
     const data = (await exec('git ls-remote --tags https://github.com/mapbox/ecs-watchbot')).stdout.split('\n');
-    if (data.stderr) reject(data.stderr);
+    if (data.stderr) return reject(data.stderr);
     data.forEach((ref) => {
-      if (ref[0] !== sha) return;
       ref = ref.split('\t');
+      if (ref[0] !== sha) return;
       const tagRegex = /refs\/tags\/(v[0-9.-]+)(\^\{(.*)\})*/;
       return resolve(tagRegex.exec(ref[1])[1]);
     });
