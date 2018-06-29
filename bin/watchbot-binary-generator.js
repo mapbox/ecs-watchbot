@@ -10,13 +10,14 @@ const exec = util.promisify(cp.exec);
 const remoteGitTags = require('remote-git-tags');
 
 const getTagForSha = (sha) => {
-  return Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     remoteGitTags('github.com/mapbox/ecs-watchbot')
       .then((allTags) => {
         allTags.forEach((remoteSha, remoteTag) => {
           if (remoteSha === sha)
             resolve(remoteTag);
         });
+        resolve(null);
       })
       .catch((err) => reject(err));
   });
@@ -55,7 +56,6 @@ const uploadBundle = async () => {
     });
   console.log('Fin.');
 };
-
 
 if (require.main === module) {
   uploadBundle()
