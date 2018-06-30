@@ -31,6 +31,10 @@ const main = async () => {
       region: { alias: 'r', default: 'us-east-1' }
     }
   });
+  cli.flags.stackName = cli.flags.stackName || cli.flags.s;
+  cli.flags.region = cli.flags.region || cli.flags.r;
+
+  if (!cli.flags.stackName) cli.showHelp();
 
   const sqs = new AWS.SQS({ region: cli.flags.region });
   const cfn = new AWS.CloudFormation({ region: cli.flags.region });
