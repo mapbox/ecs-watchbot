@@ -1,3 +1,11 @@
+### 4.5.0
+
+- Add maxJobDuration and a heartbeat for message timeout: https://github.com/mapbox/ecs-watchbot/pull/230
+
+### 4.4.4
+
+- See 4.5
+
 ### 4.4.3
 
 - Allow writable file system: https://github.com/mapbox/ecs-watchbot/pull/239
