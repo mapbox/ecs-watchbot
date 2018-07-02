@@ -1,3 +1,7 @@
+### 4.4.3
+
+- Allow writable file system: https://github.com/mapbox/ecs-watchbot/pull/239
+
 ### 4.4.2
 
 - Remove node 8 engine requirement: https://github.com/mapbox/ecs-watchbot/pull/237
