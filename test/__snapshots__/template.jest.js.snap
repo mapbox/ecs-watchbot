@@ -627,6 +627,10 @@ Object {
                 "Value": false,
               },
               Object {
+                "Name": "maxJobDuration",
+                "Value": 0,
+              },
+              Object {
                 "Name": "Volumes",
                 "Value": "/tmp,/data,/ephemeral",
               },
@@ -1023,7 +1027,7 @@ Object {
           },
           "maxReceiveCount": 10,
         },
-        "VisibilityTimeout": 600,
+        "VisibilityTimeout": 180,
       },
       "Type": "AWS::SQS::Queue",
     },
@@ -1397,6 +1401,10 @@ Object {
               Object {
                 "Name": "writableFilesystem",
                 "Value": false,
+              },
+              Object {
+                "Name": "maxJobDuration",
+                "Value": 0,
               },
               Object {
                 "Name": "Volumes",
