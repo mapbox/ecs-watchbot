@@ -1,3 +1,7 @@
+### 4.5.1
+
+- Modify logging to prefix all worker logs with `[worker]`: https://github.com/mapbox/ecs-watchbot/pull/225
+
 ### 4.5.0
 
 - Add maxJobDuration and a heartbeat for message timeout: https://github.com/mapbox/ecs-watchbot/pull/230
