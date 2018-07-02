@@ -84,6 +84,17 @@ test('[message] factory', (assert) => {
   assert.end();
 });
 
+test('[message] no SNS subject', (assert) => {
+  const sqsMessageCopy = Object.assign({}, sqsMessage);
+  sqsMessageCopy.Body = JSON.stringify({ Message: '1' }); // no Subject
+
+  const message = Message.create(sqsMessageCopy, { queueUrl });
+  assert.notOk(message.env.Subject);
+  assert.ok(message.env.Message);
+
+  assert.end();
+});
+
 test('[message] retry', async (assert) => {
   const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
     this.request.promise.returns(Promise.resolve());
