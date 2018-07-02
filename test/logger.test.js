@@ -103,7 +103,7 @@ test('[logger] workerFailure', (assert) => {
   const data = process.stdout.write.args[0][0];
   assert.equal(
     data,
-    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] [watchbot] [failure] {"code":124,"signal":"SIGTERM","duration":12345}\n',
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] [failure] {"code":124,"signal":"SIGTERM","duration":12345}\n',
     'expected message'
   );
 
@@ -124,7 +124,7 @@ test('[logger] workerError', (assert) => {
   const data = process.stdout.write.args[0][0];
   assert.equal(
     data,
-    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] [error] [watchbot] foo\n',
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] [error] [worker] foo\n',
     'expected message'
   );
 
