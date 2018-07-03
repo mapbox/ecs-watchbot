@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "bin": {
-    "watchbot": "./bin/watchbot.js"
+    "watchbot": "./bin/watchbot.js",
+    "watchbot-dead-letter": "./bin/dead-letter.js"
   },
   "scripts": {
     "pretest": "npm run lint && npm run validate-templates",

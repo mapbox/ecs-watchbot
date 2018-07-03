@@ -6,7 +6,7 @@ const Watcher = require('../lib/watcher');
 const Logger = require('../lib/logger');
 
 const main = async () => {
-  if (process.argv[2] !== 'listen' && process.argv[2] !== 'dead-letter')
+  if (process.argv[2] !== 'listen')
     throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
 
   const logger = Logger.create('watcher');
