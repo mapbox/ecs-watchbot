@@ -1,5 +1,9 @@
 ### 4.5.2
 
+- Prefix the dashboard names: https://github.com/mapbox/ecs-watchbot/pull/245
+
+### 4.5.2
+
 - Prefix the alarm names: https://github.com/mapbox/ecs-watchbot/pull/244
 
 ### 4.5.1
