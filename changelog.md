@@ -1,3 +1,7 @@
+### 4.5.2
+
+- Prefix the alarm names: https://github.com/mapbox/ecs-watchbot/pull/244
+
 ### 4.5.1
 
 - Modify logging to prefix all worker logs with `[worker]`: https://github.com/mapbox/ecs-watchbot/pull/225
