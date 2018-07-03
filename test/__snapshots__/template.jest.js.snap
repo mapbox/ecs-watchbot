@@ -24,7 +24,7 @@ Object {
               Object {
                 "Ref": "AWS::StackName",
               },
-              "CPUUtilization",
+              "SoupCPUUtilization",
             ],
           ],
         },
@@ -68,7 +68,7 @@ Object {
               Object {
                 "Ref": "AWS::StackName",
               },
-              "MemoryUtilization",
+              "SoupMemoryUtilization",
             ],
           ],
         },
@@ -131,7 +131,15 @@ Object {
         ],
         "AlarmDescription": "Provides notification when messages are visible in the dead letter queue",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-dead-letter",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-dead-letter",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": Array [
@@ -281,7 +289,15 @@ Object {
         ],
         "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.1/docs/alarms.md#queuesize",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-queue-size",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-queue-size",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
@@ -410,7 +426,7 @@ Object {
     "SoupScaleDown": Object {
       "Properties": Object {
         "PolicyName": Object {
-          "Fn::Sub": "\${AWS::StackName}-scale-down",
+          "Fn::Sub": "Soup\${AWS::StackName}-scale-down",
         },
         "PolicyType": "StepScaling",
         "ScalingTargetId": Object {
@@ -439,7 +455,15 @@ Object {
         ],
         "AlarmDescription": "Scale down due to lack of in-flight messages in queue",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-scale-down",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-scale-down",
+            ],
+          ],
         },
         "ComparisonOperator": "LessThanThreshold",
         "Dimensions": Array [
@@ -494,7 +518,15 @@ Object {
         ],
         "AlarmDescription": "Scale up due to visible messages in queue",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-scale-up",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-scale-up",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
@@ -746,7 +778,15 @@ Object {
         ],
         "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.1/docs/alarms.md#workererrors",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-worker-errors",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-worker-errors",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
@@ -822,7 +862,7 @@ Object {
               Object {
                 "Ref": "AWS::StackName",
               },
-              "CPUUtilization",
+              "WatchbotCPUUtilization",
             ],
           ],
         },
@@ -866,7 +906,7 @@ Object {
               Object {
                 "Ref": "AWS::StackName",
               },
-              "MemoryUtilization",
+              "WatchbotMemoryUtilization",
             ],
           ],
         },
@@ -929,7 +969,15 @@ Object {
         ],
         "AlarmDescription": "Provides notification when messages are visible in the dead letter queue",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-dead-letter",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-dead-letter",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": Array [
@@ -1079,7 +1127,15 @@ Object {
         ],
         "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.1/docs/alarms.md#queuesize",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-queue-size",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-queue-size",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
@@ -1186,7 +1242,7 @@ Object {
     "WatchbotScaleDown": Object {
       "Properties": Object {
         "PolicyName": Object {
-          "Fn::Sub": "\${AWS::StackName}-scale-down",
+          "Fn::Sub": "Watchbot\${AWS::StackName}-scale-down",
         },
         "PolicyType": "StepScaling",
         "ScalingTargetId": Object {
@@ -1215,7 +1271,15 @@ Object {
         ],
         "AlarmDescription": "Scale down due to lack of in-flight messages in queue",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-scale-down",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-scale-down",
+            ],
+          ],
         },
         "ComparisonOperator": "LessThanThreshold",
         "Dimensions": Array [
@@ -1270,7 +1334,15 @@ Object {
         ],
         "AlarmDescription": "Scale up due to visible messages in queue",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-scale-up",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-scale-up",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
@@ -1502,7 +1574,15 @@ Object {
         ],
         "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.1/docs/alarms.md#workererrors",
         "AlarmName": Object {
-          "Fn::Sub": "\${AWS::StackName}-worker-errors",
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-worker-errors",
+            ],
+          ],
         },
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
