@@ -5,4 +5,7 @@ COPY ./package-lock.json ./package-lock.json
 
 RUN npm install
 
-COPY ./ ./
+COPY ./lib ./lib
+COPY ./test ./test
+COPY ./bin ./bin
+COPY index.js index.js
