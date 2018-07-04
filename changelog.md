@@ -1,3 +1,7 @@
+### 4.5.4
+
+- Add dead letter queue: https://github.com/mapbox/ecs-watchbot/pull/220
+
 ### 4.5.2
 
 - Prefix the dashboard names: https://github.com/mapbox/ecs-watchbot/pull/245
