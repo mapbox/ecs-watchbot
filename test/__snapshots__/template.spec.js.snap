@@ -1,12 +1,67 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`[template]: all-properties 1`] = `
+exports[`all-properties 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {},
-  "Mappings": Object {},
-  "Metadata": Object {},
-  "Outputs": Object {},
+  "Mappings": Object {
+    "EcrRegion": Object {
+      "ap-northeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-2": Object {
+        "Region": "us-west-2",
+      },
+      "eu-central-1": Object {
+        "Region": "eu-west-1",
+      },
+      "eu-west-1": Object {
+        "Region": "eu-west-1",
+      },
+      "us-east-1": Object {
+        "Region": "us-east-1",
+      },
+      "us-east-2": Object {
+        "Region": "us-east-1",
+      },
+      "us-west-2": Object {
+        "Region": "us-west-2",
+      },
+    },
+  },
+  "Metadata": Object {
+    "EcsWatchbotVersion": "4.5.3",
+  },
+  "Outputs": Object {
+    "ClusterArn": Object {
+      "Description": "Service cluster ARN",
+      "Value": "processing",
+    },
+    "SoupDeadLetterQueueUrl": Object {
+      "Description": "The URL for the dead letter queue",
+      "Value": Object {
+        "Ref": "SoupDeadLetterQueue",
+      },
+    },
+    "SoupLogGroup": Object {
+      "Description": "The ARN of Watchbot's log group",
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "SoupLogGroup",
+          "Arn",
+        ],
+      },
+    },
+    "SoupQueueUrl": Object {
+      "Description": "The URL for the primary work queue",
+      "Value": Object {
+        "Ref": "SoupQueue",
+      },
+    },
+  },
   "Parameters": Object {},
   "Resources": Object {
     "SoupAlarmCPUUtilization": Object {
@@ -698,7 +753,17 @@ Object {
                   Object {
                     "Ref": "AWS::AccountId",
                   },
-                  ".dkr.ecr.us-east-1.amazonaws.com/",
+                  ".dkr.ecr.",
+                  Object {
+                    "Fn::FindInMap": Array [
+                      "EcrRegion",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      "Region",
+                    ],
+                  },
+                  ".amazonaws.com/",
                   "example",
                   ":",
                   "1",
@@ -858,13 +923,68 @@ Object {
 }
 `;
 
-exports[`[template]: defaults 1`] = `
+exports[`defaults 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {},
-  "Mappings": Object {},
-  "Metadata": Object {},
-  "Outputs": Object {},
+  "Mappings": Object {
+    "EcrRegion": Object {
+      "ap-northeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-2": Object {
+        "Region": "us-west-2",
+      },
+      "eu-central-1": Object {
+        "Region": "eu-west-1",
+      },
+      "eu-west-1": Object {
+        "Region": "eu-west-1",
+      },
+      "us-east-1": Object {
+        "Region": "us-east-1",
+      },
+      "us-east-2": Object {
+        "Region": "us-east-1",
+      },
+      "us-west-2": Object {
+        "Region": "us-west-2",
+      },
+    },
+  },
+  "Metadata": Object {
+    "EcsWatchbotVersion": "4.5.3",
+  },
+  "Outputs": Object {
+    "ClusterArn": Object {
+      "Description": "Service cluster ARN",
+      "Value": "processing",
+    },
+    "WatchbotDeadLetterQueueUrl": Object {
+      "Description": "The URL for the dead letter queue",
+      "Value": Object {
+        "Ref": "WatchbotDeadLetterQueue",
+      },
+    },
+    "WatchbotLogGroup": Object {
+      "Description": "The ARN of Watchbot's log group",
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "WatchbotLogGroup",
+          "Arn",
+        ],
+      },
+    },
+    "WatchbotQueueUrl": Object {
+      "Description": "The URL for the primary work queue",
+      "Value": Object {
+        "Ref": "WatchbotQueue",
+      },
+    },
+  },
   "Parameters": Object {},
   "Resources": Object {
     "WatchbotAlarmCPUUtilization": Object {
@@ -1530,7 +1650,17 @@ Object {
                   Object {
                     "Ref": "AWS::AccountId",
                   },
-                  ".dkr.ecr.us-east-1.amazonaws.com/",
+                  ".dkr.ecr.",
+                  Object {
+                    "Fn::FindInMap": Array [
+                      "EcrRegion",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      "Region",
+                    ],
+                  },
+                  ".amazonaws.com/",
                   "example",
                   ":",
                   "1",
