@@ -7,10 +7,11 @@ const cp = require('child_process');
 const util = require('util');
 const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
+const wbg = {exec};
 
 const getTagForSha = async (sha) => {
   return new Promise(async (resolve, reject) => {
-    const data = (await exec('git ls-remote --tags https://github.com/mapbox/ecs-watchbot')).stdout.split('\n');
+    const data = (await wbg.exec('git ls-remote --tags https://github.com/mapbox/ecs-watchbot')).stdout.split('\n');
     if (data.stderr) return reject(data.stderr);
     data.forEach((ref) => {
       ref = ref.split('\t');
@@ -21,6 +22,7 @@ const getTagForSha = async (sha) => {
     return resolve(null);
   });
 };
+wbg.getTagForSha = getTagForSha;
 
 const uploadBundle = async () => {
   const s3 = new AWS.S3();
@@ -32,9 +34,9 @@ const uploadBundle = async () => {
     windows: 'watchbot-win.exe'
   };
 
-  await exec('npm ci --production');
-  await exec('npm install -g pkg');
-  await exec('pkg .');
+  await wbg.exec('npm ci --production');
+  await wbg.exec('npm install -g pkg');
+  await wbg.exec('pkg .');
   const sha = process.env.CODEBUILD_RESOLVED_SOURCE_VERSION;
 
   const tag = await getTagForSha(sha);
@@ -52,6 +54,7 @@ const uploadBundle = async () => {
     console.log(`No tag found for ${process.env.CODEBUILD_RESOLVED_SOURCE_VERSION}`);
   }
 };
+wbg.uploadBundle = uploadBundle;
 
 if (require.main === module) {
   uploadBundle()
@@ -61,4 +64,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { getTagForSha, uploadBundle };
+module.exports = wbg;
