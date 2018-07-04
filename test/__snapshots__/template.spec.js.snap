@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`[template]: all-properties 1`] = `
+exports[`all-properties 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {},
@@ -923,7 +923,7 @@ Object {
 }
 `;
 
-exports[`[template]: defaults 1`] = `
+exports[`defaults 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {},
