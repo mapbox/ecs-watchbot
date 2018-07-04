@@ -16,15 +16,12 @@ const main = async () => {
   const cli = meow({
     help: `
       USAGE: watchbot-dead-letter [OPTIONS]
-      Commands:
-        worker-capacity     assess available resources on the cluster
-        dead-letter         triage messages in dead letter queue
       Options:
         -h, --help          show this help message
         -s, --stack-name    the full name of a watchbot stack
         -r, --region        the region of the stack (default us-east-1)
     `,
-    description: 'Helper utilities for interacting with watchbot stacks'
+    description: 'Helper utilities for interacting with watchbot dead letter queues'
   }, {
     flags: {
       stackName: { alias: 's' },
@@ -32,7 +29,7 @@ const main = async () => {
     }
   });
   cli.flags.stackName = cli.flags.stackName || cli.flags.s;
-  cli.flags.region = cli.flags.region || cli.flags.r;
+  cli.flags.region = cli.flags.region || cli.flags.r || 'us-east-1';
 
   if (!cli.flags.stackName) cli.showHelp();
 
@@ -263,7 +260,11 @@ async function triagePrompts(sqs, queue, message) {
 async function triageOne(sqs, queue) {
   const messages = await receive(sqs, 1, queue.deadLetter);
   const message = messages[0];
-  if (!message) return true;
+  if (!message) {
+    console.log('');
+    console.log('No messages found');
+    return true;
+  }
 
   console.log('');
   console.log(`Subject: ${message.subject}`);
