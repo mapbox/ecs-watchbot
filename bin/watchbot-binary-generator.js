@@ -7,7 +7,7 @@ const cp = require('child_process');
 const util = require('util');
 const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
-const wbg = {exec};
+const wbg = { exec };
 
 const getTagForSha = async (sha) => {
   return new Promise(async (resolve, reject) => {
