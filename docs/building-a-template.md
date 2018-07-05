@@ -70,7 +70,8 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **serviceVersion** | The version of your image to deploy. This should reference a specific image in ECR. | String/Ref | Yes | -
 **family** | The name of the task definition family that watchbot will create revisions of. | String/Ref | Yes | -
 **command** | The shell command to be run by the subprocess worker. The working directory for the subprocess is determined in your Dockerfile by the `WORKDIR` missive. | String | Yes | -
-**workers** | The maximum number of workers to run for your service. Must be a number, not a reference to a number, since one tenth of this number will be used as the scaling adjustment for the scaling policy. | Number | Yes | -
+**maxSize** | The maximum number of workers to run for your service. Must be a number, not a reference to a number, since one tenth of this number will be used as the scaling adjustment for the scaling policy. | Number | Yes | -
+**minSize** | The minimum number of workers to run for your service. | Number | No | 0
 **writableFilesystem** | Whether you want a new container for every job with a writable filesystem. See below for more details. | Boolean | No | false
 **mounts** | If your worker containers need to write files or folders inside its file system, specify those locations with this parameter. A single ephemeral mount point can be specified as `{container location}`, e.g. /mnt/tmp. Separate multiple mount strings with commas if you need to mount more than one location. You can also specify mounts as an arrays of paths. Every mounted volume will be cleaned after each job. By default, the `/tmp` directory is added as an ephemeral mount. | String/Object | No | `/tmp`
 **env** | Key-value pairs that will be provided to the worker containers as environment variables. Keys must be strings, and values can either be strings or references to other CloudFormation resources via `{"Ref": "..."}`. | Object | No | `{}`
