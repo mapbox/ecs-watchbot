@@ -9,6 +9,11 @@ const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
 const wbg = { exec };
 
+/*
+ * getTagForSha
+ * @param {string} sha - A gitsha
+ * @return {string} tag - Returns a tag, if one exists for the gitsha
+ */
 const getTagForSha = async (sha) => {
   return new Promise(async (resolve, reject) => {
     const data = (await wbg.exec('git ls-remote --tags https://github.com/mapbox/ecs-watchbot')).stdout.split('\n');
@@ -24,6 +29,9 @@ const getTagForSha = async (sha) => {
 };
 wbg.getTagForSha = getTagForSha;
 
+/*
+ * uploadBundle - uploads watchbot binaries to S3
+ */
 const uploadBundle = async () => {
   const s3 = new AWS.S3();
   const Bucket = 'watchbot-binaries';
