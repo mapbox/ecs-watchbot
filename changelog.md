@@ -1,3 +1,7 @@
+### 4.5.5
+
+- Add a code-pipeline stack for auto-generating watchbot binaries: https://github.com/mapbox/ecs-watchbot/pull/235
+
 ### 4.5.4
 
 - Add dead letter queue: https://github.com/mapbox/ecs-watchbot/pull/220
