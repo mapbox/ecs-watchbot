@@ -13,7 +13,7 @@
 # The `<os>` can be `linux`, `macosx`, `windows`, depending on what you're running on your container.
 # The `<tag>` is a tag on https://github.com/mapbox/ecs-watchbot/tree/master that is more recent than v4.0.0
 
-    RUN wget https://s3.amazonaws.com/watchbot-binaries/<os>/<tag>/watchbot
+    RUN wget https://s3.amazonaws.com/watchbot-binaries/<os>/<tag>/watchbot -O /usr/local/bin/watchbot
     RUN chmod +x /usr/local/bin/watchbot
 ```
 
