@@ -11,11 +11,9 @@
 
 ```
 # The `<os>` can be `linux`, `macosx`, `windows`, depending on what you're running on your container.
-# The `<master-sha>` can be 
-# - A sha on https://github.com/mapbox/ecs-watchbot/tree/master that is more recent than `7fc31c2fe5d64d053e6edc1711697f654645dd97`
-# - A tag on https://github.com/mapbox/ecs-watchbot/tree/master that is more recent than 
+# The `<tag>` is a tag on https://github.com/mapbox/ecs-watchbot/tree/master that is more recent than v4.0.0
 
-    RUN wget https://s3.amazonaws.com/watchbot-binaries/<os>/<master-ref>/watchbot
+    RUN wget https://s3.amazonaws.com/watchbot-binaries/<os>/<tag>/watchbot
     RUN chmod +x /usr/local/bin/watchbot
 ```
 
