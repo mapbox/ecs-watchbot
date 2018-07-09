@@ -1,3 +1,9 @@
+### 4.6.0
+- Custom Cloudformation resource for watchbot service scaling. Allows maxSize to be parameterized within a template: https://github.com/mapbox/ecs-watchbot/pull/249
+
+### 4.5.6
+- Fix undefined this.message within setInterval: https://github.com/mapbox/ecs-watchbot/pull/250
+
 ### 4.5.5
 
 - Add a code-pipeline stack for auto-generating watchbot binaries: https://github.com/mapbox/ecs-watchbot/pull/235
