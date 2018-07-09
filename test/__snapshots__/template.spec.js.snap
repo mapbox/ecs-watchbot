@@ -268,6 +268,42 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
+    "SoupLambdaScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*",
+                },
+              ],
+            },
+            "PolicyName": "CustomcfnScalingLambdaLogs",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
     "SoupLogGroup": Object {
       "Properties": Object {
         "LogGroupName": Object {
@@ -657,7 +693,7 @@ Object {
         "Handler": "index.handler",
         "Role": Object {
           "Fn::GetAtt": Array [
-            "SoupScalingRole",
+            "SoupLambdaScalingRole",
             "Arn",
           ],
         },
@@ -676,26 +712,31 @@ Object {
               "Effect": "Allow",
               "Principal": Object {
                 "Service": Array [
-                  "lambda.amazonaws.com",
+                  "application-autoscaling.amazonaws.com",
                 ],
               },
             },
           ],
         },
+        "Path": "/",
         "Policies": Array [
           Object {
             "PolicyDocument": Object {
               "Statement": Array [
                 Object {
                   "Action": Array [
-                    "logs:*",
+                    "application-autoscaling:*",
+                    "cloudwatch:DescribeAlarms",
+                    "cloudwatch:PutMetricAlarm",
+                    "ecs:UpdateService",
+                    "ecs:DescribeServices",
                   ],
                   "Effect": "Allow",
-                  "Resource": "arn:aws:logs:*:*:*",
+                  "Resource": "*",
                 },
               ],
             },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
+            "PolicyName": "watchbot-autoscaling",
           },
         ],
       },
@@ -1227,6 +1268,42 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
+    "WatchbotLambdaScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*",
+                },
+              ],
+            },
+            "PolicyName": "CustomcfnScalingLambdaLogs",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
     "WatchbotLogGroup": Object {
       "Properties": Object {
         "LogGroupName": Object {
@@ -1594,7 +1671,7 @@ Object {
         "Handler": "index.handler",
         "Role": Object {
           "Fn::GetAtt": Array [
-            "WatchbotScalingRole",
+            "WatchbotLambdaScalingRole",
             "Arn",
           ],
         },
@@ -1613,26 +1690,31 @@ Object {
               "Effect": "Allow",
               "Principal": Object {
                 "Service": Array [
-                  "lambda.amazonaws.com",
+                  "application-autoscaling.amazonaws.com",
                 ],
               },
             },
           ],
         },
+        "Path": "/",
         "Policies": Array [
           Object {
             "PolicyDocument": Object {
               "Statement": Array [
                 Object {
                   "Action": Array [
-                    "logs:*",
+                    "application-autoscaling:*",
+                    "cloudwatch:DescribeAlarms",
+                    "cloudwatch:PutMetricAlarm",
+                    "ecs:UpdateService",
+                    "ecs:DescribeServices",
                   ],
                   "Effect": "Allow",
-                  "Resource": "arn:aws:logs:*:*:*",
+                  "Resource": "*",
                 },
               ],
             },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
+            "PolicyName": "watchbot-autoscaling",
           },
         ],
       },
