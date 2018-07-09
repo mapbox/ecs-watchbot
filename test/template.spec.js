@@ -48,6 +48,7 @@ test('[template]', () => {
       cpu: 4096
     },
     privileged: true,
+    reduce: true,
     messageTimeout: 300,
     messageRetention: 1096,
     notificationEmail: 'hello@mapbox.pagerduty.com'

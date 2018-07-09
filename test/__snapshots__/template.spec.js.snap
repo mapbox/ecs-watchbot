@@ -363,6 +363,80 @@ Object {
       },
       "Type": "AWS::SNS::Topic",
     },
+    "SoupProgressTable": Object {
+      "Properties": Object {
+        "AttributeDefinitions": Array [
+          Object {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+        ],
+        "KeySchema": Array [
+          Object {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "ProvisionedThroughput": Object {
+          "ReadCapacityUnits": 30,
+          "WriteCapacityUnits": 30,
+        },
+        "TableName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-progress",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+    },
+    "SoupProgressTablePermission": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:dynamodb:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":table/",
+                    Object {
+                      "Ref": "SoupProgressTable",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+        },
+        "PolicyName": "watchbot-progress",
+        "Roles": Array [
+          Object {
+            "Ref": "SoupRole",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
     "SoupQueue": Object {
       "Properties": Object {
         "MessageRetentionPeriod": 1096,
@@ -856,6 +930,28 @@ Object {
               Object {
                 "Name": "MyKey",
                 "Value": "MyValue",
+              },
+              Object {
+                "Name": "ProgressTable",
+                "Value": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:aws:dynamodb:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/",
+                      Object {
+                        "Ref": "SoupProgressTable",
+                      },
+                    ],
+                  ],
+                },
               },
             ],
             "Image": Object {
