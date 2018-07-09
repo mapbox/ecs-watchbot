@@ -33,7 +33,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.5.6",
+    "EcsWatchbotVersion": "4.5.6-3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -71,7 +71,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -115,7 +115,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -151,6 +151,18 @@ Object {
         "Threshold": 100,
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupCustomScalingResource": Object {
+      "Properties": Object {
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "SoupScalingLambda",
+            "Arn",
+          ],
+        },
+        "maxSize": 90,
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
     },
     "SoupDashboard": Object {
       "Properties": Object {
@@ -255,6 +267,42 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
+    },
+    "SoupLambdaScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*",
+                },
+              ],
+            },
+            "PolicyName": "CustomcfnScalingLambdaLogs",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
     },
     "SoupLogGroup": Object {
       "Properties": Object {
@@ -362,7 +410,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -577,7 +625,12 @@ Object {
           "StepAdjustments": Array [
             Object {
               "MetricIntervalLowerBound": 0,
-              "ScalingAdjustment": 9,
+              "ScalingAdjustment": Object {
+                "Fn::GetAtt": Array [
+                  "SoupCustomScalingResource",
+                  "ScalingAdjustment",
+                ],
+              },
             },
           ],
         },
@@ -623,6 +676,30 @@ Object {
         "Threshold": 0,
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupScalingLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": "
+          const response = require('cfn-response');
+          exports.handler = function(event,context){
+            const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
+            response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
+          }
+          ",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "SoupLambdaScalingRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs6.10",
+      },
+      "Type": "AWS::Lambda::Function",
     },
     "SoupScalingRole": Object {
       "Properties": Object {
@@ -861,7 +938,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -956,7 +1033,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.5.6",
+    "EcsWatchbotVersion": "4.5.6-3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -994,7 +1071,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1038,7 +1115,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1074,6 +1151,18 @@ Object {
         "Threshold": 100,
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotCustomScalingResource": Object {
+      "Properties": Object {
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotScalingLambda",
+            "Arn",
+          ],
+        },
+        "maxSize": 1,
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
     },
     "WatchbotDashboard": Object {
       "Properties": Object {
@@ -1178,6 +1267,42 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
+    },
+    "WatchbotLambdaScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*",
+                },
+              ],
+            },
+            "PolicyName": "CustomcfnScalingLambdaLogs",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
     },
     "WatchbotLogGroup": Object {
       "Properties": Object {
@@ -1285,7 +1410,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1478,7 +1603,12 @@ Object {
           "StepAdjustments": Array [
             Object {
               "MetricIntervalLowerBound": 0,
-              "ScalingAdjustment": 1,
+              "ScalingAdjustment": Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotCustomScalingResource",
+                  "ScalingAdjustment",
+                ],
+              },
             },
           ],
         },
@@ -1524,6 +1654,30 @@ Object {
         "Threshold": 0,
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotScalingLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": "
+          const response = require('cfn-response');
+          exports.handler = function(event,context){
+            const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
+            response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
+          }
+          ",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotLambdaScalingRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs6.10",
+      },
+      "Type": "AWS::Lambda::Function",
     },
     "WatchbotScalingRole": Object {
       "Properties": Object {
@@ -1742,7 +1896,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.5.6-3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
