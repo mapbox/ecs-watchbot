@@ -1,3 +1,7 @@
+### 4.8.0
+
+- Add reduce mode functionality to version 4: https://github.com/mapbox/ecs-watchbot/pull/221
+
 ### 4.7.1
 
 - Fix scaling compatibility with cn-north-1 https://github.com/mapbox/ecs-watchbot/pull/257
