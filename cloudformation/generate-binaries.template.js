@@ -138,7 +138,7 @@ const Resources = {
       ServiceToken: cf.importValue('code-pipeline-helper-production-custom-resource'),
       Owner: 'mapbox',
       Repo: 'ecs-watchbot',
-      Branch: 'master',
+      Branch: 'tags',
       Name: cf.stackName,
       RoleArn: cf.getAtt('PipelineRole', 'Arn'),
       ArtifactStore: {
