@@ -1,3 +1,7 @@
+### 4.7.1
+
+- Fix scaling compatibility with cn-north-1 https://github.com/mapbox/ecs-watchbot/pull/257
+
 ### 4.7.0
 
 - Compatiblity with cn-north-1 https://github.com/mapbox/ecs-watchbot/pull/250
