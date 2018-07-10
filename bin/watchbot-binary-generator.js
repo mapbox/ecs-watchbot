@@ -21,7 +21,7 @@ const getTagForSha = async (sha) => {
     data.forEach((ref) => {
       ref = ref.split('\t');
       if (ref[0] !== sha) return;
-      const tagRegex = /refs\/tags\/(v[0-9.-]+)(\^\{(.*)\})*/;
+      const tagRegex = /refs\/tags\/(v?[0-9.-]+)(\^\{(.*)\})*/;
       return resolve(tagRegex.exec(ref[1])[1]);
     });
     return resolve(null);
