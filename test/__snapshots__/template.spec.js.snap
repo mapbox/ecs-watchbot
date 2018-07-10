@@ -3,7 +3,20 @@
 exports[`all-properties 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Conditions": Object {},
+  "Conditions": Object {
+    "NotInChina": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            Object {
+              "Ref": "AWS::Region",
+            },
+            "cn-north-1",
+          ],
+        },
+      ],
+    },
+  },
   "Mappings": Object {
     "EcrRegion": Object {
       "ap-northeast-1": Object {
@@ -14,6 +27,9 @@ Object {
       },
       "ap-southeast-2": Object {
         "Region": "us-west-2",
+      },
+      "cn-north-1": Object {
+        "Region": "cn-north-1",
       },
       "eu-central-1": Object {
         "Region": "eu-west-1",
@@ -500,11 +516,19 @@ Object {
                   },
                 },
                 Object {
-                  "Action": "kms:Decrypt",
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::ImportValue": "cloudformation-kms-production",
-                  },
+                  "Fn::If": Array [
+                    "NotInChina",
+                    Object {
+                      "Action": "kms:Decrypt",
+                      "Effect": "Allow",
+                      "Resource": Object {
+                        "Fn::ImportValue": "cloudformation-kms-production",
+                      },
+                    },
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
+                  ],
                 },
               ],
             },
@@ -840,7 +864,11 @@ Object {
                       "Region",
                     ],
                   },
-                  ".amazonaws.com/",
+                  ".",
+                  Object {
+                    "Ref": "AWS::URLSuffix",
+                  },
+                  "/",
                   "example",
                   ":",
                   "1",
@@ -1003,7 +1031,20 @@ Object {
 exports[`defaults 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Conditions": Object {},
+  "Conditions": Object {
+    "NotInChina": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            Object {
+              "Ref": "AWS::Region",
+            },
+            "cn-north-1",
+          ],
+        },
+      ],
+    },
+  },
   "Mappings": Object {
     "EcrRegion": Object {
       "ap-northeast-1": Object {
@@ -1014,6 +1055,9 @@ Object {
       },
       "ap-southeast-2": Object {
         "Region": "us-west-2",
+      },
+      "cn-north-1": Object {
+        "Region": "cn-north-1",
       },
       "eu-central-1": Object {
         "Region": "eu-west-1",
@@ -1500,11 +1544,19 @@ Object {
                   },
                 },
                 Object {
-                  "Action": "kms:Decrypt",
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::ImportValue": "cloudformation-kms-production",
-                  },
+                  "Fn::If": Array [
+                    "NotInChina",
+                    Object {
+                      "Action": "kms:Decrypt",
+                      "Effect": "Allow",
+                      "Resource": Object {
+                        "Fn::ImportValue": "cloudformation-kms-production",
+                      },
+                    },
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
+                  ],
                 },
               ],
             },
@@ -1814,7 +1866,11 @@ Object {
                       "Region",
                     ],
                   },
-                  ".amazonaws.com/",
+                  ".",
+                  Object {
+                    "Ref": "AWS::URLSuffix",
+                  },
+                  "/",
                   "example",
                   ":",
                   "1",

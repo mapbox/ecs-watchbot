@@ -87,6 +87,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **alarmPeriods** | Use this parameter to control the duration that the SQS queue must be over the message threshold before triggering an alarm. You specify the number of 5-minute periods before an alarm is triggered. The default is 24 periods, or 2 hours. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | String/Ref | No | 24
 **alarmThreshold** | Watchbot creates a CloudWatch alarm that will go off when there have been too many messages in SQS for a certain period of time. Use this parameter to adjust the Threshold number of messages to trigger the alarm. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 40
 **errorThreshold** | Watchbot creates a CloudWatch alarm that will fire if there have been more than this number of failed worker invocations in a 60 second period. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 10
+**dashboard** | Watchbot creates a Cloudwatch Dashboard called `<cloudformation-stack>-<region>`. If running in cn-north-1, this may need to be disabled | Boolean | No | `true`
 
 ### writableFilesystem mode explained
 
