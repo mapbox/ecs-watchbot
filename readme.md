@@ -50,3 +50,4 @@ A library to help run a highly-scalable AWS service that performs data processin
 5. [Using Watchbot's reduce-mode](./docs/reduce-mode.md)
 6. [Watchbot's command-line utilities](./docs/command-line-utilities.md)
 7. [Watchbot's CloudWatch alarms](./docs/alarms.md)
+8. [Development on Watchbot itself](./docs/development.md)
