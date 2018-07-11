@@ -1,3 +1,7 @@
+### 4.8.1
+
+- Create binaries when tags are added manually too: https://github.com/mapbox/ecs-watchbot/pull/259
+
 ### 4.8.0
 
 - Add reduce mode functionality to version 4: https://github.com/mapbox/ecs-watchbot/pull/221
