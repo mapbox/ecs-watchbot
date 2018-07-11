@@ -63,21 +63,21 @@ module.exports = cloudfriend.merge(myTemplate, watch);
 When creating your watchbot stacks with the `watchbot.template()` method, you now have the following options:
 
 
- Key | Description | Type | Required | Default 
+ Key | Description | Type | Required | Default
 ----------|----------------|--------------|------------ |---------
 **cluster** | The cluster on which your watchbot service will run. | String/Ref | Yes | -
 **service** | The name of your service. This is usually the same as your GitHub repository. It **must** match the name of the ECR repository where your images are stored. | String/Ref | Yes | -
 **serviceVersion** | The version of your image to deploy. This should reference a specific image in ECR. | String/Ref | Yes | -
 **family** | The name of the task definition family that watchbot will create revisions of. | String/Ref | Yes | -
 **command** | The shell command to be run by the subprocess worker. The working directory for the subprocess is determined in your Dockerfile by the `WORKDIR` missive. | String | Yes | -
-**maxSize** | The maximum number of workers to run for your service. Must be a number, not a reference to a number, since one tenth of this number will be used as the scaling adjustment for the scaling policy. | Number | Yes | -
+**maxSize** | The maximum number of workers to run for your service. | Number/Ref | Yes | -
 **minSize** | The minimum number of workers to run for your service. | Number | No | 0
 **writableFilesystem** | Whether you want a new container for every job with a writable filesystem. See below for more details. | Boolean | No | false
 **mounts** | If your worker containers need to write files or folders inside its file system, specify those locations with this parameter. A single ephemeral mount point can be specified as `{container location}`, e.g. /mnt/tmp. Separate multiple mount strings with commas if you need to mount more than one location. You can also specify mounts as an arrays of paths. Every mounted volume will be cleaned after each job. By default, the `/tmp` directory is added as an ephemeral mount. | String/Object | No | `/tmp`
 **env** | Key-value pairs that will be provided to the worker containers as environment variables. Keys must be strings, and values can either be strings or references to other CloudFormation resources via `{"Ref": "..."}`. | Object | No | `{}`
 **prefix** | a prefix that will be applied to the logical names of all the resources Watchbot creates. If you're building a template that includes more than one Watchbot system, you'll need to specify this in order to differentiate the resources. | String/Ref | No | none
 **reservation.hardMemory** | The number of MB of RAM to reserve as a hard limit. If your worker container tries to utilize more than this much RAM, it will be shut down. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | none
-**reservation.softMemory** | The number of MB of RAM to reserve as a soft limit. Your worker container will be able to utilize more than this much RAM if it happens to be available on the host. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | none 
+**reservation.softMemory** | The number of MB of RAM to reserve as a soft limit. Your worker container will be able to utilize more than this much RAM if it happens to be available on the host. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | none
 **reservation.cpu** | The number of CPU units to reserve for your worker container. This will only impact the placement of your container on an EC2 with sufficient CPU capacity, but will not limit your container's utilization. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | Yes | -
 **privileged** | Give the container elevated privileges on the host container instance | Boolean | No | false
 **messageRetention** | The number of seconds that a message will exist in SQS until it is deleted. The default value is the maximum time that SQS allows, 14 days. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 1209600 (14 days)
@@ -97,7 +97,7 @@ By default, containers are re-used from one job to the next, and file system is 
 
 Since containers are only started once during scale up and then left on for long durations, users can expect to see very few failed task placements. Combined with the low overhead of not needing to start containers for every job, watchbot is ideal for workloads that are potentially very short-lived and require high throughput. During initial benchmarks, watchbot was able to achieve a throughput of 50 tasks per second when run at 500 workers for jobs that ran 10 seconds each. There were no signs showing that it would slow down, and seemed to be able to handle as much throughput as you were willing to add workers.
 
-**writableFilesystem mode** 
+**writableFilesystem mode**
 
 In writableFilesystem mode, the whole file system is writable and containers are stopped after every job. This refreshing of containers allows users to confidently expect their work to run in a brand new container every time, and allows them to write to anywhere on the filesystem. This mode can be guaranteed to be slower than the default mode, due to the overhead of starting a new container after every job.
 
