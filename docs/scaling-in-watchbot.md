@@ -8,7 +8,7 @@ The Scale Up policy is active when the SQS ApproximateNumberOfMessagesVisible me
 
 ### Scale Down / Scale In
 
-The Scale Down policy is active whenever the SQS ApproximateNumberOfMessagesNotVisible metric is greater than zero. When ApproximateNumberOfMessagesNotVisible is zero - the stack will scale down all tasks above the minSize value.
+The Scale Down policy is active whenever the SQS ApproximateNumberOfMessagesNotVisible metric is equal to zero. When ApproximateNumberOfMessagesNotVisible is zero - the stack will scale the service's desired count to the minSize value.
 
 ### Scale Up from Min Size 0
 
