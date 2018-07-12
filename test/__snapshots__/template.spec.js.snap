@@ -331,6 +331,69 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "SoupLambdaTotalMessagesRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "SoupQueue",
+                  },
+                },
+              ],
+            },
+            "PolicyName": "LambdaTotalMessagesMetric",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
     "SoupLogGroup": Object {
       "Properties": Object {
         "LogGroupName": Object {
@@ -1066,6 +1129,64 @@ Object {
       },
       "Type": "AWS::SNS::Topic",
     },
+    "SoupTotalMessagesLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": Array [
+              "
+          const AWS = require('aws-sdk');
+          exports.handler = function(event, context, callback) {
+            const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
+            const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+
+            try {
+              const attrs = await sqs.getQueueAttributes({
+                QueueUrl: $QueueUrl, // eslint-disable-line no-undef
+                AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+              }).promise();
+
+              const metric = await cw.putMetricData({
+                Namespace: 'Mapbox/ecs-watchbot',
+                MetricData: [{
+                  MetricName: 'TotalMessages',
+                  Dimensions: [{ Name: 'QueueName', Value: $QueueName }], // eslint-disable-line no-undef
+                  Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                          Number(attrs.Attributes.ApproximateNumberOfMessages)
+                }]
+              }).promise();
+
+              return callback(null, metric);
+            } catch (err) {
+              return callback(err);
+            }
+          }
+        ",
+              Object {
+                "QueueName": Object {
+                  "Fn::GetAtt": Array [
+                    "SoupQueue",
+                    "QueueName",
+                  ],
+                },
+                "QueueUrl": Object {
+                  "Ref": "SoupQueue",
+                },
+              },
+            ],
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "SoupLambdaTotalMessagesRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs8.10",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
     "SoupWorkerErrorsAlarm": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -1461,6 +1582,69 @@ Object {
               ],
             },
             "PolicyName": "CustomcfnScalingLambdaLogs",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WatchbotLambdaTotalMessagesRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "WatchbotQueue",
+                  },
+                },
+              ],
+            },
+            "PolicyName": "LambdaTotalMessagesMetric",
           },
         ],
       },
@@ -2062,6 +2246,64 @@ Object {
         ],
       },
       "Type": "AWS::SNS::Topic",
+    },
+    "WatchbotTotalMessagesLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": Array [
+              "
+          const AWS = require('aws-sdk');
+          exports.handler = function(event, context, callback) {
+            const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
+            const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+
+            try {
+              const attrs = await sqs.getQueueAttributes({
+                QueueUrl: $QueueUrl, // eslint-disable-line no-undef
+                AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+              }).promise();
+
+              const metric = await cw.putMetricData({
+                Namespace: 'Mapbox/ecs-watchbot',
+                MetricData: [{
+                  MetricName: 'TotalMessages',
+                  Dimensions: [{ Name: 'QueueName', Value: $QueueName }], // eslint-disable-line no-undef
+                  Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                          Number(attrs.Attributes.ApproximateNumberOfMessages)
+                }]
+              }).promise();
+
+              return callback(null, metric);
+            } catch (err) {
+              return callback(err);
+            }
+          }
+        ",
+              Object {
+                "QueueName": Object {
+                  "Fn::GetAtt": Array [
+                    "WatchbotQueue",
+                    "QueueName",
+                  ],
+                },
+                "QueueUrl": Object {
+                  "Ref": "WatchbotQueue",
+                },
+              },
+            ],
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotLambdaTotalMessagesRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs8.10",
+      },
+      "Type": "AWS::Lambda::Function",
     },
     "WatchbotWorkerErrorsAlarm": Object {
       "Properties": Object {
