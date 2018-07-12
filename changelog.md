@@ -1,3 +1,7 @@
+### 4.8.3
+
+- Only add the /tmp mount if it isn't already there: https://github.com/mapbox/ecs-watchbot/pull/262
+
 ### 4.8.1
 
 - Create binaries when tags are added manually too: https://github.com/mapbox/ecs-watchbot/pull/259
