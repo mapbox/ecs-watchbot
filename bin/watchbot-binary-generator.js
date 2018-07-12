@@ -35,29 +35,32 @@ wbg.getTagForSha = getTagForSha;
 const uploadBundle = async () => {
   const s3 = new AWS.S3();
   const Bucket = 'watchbot-binaries';
-  const prefix = ['linux', 'macosx', 'windows'];
-  const pkgNames = {
-    linux: 'watchbot-linux',
-    macosx: 'watchbot-macos',
-    windows: 'watchbot-win.exe'
-  };
+
+  const targets = [
+    { prefix: 'linux', target: 'node8-linux', pkg: 'watchbot-linux' },
+    { prefix: 'alpine', target: 'node8-alpine', pkg: 'watchbot-alpine' },
+    { prefix: 'macosx', target: 'node8-macos', pkg: 'watchbot-macos' },
+    { prefix: 'windows', target: 'node8-win', pkg: 'watchbot-win.exe' }
+  ];
 
   await wbg.exec('npm ci --production');
   await wbg.exec('npm install -g pkg');
-  await wbg.exec('pkg .');
+  await wbg.exec(`pkg --targets ${targets.map((t) => t.target).join(',')} .`);
   const sha = process.env.CODEBUILD_RESOLVED_SOURCE_VERSION;
 
   const tag = await getTagForSha(sha);
   if (tag) {
-    prefix.forEach(async (pre) => {
-      console.log(`Uploading the package to s3://${Bucket}/${pre}/${tag}/watchbot`);
-      await s3.putObject({
+    const uploads = targets.map((target) => {
+      console.log(`Uploading the package to s3://${Bucket}/${target.prefix}/${tag}/watchbot`);
+      return s3.putObject({
         Bucket,
-        Key: `${pre}/${tag}/watchbot`,
-        Body: fs.createReadStream(pkgNames[pre]),
+        Key: `${target.prefix}/${tag}/watchbot`,
+        Body: fs.createReadStream(target.pkg),
         ACL: 'public-read'
       }).promise();
     });
+
+    await Promise.all(uploads);
   } else {
     console.log(`No tag found for ${process.env.CODEBUILD_RESOLVED_SOURCE_VERSION}`);
   }

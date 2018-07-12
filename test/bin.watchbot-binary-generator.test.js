@@ -49,32 +49,39 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
 
   await wbg.uploadBundle();
 
-  assert.ok(execStub.calledWith('npm ci --production'));
-  assert.ok(execStub.calledWith('npm install -g pkg'));
-  assert.ok(execStub.calledWith('pkg .'));
-  assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'));
+  assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
+  assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
+  assert.ok(execStub.calledWith('pkg --targets node8-linux,node8-alpine,node8-macos,node8-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'linux/v4.1.1/watchbot',
     Body: fs.createReadStream('watchbot-linux'),
     ACL: 'public-read'
-  }));
+  }), 'uploaded linux binary');
+  assert.ok(s3Stub.calledWith({
+    Bucket: 'watchbot-binaries',
+    Key: 'alpine/v4.1.1/watchbot',
+    Body: fs.createReadStream('watchbot-alpine'),
+    ACL: 'public-read'
+  }), 'uploaded alpine binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'macosx/v4.1.1/watchbot',
     Body: fs.createReadStream('watchbot-macos'),
     ACL: 'public-read'
-  }));
+  }), 'uploaded macos binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'windows/v4.1.1/watchbot',
     Body: fs.createReadStream('watchbot-win.exe'),
     ACL: 'public-read'
-  }));
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/v4.1.1/watchbot'));
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/v4.1.1/watchbot'));
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/windows/v4.1.1/watchbot'));
+  }), 'uploaded windows binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/v4.1.1/watchbot'), 'logged upload of linux binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/alpine/v4.1.1/watchbot'), 'logged upload of alpine binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/v4.1.1/watchbot'), 'logged upload of macos binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/windows/v4.1.1/watchbot'), 'logged upload of win binary');
 
   fsCreateReadStreamStub.restore();
   log.restore();
@@ -99,32 +106,39 @@ test('uploadBundle: tag found (Tag created manually)', async (assert) => {
 
   await wbg.uploadBundle();
 
-  assert.ok(execStub.calledWith('npm ci --production'));
-  assert.ok(execStub.calledWith('npm install -g pkg'));
-  assert.ok(execStub.calledWith('pkg .'));
-  assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'));
+  assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
+  assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
+  assert.ok(execStub.calledWith('pkg --targets node8-linux,node8-alpine,node8-macos,node8-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'linux/4.1.1/watchbot',
     Body: fs.createReadStream('watchbot-linux'),
     ACL: 'public-read'
-  }));
+  }), 'uploaded linux binary');
+  assert.ok(s3Stub.calledWith({
+    Bucket: 'watchbot-binaries',
+    Key: 'alpine/4.1.1/watchbot',
+    Body: fs.createReadStream('watchbot-alpine'),
+    ACL: 'public-read'
+  }), 'uploaded alpine binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'macosx/4.1.1/watchbot',
     Body: fs.createReadStream('watchbot-macos'),
     ACL: 'public-read'
-  }));
+  }), 'uploaded macos binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'windows/4.1.1/watchbot',
     Body: fs.createReadStream('watchbot-win.exe'),
     ACL: 'public-read'
-  }));
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/4.1.1/watchbot'));
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/4.1.1/watchbot'));
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/windows/4.1.1/watchbot'));
+  }), 'uploaded windows binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/4.1.1/watchbot'), 'logged upload of linux binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/alpine/4.1.1/watchbot'), 'logged upload of alpine binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/4.1.1/watchbot'), 'logged upload of macos binary');
+  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/windows/4.1.1/watchbot'), 'logged upload of win binary');
 
   fsCreateReadStreamStub.restore();
   log.restore();
@@ -145,10 +159,10 @@ test('uploadBundle: tag not found', async (assert) => {
 
   await wbg.uploadBundle();
 
-  assert.ok(execStub.calledWith('npm ci --production'));
-  assert.ok(execStub.calledWith('npm install -g pkg'));
-  assert.ok(execStub.calledWith('pkg .'));
-  assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'));
+  assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
+  assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
+  assert.ok(execStub.calledWith('pkg --targets node8-linux,node8-alpine,node8-macos,node8-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
   assert.ok(log.calledWith('No tag found for 123456'));
 
   log.restore();
