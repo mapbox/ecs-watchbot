@@ -414,6 +414,25 @@ Object {
       },
       "Type": "AWS::Logs::LogGroup",
     },
+    "SoupMetricSchedulePermission": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "SoupTotalMessagesLambda",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "SoupTotalMessagesSchedule",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "SoupNotificationTopic": Object {
       "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
       "Properties": Object {
@@ -1142,7 +1161,7 @@ Object {
 
             try {
               const attrs = await sqs.getQueueAttributes({
-                QueueUrl: $QueueUrl, // eslint-disable-line no-undef
+                QueueUrl: \${QueueUrl}, // eslint-disable-line no-undef
                 AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
               }).promise();
 
@@ -1150,7 +1169,7 @@ Object {
                 Namespace: 'Mapbox/ecs-watchbot',
                 MetricData: [{
                   MetricName: 'TotalMessages',
-                  Dimensions: [{ Name: 'QueueName', Value: $QueueName }], // eslint-disable-line no-undef
+                  Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }], // eslint-disable-line no-undef
                   Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
                           Number(attrs.Attributes.ApproximateNumberOfMessages)
                 }]
@@ -1186,6 +1205,35 @@ Object {
         "Runtime": "nodejs8.10",
       },
       "Type": "AWS::Lambda::Function",
+    },
+    "SoupTotalMessagesSchedule": Object {
+      "Properties": Object {
+        "Description": "Update TotalMessages metric every minute",
+        "Name": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-total-messages",
+            ],
+          ],
+        },
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "SoupTotalMessagesLambda",
+                "Arn",
+              ],
+            },
+            "Id": "SoupTotalMessagesLambda",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
     },
     "SoupWorkerErrorsAlarm": Object {
       "Properties": Object {
@@ -1669,6 +1717,25 @@ Object {
         "RetentionInDays": 14,
       },
       "Type": "AWS::Logs::LogGroup",
+    },
+    "WatchbotMetricSchedulePermission": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotTotalMessagesLambda",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotTotalMessagesSchedule",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "WatchbotNotificationTopic": Object {
       "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
@@ -2260,7 +2327,7 @@ Object {
 
             try {
               const attrs = await sqs.getQueueAttributes({
-                QueueUrl: $QueueUrl, // eslint-disable-line no-undef
+                QueueUrl: \${QueueUrl}, // eslint-disable-line no-undef
                 AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
               }).promise();
 
@@ -2268,7 +2335,7 @@ Object {
                 Namespace: 'Mapbox/ecs-watchbot',
                 MetricData: [{
                   MetricName: 'TotalMessages',
-                  Dimensions: [{ Name: 'QueueName', Value: $QueueName }], // eslint-disable-line no-undef
+                  Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }], // eslint-disable-line no-undef
                   Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
                           Number(attrs.Attributes.ApproximateNumberOfMessages)
                 }]
@@ -2304,6 +2371,35 @@ Object {
         "Runtime": "nodejs8.10",
       },
       "Type": "AWS::Lambda::Function",
+    },
+    "WatchbotTotalMessagesSchedule": Object {
+      "Properties": Object {
+        "Description": "Update TotalMessages metric every minute",
+        "Name": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-total-messages",
+            ],
+          ],
+        },
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotTotalMessagesLambda",
+                "Arn",
+              ],
+            },
+            "Id": "WatchbotTotalMessagesLambda",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
     },
     "WatchbotWorkerErrorsAlarm": Object {
       "Properties": Object {
