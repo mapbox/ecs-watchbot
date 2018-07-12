@@ -1,3 +1,7 @@
+### 4.9.0
+
+- Now builds binaries for alpine linux: https://github.com/mapbox/ecs-watchbot/pull/266
+
 ### 4.8.3
 
 - Only add the /tmp mount if it isn't already there: https://github.com/mapbox/ecs-watchbot/pull/262
