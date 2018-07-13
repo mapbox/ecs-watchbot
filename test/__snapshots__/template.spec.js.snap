@@ -49,7 +49,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.9.1",
+    "EcsWatchbotVersion": "4.9.1-4",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -87,7 +87,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -131,7 +131,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -331,6 +331,72 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "SoupLambdaTotalMessagesRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "LambdaTotalMessagesMetric",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
     "SoupLogGroup": Object {
       "Properties": Object {
         "LogGroupName": Object {
@@ -350,6 +416,25 @@ Object {
         "RetentionInDays": 14,
       },
       "Type": "AWS::Logs::LogGroup",
+    },
+    "SoupMetricSchedulePermission": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "SoupTotalMessagesLambda",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "SoupTotalMessagesSchedule",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "SoupNotificationTopic": Object {
       "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
@@ -511,7 +596,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -710,8 +795,8 @@ Object {
           },
         ],
         "EvaluationPeriods": 1,
-        "MetricName": "ApproximateNumberOfMessagesNotVisible",
-        "Namespace": "AWS/SQS",
+        "MetricName": "TotalMessages",
+        "Namespace": "Mapbox/ecs-watchbot",
         "Period": 600,
         "Statistic": "Maximum",
         "Threshold": 1,
@@ -1066,6 +1151,91 @@ Object {
       },
       "Type": "AWS::SNS::Topic",
     },
+    "SoupTotalMessagesLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": Array [
+              "
+          const AWS = require('aws-sdk');
+          exports.handler = function(event, context, callback) {
+            const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
+            const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+
+            return sqs.getQueueAttributes({
+              QueueUrl: '\${QueueUrl}',
+              AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+            }).promise()
+              .then((attrs) => {
+                return cw.putMetricData({
+                  Namespace: 'Mapbox/ecs-watchbot',
+                  MetricData: [{
+                    MetricName: 'TotalMessages',
+                    Dimensions: [{ Name: 'QueueName', Value: '\${QueueName}' }],
+                    Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                            Number(attrs.Attributes.ApproximateNumberOfMessages)
+                  }]
+                }).promise();
+              })
+              .then((metric) => callback(null, metric))
+              .catch((err) => callback(err));
+          }
+        ",
+              Object {
+                "QueueName": Object {
+                  "Fn::GetAtt": Array [
+                    "SoupQueue",
+                    "QueueName",
+                  ],
+                },
+                "QueueUrl": Object {
+                  "Ref": "SoupQueue",
+                },
+              },
+            ],
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "SoupLambdaTotalMessagesRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs6.10",
+        "Timeout": 60,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SoupTotalMessagesSchedule": Object {
+      "Properties": Object {
+        "Description": "Update TotalMessages metric every minute",
+        "Name": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-total-messages",
+            ],
+          ],
+        },
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "SoupTotalMessagesLambda",
+                "Arn",
+              ],
+            },
+            "Id": "SoupTotalMessagesLambda",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
     "SoupWorkerErrorsAlarm": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -1073,7 +1243,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1184,7 +1354,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.9.1",
+    "EcsWatchbotVersion": "4.9.1-4",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -1222,7 +1392,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1266,7 +1436,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1466,6 +1636,72 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "WatchbotLambdaTotalMessagesRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "LambdaTotalMessagesMetric",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
     "WatchbotLogGroup": Object {
       "Properties": Object {
         "LogGroupName": Object {
@@ -1485,6 +1721,25 @@ Object {
         "RetentionInDays": 14,
       },
       "Type": "AWS::Logs::LogGroup",
+    },
+    "WatchbotMetricSchedulePermission": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotTotalMessagesLambda",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotTotalMessagesSchedule",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "WatchbotNotificationTopic": Object {
       "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
@@ -1572,7 +1827,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1749,8 +2004,8 @@ Object {
           },
         ],
         "EvaluationPeriods": 1,
-        "MetricName": "ApproximateNumberOfMessagesNotVisible",
-        "Namespace": "AWS/SQS",
+        "MetricName": "TotalMessages",
+        "Namespace": "Mapbox/ecs-watchbot",
         "Period": 600,
         "Statistic": "Maximum",
         "Threshold": 1,
@@ -2063,6 +2318,91 @@ Object {
       },
       "Type": "AWS::SNS::Topic",
     },
+    "WatchbotTotalMessagesLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": Array [
+              "
+          const AWS = require('aws-sdk');
+          exports.handler = function(event, context, callback) {
+            const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
+            const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+
+            return sqs.getQueueAttributes({
+              QueueUrl: '\${QueueUrl}',
+              AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+            }).promise()
+              .then((attrs) => {
+                return cw.putMetricData({
+                  Namespace: 'Mapbox/ecs-watchbot',
+                  MetricData: [{
+                    MetricName: 'TotalMessages',
+                    Dimensions: [{ Name: 'QueueName', Value: '\${QueueName}' }],
+                    Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                            Number(attrs.Attributes.ApproximateNumberOfMessages)
+                  }]
+                }).promise();
+              })
+              .then((metric) => callback(null, metric))
+              .catch((err) => callback(err));
+          }
+        ",
+              Object {
+                "QueueName": Object {
+                  "Fn::GetAtt": Array [
+                    "WatchbotQueue",
+                    "QueueName",
+                  ],
+                },
+                "QueueUrl": Object {
+                  "Ref": "WatchbotQueue",
+                },
+              },
+            ],
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotLambdaTotalMessagesRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs6.10",
+        "Timeout": 60,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "WatchbotTotalMessagesSchedule": Object {
+      "Properties": Object {
+        "Description": "Update TotalMessages metric every minute",
+        "Name": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-total-messages",
+            ],
+          ],
+        },
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotTotalMessagesLambda",
+                "Arn",
+              ],
+            },
+            "Id": "WatchbotTotalMessagesLambda",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
     "WatchbotWorkerErrorsAlarm": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -2070,7 +2410,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-4/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
