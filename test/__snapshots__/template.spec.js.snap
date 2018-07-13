@@ -1159,26 +1159,23 @@ Object {
             const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
             const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
 
-            try {
-              const attrs = await sqs.getQueueAttributes({
-                QueueUrl: \${QueueUrl}, // eslint-disable-line no-undef
-                AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
-              }).promise();
-
-              const metric = await cw.putMetricData({
-                Namespace: 'Mapbox/ecs-watchbot',
-                MetricData: [{
-                  MetricName: 'TotalMessages',
-                  Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }], // eslint-disable-line no-undef
-                  Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
-                          Number(attrs.Attributes.ApproximateNumberOfMessages)
-                }]
-              }).promise();
-
-              return callback(null, metric);
-            } catch (err) {
-              return callback(err);
-            }
+            return sqs.getQueueAttributes({
+              QueueUrl: \${QueueUrl},
+              AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+            }).promise()
+              .then((attrs) => {
+                return cw.putMetricData({
+                  Namespace: 'Mapbox/ecs-watchbot',
+                  MetricData: [{
+                    MetricName: 'TotalMessages',
+                    Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }],
+                    Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                            Number(attrs.Attributes.ApproximateNumberOfMessages)
+                  }]
+                }).promise();
+              })
+              .then((metric) => callback(null, metric))
+              .catch((err) => callback(err));
           }
         ",
               Object {
@@ -2325,26 +2322,23 @@ Object {
             const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
             const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
 
-            try {
-              const attrs = await sqs.getQueueAttributes({
-                QueueUrl: \${QueueUrl}, // eslint-disable-line no-undef
-                AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
-              }).promise();
-
-              const metric = await cw.putMetricData({
-                Namespace: 'Mapbox/ecs-watchbot',
-                MetricData: [{
-                  MetricName: 'TotalMessages',
-                  Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }], // eslint-disable-line no-undef
-                  Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
-                          Number(attrs.Attributes.ApproximateNumberOfMessages)
-                }]
-              }).promise();
-
-              return callback(null, metric);
-            } catch (err) {
-              return callback(err);
-            }
+            return sqs.getQueueAttributes({
+              QueueUrl: \${QueueUrl},
+              AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+            }).promise()
+              .then((attrs) => {
+                return cw.putMetricData({
+                  Namespace: 'Mapbox/ecs-watchbot',
+                  MetricData: [{
+                    MetricName: 'TotalMessages',
+                    Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }],
+                    Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                            Number(attrs.Attributes.ApproximateNumberOfMessages)
+                  }]
+                }).promise();
+              })
+              .then((metric) => callback(null, metric))
+              .catch((err) => callback(err));
           }
         ",
               Object {
