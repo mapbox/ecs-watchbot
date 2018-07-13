@@ -14,7 +14,9 @@
     "test-container": "tape test/*.test.js | tap-spec && jest test/*.spec.js",
     "validate-templates": "tape test/template.validation.js | tap-spec",
     "update-jest-snapshots": "jest -u test/*.spec.js",
-    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html"
+    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
+    "preversion": "npm run test",
+    "version": "npm run update-jest-snapshots && git add test/__snapshots__/"
   },
   "repository": {
     "type": "git",
