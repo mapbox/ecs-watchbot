@@ -49,7 +49,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.9.1",
+    "EcsWatchbotVersion": "4.9.1-2",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -87,7 +87,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -131,7 +131,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -383,7 +383,10 @@ Object {
                   ],
                   "Effect": "Allow",
                   "Resource": Object {
-                    "Ref": "SoupQueue",
+                    "Fn::GetAtt": Array [
+                      "SoupQueue",
+                      "Arn",
+                    ],
                   },
                 },
               ],
@@ -593,7 +596,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1160,7 +1163,7 @@ Object {
             const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
 
             return sqs.getQueueAttributes({
-              QueueUrl: \${QueueUrl},
+              QueueUrl: '\${QueueUrl}',
               AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
             }).promise()
               .then((attrs) => {
@@ -1168,7 +1171,7 @@ Object {
                   Namespace: 'Mapbox/ecs-watchbot',
                   MetricData: [{
                     MetricName: 'TotalMessages',
-                    Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }],
+                    Dimensions: [{ Name: 'QueueName', Value: '\${QueueName}' }],
                     Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
                             Number(attrs.Attributes.ApproximateNumberOfMessages)
                   }]
@@ -1239,7 +1242,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1350,7 +1353,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "4.9.1",
+    "EcsWatchbotVersion": "4.9.1-2",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -1388,7 +1391,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#cpuutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#cpuutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1432,7 +1435,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1684,7 +1687,10 @@ Object {
                   ],
                   "Effect": "Allow",
                   "Resource": Object {
-                    "Ref": "WatchbotQueue",
+                    "Fn::GetAtt": Array [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
                   },
                 },
               ],
@@ -1820,7 +1826,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -2323,7 +2329,7 @@ Object {
             const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
 
             return sqs.getQueueAttributes({
-              QueueUrl: \${QueueUrl},
+              QueueUrl: '\${QueueUrl}',
               AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
             }).promise()
               .then((attrs) => {
@@ -2331,7 +2337,7 @@ Object {
                   Namespace: 'Mapbox/ecs-watchbot',
                   MetricData: [{
                     MetricName: 'TotalMessages',
-                    Dimensions: [{ Name: 'QueueName', Value: \${QueueName} }],
+                    Dimensions: [{ Name: 'QueueName', Value: '\${QueueName}' }],
                     Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
                             Number(attrs.Attributes.ApproximateNumberOfMessages)
                   }]
@@ -2402,7 +2408,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.9.1-2/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
