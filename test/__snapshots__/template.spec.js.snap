@@ -461,7 +461,7 @@ Object {
           },
           "maxReceiveCount": 10,
         },
-        "VisibilityTimeout": 300,
+        "VisibilityTimeout": 180,
       },
       "Type": "AWS::SQS::Queue",
     },
