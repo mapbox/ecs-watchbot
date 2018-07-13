@@ -1,3 +1,7 @@
+### 4.10.0
+
+- Create a new metric of `TotalMessages` to prevent accidental scaledown: https://github.com/mapbox/ecs-watchbot/pull/267
+
 ### 4.9.1
 
 - Hardcode messageTimeout: https://github.com/mapbox/ecs-watchbot/pull/264
