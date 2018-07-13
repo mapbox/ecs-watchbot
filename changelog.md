@@ -1,3 +1,7 @@
+### 4.9.1
+
+- Hardcode messageTimeout: https://github.com/mapbox/ecs-watchbot/pull/264
+
 ### 4.9.0
 
 - Now builds binaries for alpine linux: https://github.com/mapbox/ecs-watchbot/pull/266
