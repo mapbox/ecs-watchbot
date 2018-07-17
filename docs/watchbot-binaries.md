@@ -1,16 +1,5 @@
 # Watchbot binaries
 
-## Install the current watchbot version
-
-Add these lines to your Dockerfile, to use the latest watchbot for the linux operating system.
-
-```
-RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v4.9.0/watchbot -O /usr/local/bin/watchbot
-RUN chmod +x /usr/local/bin/watchbot
-```
-* **os**: You can replace `linux` with other operating systems like `alpine`, `macosx` or, `windows`
-* **tag**: You can replace `v4.9.0`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent that v4.0.0
-
 ## What is a watchbot binary?
 
 A watchbot binary contains all of the watchbot code and dependencies,  pre-packed using [`zeit/pkg`](https://github.com/zeit/pkg/) and node 8, for the linux, mac OSX, windows and Alpine operating systems.
