@@ -13,7 +13,7 @@ RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v4.10.0/watchbot -O /u
 RUN chmod +x /usr/local/bin/watchbot
 ```
 * **os**: You can replace `linux` with other operating systems like `alpine`, `macosx` or, `windows`
-* **tag**: You can replace `v4.9.0`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent that v4.0.0
+* **tag**: You can replace `v4.10.0`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent that v4.0.0
 
 * If you are an existing user of watchbot, take a look at ["Upgrading to Watchbot 4"](https://github.com/mapbox/ecs-watchbot/blob/master/docs/upgrading-to-watchbot4.md), for a complete set of instructions to upgrade your stacks to Watchbot 4.
 
