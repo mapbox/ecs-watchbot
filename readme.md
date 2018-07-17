@@ -9,7 +9,7 @@ A library to help run a highly-scalable AWS service that performs data processin
 Add these lines to your Dockerfile, to use the latest watchbot for the linux operating system.
 
 ```
-RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v4.9.0/watchbot -O /usr/local/bin/watchbot
+RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v4.10.0/watchbot -O /usr/local/bin/watchbot
 RUN chmod +x /usr/local/bin/watchbot
 ```
 * **os**: You can replace `linux` with other operating systems like `alpine`, `macosx` or, `windows`
