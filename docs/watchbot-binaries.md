@@ -20,7 +20,7 @@ RUN chmod +x /usr/local/bin/watchbot
   * os: `linux`, `alpine`, `macosx`, `windows`
   * tag: Any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent that v4.0.0
 
-* A watchbot stack and template generated as part of the above system will then automatically use the above global binary, when the watchbot worker is called.
+* A watchbot stack and template generated as part of the above system will then automatically use the above global binary, when the watchbot worker is called. For the complete set of instructions to upgrade your stacks from Watchbot 3 to Watchbot 4, take a look at ["Upgrading to Watchbot 4"](https://github.com/mapbox/ecs-watchbot/blob/master/docs/upgrading-to-watchbot4.md)
 
 ## When is a new watchbot binary generated?
 
