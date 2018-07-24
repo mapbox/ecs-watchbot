@@ -78,7 +78,7 @@ const Resources = {
             phases:
               install:
                 commands:
-                  - echo \${Gitsha}
+                  - echo \${GitSha}
                   - npm install -g npm@5.8.0
                   - npm ci --production
               build:
