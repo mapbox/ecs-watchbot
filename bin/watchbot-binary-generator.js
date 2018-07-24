@@ -48,6 +48,7 @@ const uploadBundle = async () => {
   await wbg.exec(`pkg --targets ${targets.map((t) => t.target).join(',')} .`);
   const sha = process.env.CODEBUILD_RESOLVED_SOURCE_VERSION;
 
+  console.log(`ref/sha ${sha}`);
   const tag = await getTagForSha(sha);
   if (tag) {
     const uploads = targets.map((target) => {
