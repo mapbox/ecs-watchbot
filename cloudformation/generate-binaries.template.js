@@ -72,17 +72,19 @@ const Resources = {
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
         Type: 'CODEPIPELINE',
-        BuildSpec: redent(`
-          version: 0.2
-          phases:
-            install:
-              commands:
-                - npm install -g npm@5.8.0
-                - npm ci --production
-            build:
-              commands:
-                - node bin/watchbot-binary-generator
-        `)
+        BuildSpec: cf.sub(
+          redent(`
+            version: 0.2
+            phases:
+              install:
+                commands:
+                  - echo \${Gitsha}
+                  - npm install -g npm@5.8.0
+                  - npm ci --production
+              build:
+                commands:
+                  - node bin/watchbot-binary-generator
+        `))
       }
     }
   },
