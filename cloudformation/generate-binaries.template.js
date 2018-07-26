@@ -2,6 +2,7 @@
 
 const redent = require('redent');
 const cf = require('@mapbox/cloudfriend');
+const hookshot = require('@mapbox/hookshot');
 
 const Parameters = {
   GitSha: { Type: 'String' }
@@ -62,7 +63,7 @@ const Resources = {
       Name: cf.sub('${AWS::StackName}-bundler'),
       Description: 'Uploads code-pipeline-helper bundles',
       Artifacts: {
-        Type: 'CODEPIPELINE'
+        Type: 'GITHUB'
       },
       Environment: {
         Type: 'LINUX_CONTAINER',
@@ -71,7 +72,8 @@ const Resources = {
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
-        Type: 'CODEPIPELINE',
+        Type: 'GITHUB',
+        Location: 'https://github.com/mapbox/ecs-watchbot',
         BuildSpec: cf.sub(
           redent(`
             version: 0.2
@@ -88,89 +90,50 @@ const Resources = {
       }
     }
   },
-  PipelineRole: {
+  CodeBuildTriggerFunction: {
+    Type: 'AWS::Lambda::Function',
+    Properties: {
+      Code: {
+        S3Bucket: cf.join(['mapbox-', cf.region]),
+        S3Key: cf.join(['bundles/ecs-watchbot/', cf.ref('GitSha'), '.zip'])
+      },
+      FunctionName: cf.join([cf.stackName, '-code-build-trigger']),
+      Handler: 'index.codeBuildTrigger',
+      MemorySize: 256,
+      Runtime: 'nodejs8.10',
+      Timeout: 300,
+      Role: cf.getAtt('CodeBuildTriggerRole', 'Arn')
+    }
+  },
+  CodeBuildTriggerRole: {
     Type: 'AWS::IAM::Role',
     Properties: {
       AssumeRolePolicyDocument: {
         Statement: [
           {
             Effect: 'Allow',
-            Action: 'sts:AssumeRole',
-            Principal: { Service: 'codepipeline.amazonaws.com' }
+            Principal: { Service: 'lambda.amazonaws.com' },
+            Action: 'sts:AssumeRole'
           }
         ]
       },
       Policies: [
         {
-          PolicyName: cf.sub('PipelinePolicy'),
+          PolicyName: 'write-logs',
           PolicyDocument: {
             Statement: [
               {
                 Effect: 'Allow',
-                Action: [
-                  's3:ListBucket',
-                  's3:GetBucketVersioning',
-                  's3:GetObject',
-                  's3:GetObjectVersion',
-                  's3:PutObject'
-                ],
-                Resource: [
-                  cf.sub('arn:${AWS::Partition}:s3:::watchbot-binaries'),
-                  cf.sub('arn:${AWS::Partition}:s3:::watchbot-binaries/*')
-                ]
-              },
-              {
-                Effect: 'Allow',
-                Action: [
-                  'codebuild:StartBuild',
-                  'codebuild:BatchGetBuilds',
-                  'iam:PassRole'
-                ],
-                Resource: '*'
+                Action: 'logs:*',
+                Resource: 'arn:aws:logs:*'
               }
             ]
           }
         }
       ]
     }
-  },
-  Pipeline: {
-    Type: 'Custom::CodePipelineHelper',
-    Properties: {
-      ServiceToken: cf.importValue('code-pipeline-helper-production-custom-resource'),
-      Owner: 'mapbox',
-      Repo: 'ecs-watchbot',
-      Branch: 'binary-use-tags',
-      Name: cf.stackName,
-      RoleArn: cf.getAtt('PipelineRole', 'Arn'),
-      ArtifactStore: {
-        Type: 'S3',
-        Location: 'watchbot-binaries'
-      },
-      Stages: [
-        {
-          Name: 'Bundle',
-          Actions: [
-            {
-              Name: 'Bundle',
-              ActionTypeId: {
-                Category: 'Build',
-                Owner: 'AWS',
-                Version: '1',
-                Provider: 'CodeBuild'
-              },
-              InputArtifacts: [
-                { Name: 'Source' }
-              ],
-              Configuration: {
-                ProjectName: cf.ref('Bundler')
-              }
-            }
-          ]
-        }
-      ]
-    }
   }
 };
+const webhook = hookshot.github('CodeBuildTriggerFunction');
 
-module.exports = cf.merge({ Parameters, Resources });
+module.exports = cf.merge({ Parameters, Resources }, webhook);
