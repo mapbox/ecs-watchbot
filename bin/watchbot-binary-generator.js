@@ -76,4 +76,9 @@ if (require.main === module) {
     });
 }
 
+const codeBuildTrigger = async (event) => {
+  console.log(JSON.stringify(event));
+};
+wbg.codeBuildTrigger = codeBuildTrigger;
+
 module.exports = wbg;

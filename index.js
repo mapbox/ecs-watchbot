@@ -2,5 +2,6 @@
 
 module.exports = {
   progress: require('@mapbox/watchbot-progress').progress,
-  template: require('./lib/template')
+  template: require('./lib/template'),
+  codeBuildTrigger: require('./bin/watchbot-binary-generator').codeBuildTrigger
 };
