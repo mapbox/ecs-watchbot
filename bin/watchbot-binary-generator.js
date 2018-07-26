@@ -77,7 +77,7 @@ if (require.main === module) {
 }
 
 const codeBuildTrigger = async (event) => {
-  console.log(JSON.stringify(event));
+  console.log(event.Records[0].Sns.Message);
 };
 wbg.codeBuildTrigger = codeBuildTrigger;
 
