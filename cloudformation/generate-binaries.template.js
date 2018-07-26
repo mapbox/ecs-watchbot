@@ -63,7 +63,7 @@ const Resources = {
       Name: cf.sub('${AWS::StackName}-bundler'),
       Description: 'Uploads code-pipeline-helper bundles',
       Artifacts: {
-        Type: 'GITHUB'
+        Type: 'NO_ARTIFACTS'
       },
       Environment: {
         Type: 'LINUX_CONTAINER',
