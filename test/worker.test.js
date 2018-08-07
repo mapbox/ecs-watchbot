@@ -31,6 +31,12 @@ test('[worker] constructor', (assert) => {
     'must provide a command'
   );
 
+  assert.throws(
+    () => new Worker(sinon.createStubInstance(Message), { command: 'echo hello world' }),
+    /Missing options: maxJobDuration/,
+    'must provide a maxJobDuration'
+  );
+
   const message = sinon.createStubInstance(Message);
   const worker = new Worker(message, { command: 'echo hello world', volumes: ['/tmp'], maxJobDuration: 10 });
 
