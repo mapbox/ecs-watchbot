@@ -1006,7 +1006,7 @@ Object {
               },
               Object {
                 "Name": "maxJobDuration",
-                "Value": 0,
+                "Value": 300,
               },
               Object {
                 "Name": "Volumes",
@@ -2215,7 +2215,7 @@ Object {
               },
               Object {
                 "Name": "maxJobDuration",
-                "Value": 0,
+                "Value": 43200,
               },
               Object {
                 "Name": "Volumes",

@@ -28,7 +28,8 @@ test('[watcher] constructor', (assert) => {
     queueUrl: 'https://faker',
     workerOptions: {
       command: 'echo hello world',
-      volumes: ['/tmp']
+      volumes: ['/tmp'],
+      maxJobDuration: 10
     }
   };
   const watcher = new Watcher(options);
@@ -61,7 +62,8 @@ test('[watcher] listens exactly once', async (assert) => {
     writableFilesystem: true,
     workerOptions: {
       command: 'echo hello world',
-      volumes: ['/tmp']
+      volumes: ['/tmp'],
+      maxJobDuration: 10
     }
   });
 
@@ -81,7 +83,8 @@ test('[watcher] listen', async (assert) => {
   const worker = stubber(Worker).setup();
   const workerOptions = {
     command: 'echo hello world',
-    volumes: ['/tmp','/mnt']
+    volumes: ['/tmp','/mnt'],
+    maxJobDuration: 10
   };
 
   const watcher = new Watcher({
@@ -133,7 +136,8 @@ test('[watcher] factory', (assert) => {
     queueUrl: 'https://faker',
     workerOptions: {
       command: 'echo hello world',
-      volumes: ['/tmp']
+      volumes: ['/tmp'],
+      maxJobDuration: 10
     }
   });
 

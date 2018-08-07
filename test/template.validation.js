@@ -56,7 +56,7 @@ test('[template validation] options set', async (assert) => {
       cpu: 4096
     },
     privileged: true,
-    messageTimeout: 300,
+    maxJobDuration: 300,
     messageRetention: 1096,
     notificationEmail: 'hello@mapbox.pagerduty.com'
   }));
