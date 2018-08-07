@@ -81,7 +81,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **reservation.cpu** | The number of CPU units to reserve for your worker container. This will only impact the placement of your container on an EC2 with sufficient CPU capacity, but will not limit your container's utilization. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | Yes | -
 **privileged** | Give the container elevated privileges on the host container instance | Boolean | No | false
 **messageRetention** | The number of seconds that a message will exist in SQS until it is deleted. The default value is the maximum time that SQS allows, 14 days. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 1209600 (14 days)
-**maxJobDuration** | The maximum number of seconds that a job is allowed to run. After this time period, the worker will be stopped and the job will be returned to the queue. | Number/Ref | No | No | -
+**maxJobDuration** | The maximum number of seconds that a job is allowed to run. After this time period, the worker will be stopped and the job will be returned to the queue. The maximum timeout is 43020 seconds, or twelve hours. | Number/Ref | No | 43020 | -
 **notificationEmail** | The email to send alarm notifications to | String/Ref | No. Must specify either a `notificationTopic` or `notificationEmail` | -
 **notificationTopic** | An SNS topic to send alarms to | String/Ref | No. Must specify either a `notificationTopic` or `notificationEmail` | -
 **alarmPeriods** | Use this parameter to control the duration that the SQS queue must be over the message threshold before triggering an alarm. You specify the number of 5-minute periods before an alarm is triggered. The default is 24 periods, or 2 hours. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | String/Ref | No | 24
@@ -102,6 +102,14 @@ Since containers are only started once during scale up and then left on for long
 In writableFilesystem mode, the whole file system is writable and containers are stopped after every job. This refreshing of containers allows users to confidently expect their work to run in a brand new container every time, and allows them to write to anywhere on the filesystem. This mode can be guaranteed to be slower than the default mode, due to the overhead of starting a new container after every job.
 
 writableFilesystem mode has no restrictions to the file system: workers can write anywhere and read from anywhere, their files being instantly deleted after the job finishes and the container dies.
+
+### maxJobDuration explained
+
+When maxJobDuration is exceeded by a worker, the worker will stop all processes and return the processing message to the queue. Typically, the maxJobDuration should be set marginally above the maximum time that it takes your application to process and delete a message from the queue. This ensures all work can be completed; while providing protection against erroneous processing continuing to the maximum of twelve hours.
+
+Default maxJobDuration in watchbot is 43020 seconds, or roughly 12 hours. This parameter can be set lower than 43020 seconds; but not extended past 43020. If processing of one message takes over 12 hours then watchbot is not a good fit for your workload.
+
+The maximum of 43020 is due to the [maximum visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) on SQS messages. Whenever a worker is processing a message, a heartbeat function will continue to extend the timeout as long as the worker is processing the message. If the worker container is unexpectedly interupted, the message will return to visibility in a maximum of three minutes. Per AWS limits, the visibility timeout cannot be extended past twelve hours. Once the message visibility can no longer be extended, work would be duplicated as the message returns to the queue. Watchbot enforces a maxJobDuration to avoid this duplication.
 
 ### watchbot.template references
 
