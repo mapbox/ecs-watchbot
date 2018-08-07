@@ -8,6 +8,50 @@ const test = require('tape');
 const cf = require('@mapbox/cloudfriend');
 const template = require('../lib/template');
 
+test('[template validation] throws', async (assert) => {
+  assert.throws(
+    () => {
+      template({
+        serviceVersion: '1',
+        command: 'echo hello world',
+        cluster: 'processing',
+        notificationEmail: 'hello@mapbox.pagerduty.com'
+      });
+    },
+    'options.service is required'
+  );
+
+  assert.throws(
+    () => {
+      template({
+        service: 'hi',
+        serviceVersion: '1',
+        command: 'echo hello world',
+        cluster: 'processing',
+        notificationEmail: 'hello@mapbox.pagerduty.com',
+        maxJobDuration: 43021
+      });
+    },
+    'options.maxJobDuration throws on > 43020'
+  );
+
+  assert.throws(
+    () => {
+      template({
+        service: 'hi',
+        serviceVersion: '1',
+        command: 'echo hello world',
+        cluster: 'processing',
+        notificationEmail: 'hello@mapbox.pagerduty.com',
+        maxJobDuration: -10
+      });
+    },
+    'options.maxJobDuration throws on < 0'
+  );
+
+  assert.end();
+});
+
 test('[template validation] defaults', async (assert) => {
   const builtWithDefaults = cf.merge(template({
     service: 'example',
