@@ -159,4 +159,28 @@ test('[template]', () => {
   }));
 
   expect(setsAllLowCPU).toMatchSnapshot('all-properties-low-CPU');
+
+
+  const fifo = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com',
+    fifo: true
+  }));
+
+  expect(fifo).toMatchSnapshot('fifo');
+
+  const fifoMaxSize = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com',
+    fifo: true,
+    maxSize: 50
+  }));
+
+  expect(fifoMaxSize).toMatchSnapshot('fifoMaxSize');
 });

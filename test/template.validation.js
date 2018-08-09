@@ -75,3 +75,27 @@ test('[template validation] options set', async (assert) => {
 
   assert.end();
 });
+
+test('[template validation] fifo queue', async (assert) => {
+  const fifo = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com',
+    fifo: true
+  }));
+
+  const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
+  fs.writeFileSync(tmp, JSON.stringify(fifo));
+
+  try {
+    await cf.validate(tmp);
+    assert.pass('template is valid');
+  } catch (err) {
+    assert.ifError(err, 'template is not valid');
+  }
+
+  assert.end();
+});
+

@@ -19,7 +19,7 @@ RUN chmod +x /usr/local/bin/watchbot
 
 ## Helpful lingo
 
-- **queue**: [An SQS queue](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/SQSConcepts.html) is a "backlog" of messages for your stack to process that helps to guarantee every message gets processed at least once.
+- **queue**: [An SQS queue](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/SQSConcepts.html) is a "backlog" of messages for your stack to process that helps to guarantee every message gets processed at least once. It can be a standard queue or [a first-in-first-out (FIFO) queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html).
 - **message**: A message in the queue represents some job to be processed. Generally, you are responsible for sending messages to your stack by [publishing to Watchbot's SNS topic](http://docs.aws.amazon.com/sns/latest/dg/PublishTopic.html), or optionally by POST to a webhook endpoint (see `WatchbotUseWebhooks` in the parameters section below).
 - **worker**: CLI command/subprocess responsible for processing a single message. You define the work performed by the worker through the `command` property in the cloudformation template. Watchbot sets environment variables for the subprocess that represent the content of a single message.
 - **watcher**: The main process in the container that polls the queue, spawns worker subprocesses to process messages, and tracks results.
@@ -39,8 +39,9 @@ RUN chmod +x /usr/local/bin/watchbot
 
 ## What Watchbot provides:
 
-- a queue for you to send messages to in order to trigger your workers to run
-- [optionally] [an AWS access key](http://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) with permission to send messages to the queue
+- a queue that triggers your workers
+- an SNS topic through which you'll send messages to the queue, unless you have a FIFO queue
+- [optionally] [an AWS access key](http://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) with permission to send messages to the SNS topic or FIFO queue
 - [an ECS TaskDefinition](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_defintions.html) for your worker, using the image you provide
 - one or more watcher containers that run continuously on your cluster, polling the queue, running a worker for each message, removing messages from the queue as workers complete, and managing worker failures and retries
 - a script to help you include the resources Watchbot needs to run in your template
