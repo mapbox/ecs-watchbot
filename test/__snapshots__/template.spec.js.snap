@@ -651,13 +651,6 @@ Object {
             "PolicyDocument": Object {
               "Statement": Array [
                 Object {
-                  "Action": "sns:Publish",
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Ref": "SoupTopic",
-                  },
-                },
-                Object {
                   "Action": Array [
                     "sqs:ReceiveMessage",
                     "sqs:DeleteMessage",
@@ -712,6 +705,13 @@ Object {
                   "-default-worker",
                 ],
               ],
+            },
+          },
+          Object {
+            "Action": "sns:Publish",
+            "Effect": "Allow",
+            "Resource": Object {
+              "Ref": "SoupTopic",
             },
           },
           Object {
@@ -1011,6 +1011,10 @@ Object {
               Object {
                 "Name": "Volumes",
                 "Value": "/tmp,/data,/ephemeral",
+              },
+              Object {
+                "Name": "Fifo",
+                "Value": "false",
               },
               Object {
                 "Name": "MyKey",
@@ -1882,13 +1886,6 @@ Object {
             "PolicyDocument": Object {
               "Statement": Array [
                 Object {
-                  "Action": "sns:Publish",
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Ref": "WatchbotTopic",
-                  },
-                },
-                Object {
                   "Action": Array [
                     "sqs:ReceiveMessage",
                     "sqs:DeleteMessage",
@@ -1943,6 +1940,13 @@ Object {
                   "-default-worker",
                 ],
               ],
+            },
+          },
+          Object {
+            "Action": "sns:Publish",
+            "Effect": "Allow",
+            "Resource": Object {
+              "Ref": "WatchbotTopic",
             },
           },
         ],
@@ -2221,6 +2225,10 @@ Object {
                 "Name": "Volumes",
                 "Value": "/tmp",
               },
+              Object {
+                "Name": "Fifo",
+                "Value": "false",
+              },
             ],
             "Image": Object {
               "Fn::Join": Array [
@@ -2317,6 +2325,833 @@ Object {
         ],
       },
       "Type": "AWS::SNS::Topic",
+    },
+    "WatchbotTotalMessagesLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": Array [
+              "
+          const AWS = require('aws-sdk');
+          exports.handler = function(event, context, callback) {
+            const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
+            const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+
+            return sqs.getQueueAttributes({
+              QueueUrl: '\${QueueUrl}',
+              AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+            }).promise()
+              .then((attrs) => {
+                return cw.putMetricData({
+                  Namespace: 'Mapbox/ecs-watchbot',
+                  MetricData: [{
+                    MetricName: 'TotalMessages',
+                    Dimensions: [{ Name: 'QueueName', Value: '\${QueueName}' }],
+                    Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                            Number(attrs.Attributes.ApproximateNumberOfMessages)
+                  }]
+                }).promise();
+              })
+              .then((metric) => callback(null, metric))
+              .catch((err) => callback(err));
+          }
+        ",
+              Object {
+                "QueueName": Object {
+                  "Fn::GetAtt": Array [
+                    "WatchbotQueue",
+                    "QueueName",
+                  ],
+                },
+                "QueueUrl": Object {
+                  "Ref": "WatchbotQueue",
+                },
+              },
+            ],
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotLambdaTotalMessagesRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs6.10",
+        "Timeout": 60,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "WatchbotTotalMessagesSchedule": Object {
+      "Properties": Object {
+        "Description": "Update TotalMessages metric every minute",
+        "Name": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-total-messages",
+            ],
+          ],
+        },
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotTotalMessagesLambda",
+                "Arn",
+              ],
+            },
+            "Id": "WatchbotTotalMessagesLambda",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "WatchbotWorkerErrorsAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.10.0/docs/alarms.md#workererrors",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-worker-errors",
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "MetricName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "WatchbotWorkerErrors-",
+              Object {
+                "Ref": "AWS::StackName",
+              },
+            ],
+          ],
+        },
+        "Namespace": "Mapbox/ecs-watchbot",
+        "Period": "60",
+        "Statistic": "Sum",
+        "Threshold": 10,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotWorkerErrorsMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "\\"[failure]\\"",
+        "LogGroupName": Object {
+          "Ref": "WatchbotLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "WatchbotWorkerErrors-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": 1,
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+  },
+}
+`;
+
+exports[`fifo 1`] = `
+Object {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": Object {
+    "NotInChina": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            Object {
+              "Ref": "AWS::Region",
+            },
+            "cn-north-1",
+          ],
+        },
+      ],
+    },
+  },
+  "Mappings": Object {
+    "EcrRegion": Object {
+      "ap-northeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-2": Object {
+        "Region": "us-west-2",
+      },
+      "cn-north-1": Object {
+        "Region": "cn-north-1",
+      },
+      "eu-central-1": Object {
+        "Region": "eu-west-1",
+      },
+      "eu-west-1": Object {
+        "Region": "eu-west-1",
+      },
+      "us-east-1": Object {
+        "Region": "us-east-1",
+      },
+      "us-east-2": Object {
+        "Region": "us-east-1",
+      },
+      "us-west-2": Object {
+        "Region": "us-west-2",
+      },
+    },
+  },
+  "Metadata": Object {
+    "EcsWatchbotVersion": "4.10.0",
+  },
+  "Outputs": Object {
+    "ClusterArn": Object {
+      "Description": "Service cluster ARN",
+      "Value": "processing",
+    },
+    "WatchbotDeadLetterQueueUrl": Object {
+      "Description": "The URL for the dead letter queue",
+      "Value": Object {
+        "Ref": "WatchbotDeadLetterQueue",
+      },
+    },
+    "WatchbotLogGroup": Object {
+      "Description": "The ARN of Watchbot's log group",
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "WatchbotLogGroup",
+          "Arn",
+        ],
+      },
+    },
+    "WatchbotQueueUrl": Object {
+      "Description": "The URL for the primary work queue",
+      "Value": Object {
+        "Ref": "WatchbotQueue",
+      },
+    },
+  },
+  "Parameters": Object {},
+  "Resources": Object {
+    "WatchbotAlarmCPUUtilization": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.10.0/docs/alarms.md#cpuutilization",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "WatchbotCPUUtilization",
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "ClusterName",
+            "Value": "processing",
+          },
+          Object {
+            "Name": "ServiceName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotService",
+                "Name",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 10,
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/ECS",
+        "Period": 60,
+        "Statistic": "Average",
+        "Threshold": 90,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotAlarmMemoryUtilization": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.10.0/docs/alarms.md#memoryutilization",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "WatchbotMemoryUtilization",
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "ClusterName",
+            "Value": "processing",
+          },
+          Object {
+            "Name": "ServiceName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotService",
+                "Name",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 10,
+        "MetricName": "MemoryUtilization",
+        "Namespace": "AWS/ECS",
+        "Period": 60,
+        "Statistic": "Average",
+        "Threshold": 100,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotDashboard": Object {
+      "Properties": Object {
+        "DashboardBody": Object {
+          "Fn::Sub": Array [
+            "{\\"widgets\\":[{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":0,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Visible and NotVisible Messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesNotVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Deleted messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"NumberOfMessagesDeleted\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotService: RunningCapacity, DesiredCapacity\\",\\"metrics\\":[[\\"Mapbox/ecs-cluster\\",\\"RunningCapacity\\",\\"ClusterName\\",\\"\${Cluster}\\",\\"ServiceName\\",\\"\${WatchbotService}\\",{\\"period\\":60}],[\\".\\",\\"DesiredCapacity\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"Concurrency vs Throughput\\",\\"metrics\\":[[\\"Mapbox/ecs-cluster\\",\\"RunningCapacity\\",\\"ClusterName\\",\\"\${Cluster}\\",\\"ServiceName\\",\\"\${WatchbotService}\\",{\\"period\\":60,\\"yAxis\\":\\"right\\"}],[\\".\\",\\"DesiredCapacity\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60,\\"yAxis\\":\\"right\\"}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60,\\"stat\\":\\"Sum\\",\\"yAxis\\":\\"left\\"}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"right\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":18,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotService: CPUUtilization, MemoryUtilization\\",\\"metrics\\":[[\\"AWS/ECS\\",\\"CPUUtilization\\",\\"ServiceName\\",\\"\${WatchbotService}\\",\\"ClusterName\\",\\"\${Cluster}\\",{\\"period\\":60}],[\\".\\",\\"MemoryUtilization\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":300}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":18,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotDeadLetterQueue: Visible and NotVisible Messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesNotVisible\\",\\"QueueName\\",\\"\${WatchbotDeadLetterQueue}\\",{\\"period\\":60}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotDeadLetterQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}}]}",
+            Object {
+              "Cluster": "processing",
+              "WatchbotDeadLetterQueue": Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotDeadLetterQueue",
+                  "QueueName",
+                ],
+              },
+              "WatchbotQueue": Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotQueue",
+                  "QueueName",
+                ],
+              },
+              "WatchbotService": Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotService",
+                  "Name",
+                ],
+              },
+            },
+          ],
+        },
+        "DashboardName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
+    "WatchbotDeadLetterAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "Provides notification when messages are visible in the dead letter queue",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-dead-letter",
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotDeadLetterQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": "60",
+        "Statistic": "Minimum",
+        "Threshold": 1,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotDeadLetterQueue": Object {
+      "Description": "List of messages that failed to process 14 times",
+      "Properties": Object {
+        "ContentBasedDeduplication": true,
+        "FifoQueue": true,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "WatchbotDeadLetterQueue",
+              ".fifo",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "WatchbotLambdaTotalMessagesRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "LambdaTotalMessagesMetric",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WatchbotLogGroup": Object {
+      "Properties": Object {
+        "LogGroupName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              Object {
+                "Ref": "AWS::Region",
+              },
+              "watchbot",
+            ],
+          ],
+        },
+        "RetentionInDays": 14,
+      },
+      "Type": "AWS::Logs::LogGroup",
+    },
+    "WatchbotMetricSchedulePermission": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotTotalMessagesLambda",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotTotalMessagesSchedule",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "WatchbotNotificationTopic": Object {
+      "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
+      "Properties": Object {
+        "Subscription": Array [
+          Object {
+            "Endpoint": "hello@mapbox.pagerduty.com",
+            "Protocol": "email",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+    "WatchbotQueue": Object {
+      "Properties": Object {
+        "ContentBasedDeduplication": true,
+        "FifoQueue": true,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "WatchbotQueue",
+              ".fifo",
+            ],
+          ],
+        },
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "WatchbotDeadLetterQueue",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 10,
+        },
+        "VisibilityTimeout": 180,
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "WatchbotQueueSizeAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.10.0/docs/alarms.md#queuesize",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-queue-size",
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 24,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": "300",
+        "Statistic": "Average",
+        "Threshold": 40,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "ecs-tasks.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:ChangeMessageVisibility",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "logs:FilterLogEvents",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "WatchbotLogGroup",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Fn::If": Array [
+                    "NotInChina",
+                    Object {
+                      "Action": "kms:Decrypt",
+                      "Effect": "Allow",
+                      "Resource": Object {
+                        "Fn::ImportValue": "cloudformation-kms-production",
+                      },
+                    },
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
+                  ],
+                },
+              ],
+            },
+            "PolicyName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-default-worker",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WatchbotService": Object {
+      "Properties": Object {
+        "Cluster": "processing",
+        "DesiredCount": 1,
+        "TaskDefinition": Object {
+          "Ref": "WatchbotTask",
+        },
+      },
+      "Type": "AWS::ECS::Service",
+    },
+    "WatchbotTask": Object {
+      "Properties": Object {
+        "ContainerDefinitions": Array [
+          Object {
+            "Command": Array [
+              "watchbot",
+              "listen",
+              "echo hello world",
+            ],
+            "Cpu": undefined,
+            "Environment": Array [
+              Object {
+                "Name": "WorkTopic",
+                "Value": undefined,
+              },
+              Object {
+                "Name": "QueueUrl",
+                "Value": Object {
+                  "Ref": "WatchbotQueue",
+                },
+              },
+              Object {
+                "Name": "writableFilesystem",
+                "Value": false,
+              },
+              Object {
+                "Name": "maxJobDuration",
+                "Value": 0,
+              },
+              Object {
+                "Name": "Volumes",
+                "Value": "/tmp",
+              },
+              Object {
+                "Name": "Fifo",
+                "Value": "true",
+              },
+            ],
+            "Image": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::AccountId",
+                  },
+                  ".dkr.ecr.",
+                  Object {
+                    "Fn::FindInMap": Array [
+                      "EcrRegion",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      "Region",
+                    ],
+                  },
+                  ".",
+                  Object {
+                    "Ref": "AWS::URLSuffix",
+                  },
+                  "/",
+                  "example",
+                  ":",
+                  "1",
+                ],
+              ],
+            },
+            "LogConfiguration": Object {
+              "LogDriver": "awslogs",
+              "Options": Object {
+                "awslogs-group": Object {
+                  "Ref": "WatchbotLogGroup",
+                },
+                "awslogs-region": Object {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "1",
+              },
+            },
+            "MountPoints": Array [
+              Object {
+                "ContainerPath": "/tmp",
+                "SourceVolume": "tmp",
+              },
+            ],
+            "Name": Object {
+              "Fn::Join": Array [
+                "-",
+                Array [
+                  "Watchbot",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "Privileged": false,
+            "ReadonlyRootFilesystem": true,
+            "Ulimits": Array [
+              Object {
+                "HardLimit": 10240,
+                "Name": "nofile",
+                "SoftLimit": 10240,
+              },
+            ],
+          },
+        ],
+        "Family": "example",
+        "TaskRoleArn": Object {
+          "Ref": "WatchbotRole",
+        },
+        "Volumes": Array [
+          Object {
+            "Name": "tmp",
+          },
+        ],
+      },
+      "Type": "AWS::ECS::TaskDefinition",
     },
     "WatchbotTotalMessagesLambda": Object {
       "Properties": Object {
