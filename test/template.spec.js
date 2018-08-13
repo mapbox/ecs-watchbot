@@ -1,6 +1,7 @@
 'use strict';
 
 /* NOTE: this scipt is meant to be run via Jest, not Tape */
+/* eslint-disable no-undef */
 
 const assert = require('assert');
 const template = require('../lib/template');

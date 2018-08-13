@@ -3,6 +3,9 @@
   "version": "4.10.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": ">=8"
+  },
   "bin": {
     "watchbot": "./bin/watchbot.js",
     "watchbot-progress": "bin/watchbot-progress.sh",
@@ -28,19 +31,20 @@
   },
   "homepage": "https://github.com/mapbox/ecs-watchbot#readme",
   "devDependencies": {
-    "@mapbox/mock-aws-sdk-js": "0.0.5",
+    "@mapbox/eslint-config-mapbox": "^1.2.1",
+    "@mapbox/mock-aws-sdk-js": "^1.0.0",
     "cli-spinner": "^0.2.8",
     "cwlogs": "^1.0.3",
-    "eslint": "^4.19.1",
-    "eslint-plugin-node": "^5.2.1",
-    "jest": "21.2.1",
+    "eslint": "^5.3.0",
+    "eslint-plugin-node": "^7.0.1",
+    "jest": "^21.2.1",
     "meow": "^5.0.0",
-    "nyc": "^11.4.1",
+    "nyc": "^12.0.2",
     "opener": "^1.4.3",
     "redent": "^2.0.0",
-    "sinon": "^4.2.2",
+    "sinon": "^6.1.4",
     "tap-spec": "^4.1.1",
-    "tape": "^4.8.0"
+    "tape": "^4.9.1"
   },
   "dependencies": {
     "@mapbox/cloudfriend": "^1.9.1",
@@ -53,5 +57,8 @@
     "remote-git-tags": "^2.0.0",
     "stream-combiner2": "^1.1.1",
     "tree-kill": "^1.2.0"
+  },
+  "eslintConfig": {
+    "extends": "@mapbox/eslint-config-mapbox"
   }
 }
