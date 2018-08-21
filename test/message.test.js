@@ -82,8 +82,10 @@ test('[message] constructor with SQS FIFO message', (assert) => {
   AWS.stub('SQS', 'receiveMessage');
 
   const sqsFifoMessage = Object.assign({}, sqsMessage, {
-    MessageGroupId: 'fake-message-group-id',
-    Body: 'fake-message-body'
+    Body: 'fake-message-body',
+    Attributes: Object.assign({}, sqsMessage.Attributes, {
+      MessageGroupId: 'fake-message-group-id'
+    })
   });
   const message = new Message(sqsFifoMessage, { queueUrl });
 
