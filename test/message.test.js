@@ -83,7 +83,7 @@ test('[message] constructor with SQS FIFO message', (assert) => {
 
   const sqsFifoMessage = Object.assign({}, sqsMessage, {
     MessageGroupId: 'fake-message-group-id',
-    Body: JSON.stringify({ Message: 'fake-message' })
+    Body: 'fake-message-body'
   });
   const message = new Message(sqsFifoMessage, { queueUrl });
 
@@ -92,7 +92,7 @@ test('[message] constructor with SQS FIFO message', (assert) => {
     {
       MessageId: '1',
       Subject: 'fake-message-group-id',
-      Message: 'fake-message',
+      Message: 'fake-message-body',
       SentTimestamp: '2018-02-07T18:18:53.772Z',
       ApproximateFirstReceiveTimestamp: '2018-02-07T18:18:53.772Z',
       ApproximateReceiveCount: '3'
