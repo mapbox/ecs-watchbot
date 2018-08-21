@@ -2648,6 +2648,18 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
+    "WatchbotCustomScalingResource": Object {
+      "Properties": Object {
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotScalingLambda",
+            "Arn",
+          ],
+        },
+        "maxSize": 1,
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
+    },
     "WatchbotDashboard": Object {
       "Properties": Object {
         "DashboardBody": Object {
@@ -2754,6 +2766,53 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
+    },
+    "WatchbotLambdaScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "CustomcfnScalingLambdaLogs",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
     },
     "WatchbotLambdaTotalMessagesRole": Object {
       "Properties": Object {
@@ -3025,10 +3084,237 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "WatchbotScaleDown": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "Watchbot\${AWS::StackName}-scale-down",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "WatchbotScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "PercentChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalUpperBound": 0,
+              "ScalingAdjustment": -100,
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "WatchbotScaleDownTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotScaleDown",
+          },
+        ],
+        "AlarmDescription": "Scale down due to lack of in-flight messages in queue",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-scale-down",
+            ],
+          ],
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "TotalMessages",
+        "Namespace": "Mapbox/ecs-watchbot",
+        "Period": 600,
+        "Statistic": "Maximum",
+        "Threshold": 1,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotScaleUp": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-up",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "WatchbotScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "ChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalLowerBound": 0,
+              "ScalingAdjustment": Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotCustomScalingResource",
+                  "ScalingAdjustment",
+                ],
+              },
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "WatchbotScaleUpTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "WatchbotScaleUp",
+          },
+        ],
+        "AlarmDescription": "Scale up due to visible messages in queue",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Watchbot-scale-up",
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "WatchbotQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": 300,
+        "Statistic": "Maximum",
+        "Threshold": 0,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "WatchbotScalingLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": "
+          const response = require('cfn-response');
+          exports.handler = function(event,context){
+            const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
+            response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
+          }
+          ",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotLambdaScalingRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs6.10",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "WatchbotScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "application-autoscaling.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Path": "/",
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "application-autoscaling:*",
+                    "cloudwatch:DescribeAlarms",
+                    "cloudwatch:PutMetricAlarm",
+                    "ecs:UpdateService",
+                    "ecs:DescribeServices",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+              ],
+            },
+            "PolicyName": "watchbot-autoscaling",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WatchbotScalingTarget": Object {
+      "Properties": Object {
+        "MaxCapacity": 1,
+        "MinCapacity": 0,
+        "ResourceId": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "service/",
+              "processing",
+              "/",
+              Object {
+                "Fn::GetAtt": Array [
+                  "WatchbotService",
+                  "Name",
+                ],
+              },
+            ],
+          ],
+        },
+        "RoleARN": Object {
+          "Fn::GetAtt": Array [
+            "WatchbotScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "ecs:service:DesiredCount",
+        "ServiceNamespace": "ecs",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    },
     "WatchbotService": Object {
       "Properties": Object {
         "Cluster": "processing",
-        "DesiredCount": 1,
+        "DesiredCount": 0,
         "TaskDefinition": Object {
           "Ref": "WatchbotTask",
         },
