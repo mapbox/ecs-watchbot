@@ -58,6 +58,8 @@ test('[template validation] options set', async (assert) => {
     privileged: true,
     messageTimeout: 300,
     messageRetention: 1096,
+    cpuAlarmThreshold: 10,
+    cpuAlarmPeriods: 10,
     notificationEmail: 'hello@mapbox.pagerduty.com'
   }));
 
