@@ -78,7 +78,7 @@ test('[message] constructor', (assert) => {
   assert.end();
 });
 
-test('[message] constructor with SQS FIFO message', (assert) => {
+test('[message] constructor with SQS FIFO non-JSON message', (assert) => {
   AWS.stub('SQS', 'receiveMessage');
 
   const sqsFifoMessage = Object.assign({}, sqsMessage, {
@@ -91,6 +91,30 @@ test('[message] constructor with SQS FIFO message', (assert) => {
     {
       MessageId: '1',
       Message: 'fake-message-body',
+      SentTimestamp: '2018-02-07T18:18:53.772Z',
+      ApproximateFirstReceiveTimestamp: '2018-02-07T18:18:53.772Z',
+      ApproximateReceiveCount: '3'
+    },
+    'sets .env'
+  );
+
+  AWS.SQS.restore();
+  assert.end();
+});
+
+test('[message] constructor with SQS FIFO JSON message', (assert) => {
+  AWS.stub('SQS', 'receiveMessage');
+
+  const sqsFifoMessage = Object.assign({}, sqsMessage, {
+    Body: '{ "a": 1, "b": 2 }'
+  });
+  const message = new Message(sqsFifoMessage, { queueUrl });
+
+  assert.deepEqual(
+    message.env,
+    {
+      MessageId: '1',
+      Message: '{ "a": 1, "b": 2 }',
       SentTimestamp: '2018-02-07T18:18:53.772Z',
       ApproximateFirstReceiveTimestamp: '2018-02-07T18:18:53.772Z',
       ApproximateReceiveCount: '3'
