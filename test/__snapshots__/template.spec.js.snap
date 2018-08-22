@@ -80,50 +80,6 @@ Object {
   },
   "Parameters": Object {},
   "Resources": Object {
-    "SoupAlarmCPUUtilization": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.10.0/docs/alarms.md#cpuutilization",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "SoupCPUUtilization",
-            ],
-          ],
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "Dimensions": Array [
-          Object {
-            "Name": "ClusterName",
-            "Value": "processing",
-          },
-          Object {
-            "Name": "ServiceName",
-            "Value": Object {
-              "Fn::GetAtt": Array [
-                "SoupService",
-                "Name",
-              ],
-            },
-          },
-        ],
-        "EvaluationPeriods": 10,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/ECS",
-        "Period": 60,
-        "Statistic": "Average",
-        "Threshold": 90,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
     "SoupAlarmMemoryUtilization": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -1385,50 +1341,6 @@ Object {
   },
   "Parameters": Object {},
   "Resources": Object {
-    "WatchbotAlarmCPUUtilization": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "WatchbotNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v4.10.0/docs/alarms.md#cpuutilization",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "WatchbotCPUUtilization",
-            ],
-          ],
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "Dimensions": Array [
-          Object {
-            "Name": "ClusterName",
-            "Value": "processing",
-          },
-          Object {
-            "Name": "ServiceName",
-            "Value": Object {
-              "Fn::GetAtt": Array [
-                "WatchbotService",
-                "Name",
-              ],
-            },
-          },
-        ],
-        "EvaluationPeriods": 10,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/ECS",
-        "Period": 60,
-        "Statistic": "Average",
-        "Threshold": 90,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
     "WatchbotAlarmMemoryUtilization": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -2195,7 +2107,7 @@ Object {
               "listen",
               "echo hello world",
             ],
-            "Cpu": undefined,
+            "Cpu": 128,
             "Environment": Array [
               Object {
                 "Name": "WorkTopic",
