@@ -1,3 +1,7 @@
+### 4.11.0
+- Remove CPU Alarm: https://github.com/mapbox/ecs-watchbot/pull/282
+- Minimum CPU value for watchbot container is now 128
+
 ### 4.10.0
 
 - Create a new metric of `TotalMessages` to prevent accidental scaledown: https://github.com/mapbox/ecs-watchbot/pull/267
