@@ -500,7 +500,7 @@ Object {
               "Arn",
             ],
           },
-          "maxReceiveCount": 10,
+          "maxReceiveCount": 50,
         },
         "VisibilityTimeout": 180,
       },
