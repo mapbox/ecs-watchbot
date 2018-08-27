@@ -1192,6 +1192,32 @@ Object {
       },
       "Type": "AWS::Events::Rule",
     },
+    "SoupWorkerDurationMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "{ $.duration = * }",
+        "LogGroupName": Object {
+          "Ref": "SoupLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "SoupWorkerDuration-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": "$.duration",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
     "SoupWorkerErrorsAlarm": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -2314,6 +2340,32 @@ Object {
         ],
       },
       "Type": "AWS::Events::Rule",
+    },
+    "WatchbotWorkerDurationMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "{ $.duration = * }",
+        "LogGroupName": Object {
+          "Ref": "WatchbotLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "WatchbotWorkerDuration-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": "$.duration",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
     },
     "WatchbotWorkerErrorsAlarm": Object {
       "Properties": Object {
