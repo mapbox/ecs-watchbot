@@ -1,3 +1,6 @@
+### 4.11.1
+- Re-Introduce `WorkerDuration` and `MessageReceives` metrics (removed since v4)
+
 ### 4.11.0
 - Remove CPU Alarm: https://github.com/mapbox/ecs-watchbot/pull/282
 - Minimum CPU value for watchbot container is now 128
