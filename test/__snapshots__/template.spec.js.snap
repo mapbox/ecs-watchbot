@@ -373,6 +373,32 @@ Object {
       },
       "Type": "AWS::Logs::LogGroup",
     },
+    "SoupMessageReceivesMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "{ $.receives = * }",
+        "LogGroupName": Object {
+          "Ref": "SoupLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "SoupMessageReceives-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": "$.receives",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
     "SoupMetricSchedulePermission": Object {
       "Properties": Object {
         "Action": "lambda:InvokeFunction",
@@ -1659,6 +1685,32 @@ Object {
         "RetentionInDays": 14,
       },
       "Type": "AWS::Logs::LogGroup",
+    },
+    "WatchbotMessageReceivesMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "{ $.receives = * }",
+        "LogGroupName": Object {
+          "Ref": "WatchbotLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "WatchbotMessageReceives-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": "$.receives",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
     },
     "WatchbotMetricSchedulePermission": Object {
       "Properties": Object {
