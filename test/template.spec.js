@@ -46,7 +46,7 @@ test('[template]', () => {
     reservation: {
       memory: 512,
       softMemory: 128,
-      cpu: 4096
+      cpu: cf.ref('Gitsha')
     },
     privileged: true,
     reduce: true,
@@ -57,4 +57,105 @@ test('[template]', () => {
   }));
 
   expect(setsAllOptions).toMatchSnapshot('all-properties');
+
+  const setsAllCPUNumber = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    permissions: [
+      {
+        Effect: 'Allow',
+        Action: 's3:GetObject',
+        Resource: 'arn:aws:s3:::bucket/*'
+      }
+    ],
+    env: {
+      MyKey: 'MyValue'
+    },
+    prefix: 'Soup',
+    family: 'abc-123',
+    maxSize: 90,
+    mounts: '/data,/ephemeral',
+    reservation: {
+      memory: 512,
+      softMemory: 128,
+      cpu: 1024
+    },
+    privileged: true,
+    reduce: true,
+    messageTimeout: 300,
+    messageRetention: 1096,
+    deadletterThreshold: 50,
+    notificationEmail: 'hello@mapbox.pagerduty.com'
+  }));
+
+  expect(setsAllCPUNumber).toMatchSnapshot('all-properties-CPU');
+
+  const setsAllNoCPU = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    permissions: [
+      {
+        Effect: 'Allow',
+        Action: 's3:GetObject',
+        Resource: 'arn:aws:s3:::bucket/*'
+      }
+    ],
+    env: {
+      MyKey: 'MyValue'
+    },
+    prefix: 'Soup',
+    family: 'abc-123',
+    maxSize: 90,
+    mounts: '/data,/ephemeral',
+    reservation: {
+      memory: 512,
+      softMemory: 128
+    },
+    privileged: true,
+    reduce: true,
+    messageTimeout: 300,
+    messageRetention: 1096,
+    deadletterThreshold: 50,
+    notificationEmail: 'hello@mapbox.pagerduty.com'
+  }));
+
+  expect(setsAllNoCPU).toMatchSnapshot('all-properties-no-CPU');
+
+  const setsAllLowCPU = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    permissions: [
+      {
+        Effect: 'Allow',
+        Action: 's3:GetObject',
+        Resource: 'arn:aws:s3:::bucket/*'
+      }
+    ],
+    env: {
+      MyKey: 'MyValue'
+    },
+    prefix: 'Soup',
+    family: 'abc-123',
+    maxSize: 90,
+    mounts: '/data,/ephemeral',
+    reservation: {
+      memory: 512,
+      softMemory: 128,
+      cpu: 0
+    },
+    privileged: true,
+    reduce: true,
+    messageTimeout: 300,
+    messageRetention: 1096,
+    deadletterThreshold: 50,
+    notificationEmail: 'hello@mapbox.pagerduty.com'
+  }));
+
+  expect(setsAllLowCPU).toMatchSnapshot('all-properties-low-CPU');
 });
