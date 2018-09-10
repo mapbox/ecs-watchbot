@@ -1,3 +1,6 @@
+### 4.11.2
+- Patch bug with CPU reservations as cf.ref() introduced in https://github.com/mapbox/ecs-watchbot/pull/282, and addressed with https://github.com/mapbox/ecs-watchbot/pull/289
+
 ### 4.11.1
 - Re-Introduce `WorkerDuration` and `MessageReceives` metrics (removed since v4)
 
