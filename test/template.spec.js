@@ -53,6 +53,7 @@ test('[template]', () => {
     messageTimeout: 300,
     messageRetention: 1096,
     deadletterThreshold: 50,
+    deadletterAlarm: true,
     notificationEmail: 'hello@mapbox.pagerduty.com'
   }));
 
