@@ -89,6 +89,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **errorThreshold** | Watchbot creates a CloudWatch alarm that will fire if there have been more than this number of failed worker invocations in a 60 second period. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 10
 **deadletterThreshold** | Use this parameter to control the number of times a message is delivered to the source queue before being moved to the dead-letter queue. This parameter can be provided as either a number or a reference, i.e. `{"Ref": "..."}`. | Number/Ref | No | 10
 **dashboard** | Watchbot creates a Cloudwatch Dashboard called `<cloudformation-stack>-<region>`. If running in cn-north-1, this may need to be disabled | Boolean | No | `true`
+**fifo** | Whether you want Watchbot's SQS queue to be first-in-first-out (FIFO). By default, Watchbot creates a standard SQS queue, in which the order of jobs is not guaranteed to match the order of messages. If your program requires more precise ordering and the limitations of a FIFO queue will be acceptable, set this option to `true`. Learn more in ["Using a FIFO queue"](./using-a-fifo-queue.md) | Boolean | No | `false`
 
 ### writableFilesystem mode explained
 
