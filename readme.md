@@ -41,7 +41,6 @@ RUN chmod +x /usr/local/bin/watchbot
 
 - a queue that triggers your workers
 - an SNS topic through which you'll send messages to the queue, unless you have a FIFO queue
-- [optionally] [an AWS access key](http://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) with permission to send messages to the SNS topic or FIFO queue
 - [an ECS TaskDefinition](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_defintions.html) for your worker, using the image you provide
 - one or more watcher containers that run continuously on your cluster, polling the queue, running a worker for each message, removing messages from the queue as workers complete, and managing worker failures and retries
 - a script to help you include the resources Watchbot needs to run in your template
