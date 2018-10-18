@@ -89,7 +89,7 @@ test('[worker] ignore', async (assert) => {
   const results = { code: 3, duration: 12345 };
   await worker.ignore(results);
 
-  assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
+  assert.ok(logger.workerFailure.calledWith(results), 'logs worker result');
   assert.equal(message.complete.callCount, 1, 'calls message.complete()');
 
   logger.teardown();
@@ -290,9 +290,9 @@ test('[worker] waitFor, exit 3', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  const results = logger.workerSuccess.args[0][0];
-  assert.equal(results.code, 3, 'logged worker success exit code');
-  assert.ok(results.duration, 'logged worker success duration');
+  const results = logger.workerFailure.args[0][0];
+  assert.equal(results.code, 3, 'logged worker failure exit code');
+  assert.ok(results.duration, 'logged worker failure duration');
   assert.equal(message.complete.callCount, 1, 'calls message.complete()');
 
   child_process.spawn.restore();
