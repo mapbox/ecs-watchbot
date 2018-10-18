@@ -1,3 +1,7 @@
+### 4.13.1
+
+- Fixes behavior when a worker exits with code `3`: now an notification will be triggered, as the documentation states.
+
 ### 4.13.0
 
 - Adds support for first-in-first-out (FIFO) SQS queues. https://github.com/mapbox/ecs-watchbot/pull/279
