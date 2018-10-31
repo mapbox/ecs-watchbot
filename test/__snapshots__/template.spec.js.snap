@@ -675,6 +675,13 @@ Object {
                     },
                   ],
                 },
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
               ],
             },
             "PolicyName": Object {
@@ -687,13 +694,6 @@ Object {
                   "-default-worker",
                 ],
               ],
-            },
-          },
-          Object {
-            "Action": "sns:Publish",
-            "Effect": "Allow",
-            "Resource": Object {
-              "Ref": "SoupTopic",
             },
           },
           Object {
@@ -2000,6 +2000,13 @@ Object {
                     },
                   ],
                 },
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
               ],
             },
             "PolicyName": Object {
@@ -2012,13 +2019,6 @@ Object {
                   "-default-worker",
                 ],
               ],
-            },
-          },
-          Object {
-            "Action": "sns:Publish",
-            "Effect": "Allow",
-            "Resource": Object {
-              "Ref": "SoupTopic",
             },
           },
           Object {
@@ -3323,6 +3323,13 @@ Object {
                     },
                   ],
                 },
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
               ],
             },
             "PolicyName": Object {
@@ -3335,13 +3342,6 @@ Object {
                   "-default-worker",
                 ],
               ],
-            },
-          },
-          Object {
-            "Action": "sns:Publish",
-            "Effect": "Allow",
-            "Resource": Object {
-              "Ref": "SoupTopic",
             },
           },
           Object {
@@ -4646,6 +4646,13 @@ Object {
                     },
                   ],
                 },
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
               ],
             },
             "PolicyName": Object {
@@ -4658,13 +4665,6 @@ Object {
                   "-default-worker",
                 ],
               ],
-            },
-          },
-          Object {
-            "Action": "sns:Publish",
-            "Effect": "Allow",
-            "Resource": Object {
-              "Ref": "SoupTopic",
             },
           },
           Object {
@@ -5895,6 +5895,13 @@ Object {
                     },
                   ],
                 },
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "WatchbotTopic",
+                  },
+                },
               ],
             },
             "PolicyName": Object {
@@ -5907,13 +5914,6 @@ Object {
                   "-default-worker",
                 ],
               ],
-            },
-          },
-          Object {
-            "Action": "sns:Publish",
-            "Effect": "Allow",
-            "Resource": Object {
-              "Ref": "WatchbotTopic",
             },
           },
         ],
