@@ -1,3 +1,7 @@
+### 4.13.2
+
+- Fixes a regression from v4.13.0 that resulted in an invalid IAM role. https://github.com/mapbox/ecs-watchbot/pull/297
+
 ### 4.13.1
 
 - Fixes behavior when a worker exits with code `3`: now an notification will be triggered, as the documentation states.
