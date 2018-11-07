@@ -68,7 +68,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **cluster** | The cluster on which your watchbot service will run. | String/Ref | Yes | -
 **service** | The name of your service. This is usually the same as your GitHub repository. It **must** match the name of the ECR repository where your images are stored. | String/Ref | Yes | -
 **serviceVersion** | The version of your image to deploy. This should reference a specific image in ECR. | String/Ref | Yes | -
-**family** | The name of the task definition family that watchbot will create revisions of. | String/Ref | Yes | -
+**family** | The name of the task definition family that watchbot will create revisions of. | String/Ref | No | -
 **command** | The shell command to be run by the subprocess worker. The working directory for the subprocess is determined in your Dockerfile by the `WORKDIR` missive. | String | Yes | -
 **maxSize** | The maximum number of workers to run for your service. | Number/Ref | Yes | -
 **minSize** | The minimum number of workers to run for your service. | Number | No | 0

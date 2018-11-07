@@ -1,3 +1,5 @@
+- Make `Family` property optional in docs
+
 ### 4.13.2
 
 - Fixes a regression from v4.13.0 that resulted in an invalid IAM role. https://github.com/mapbox/ecs-watchbot/pull/297
