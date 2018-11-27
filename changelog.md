@@ -1,4 +1,7 @@
+### 4.13.3
+
 - Make `Family` property optional in docs
+- Upgrade @mapbox/watchbot-progress dependencies
 
 ### 4.13.2
 
