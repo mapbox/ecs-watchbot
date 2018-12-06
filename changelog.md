@@ -1,3 +1,7 @@
+### 4.14.0
+
+- Modifies CloudWatch alarm names to include the AWS region.
+
 ### 4.13.3
 
 - Make `Family` property optional in docs
