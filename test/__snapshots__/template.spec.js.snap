@@ -96,6 +96,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "SoupMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -197,6 +200,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -587,6 +593,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -1272,6 +1281,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -1421,6 +1433,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "SoupMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -1522,6 +1537,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -1912,6 +1930,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -2595,6 +2616,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -2744,6 +2768,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "SoupMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -2845,6 +2872,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -3235,6 +3265,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -3918,6 +3951,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -4067,6 +4103,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "SoupMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -4168,6 +4207,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -4558,6 +4600,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -5241,6 +5286,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -5390,6 +5438,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "WatchbotMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -5491,6 +5542,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -5807,6 +5861,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -6426,6 +6483,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -6575,6 +6635,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "WatchbotMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -6676,6 +6739,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -6959,6 +7025,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -7553,6 +7622,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -7702,6 +7774,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "WatchbotMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -7803,6 +7878,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -8086,6 +8164,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -8680,6 +8761,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
