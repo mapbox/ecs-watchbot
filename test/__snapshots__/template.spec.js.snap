@@ -770,6 +770,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-down",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -838,6 +841,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-up",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -2107,6 +2113,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-down",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -2175,6 +2184,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-up",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -3442,6 +3454,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-down",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -3510,6 +3525,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-up",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -4777,6 +4795,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-down",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -4845,6 +4866,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Soup-scale-up",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -6016,6 +6040,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-scale-down",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -6084,6 +6111,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-scale-up",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -7173,6 +7203,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-scale-down",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -7241,6 +7274,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-scale-up",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -8312,6 +8348,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-scale-down",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
@@ -8380,6 +8419,9 @@ Object {
                 "Ref": "AWS::StackName",
               },
               "Watchbot-scale-up",
+              Object {
+                "Ref": "AWS::Region",
+              },
             ],
           ],
         },
