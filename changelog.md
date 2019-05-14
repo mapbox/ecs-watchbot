@@ -1,3 +1,8 @@
+
+### 4.15.0
+
+- Changes the Lambda functions a watchbot stack creates to use the node 8 runtime
+
 ### 4.14.0
 
 - Modifies CloudWatch alarm names to include the AWS region.
