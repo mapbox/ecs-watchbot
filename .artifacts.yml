@@ -4,4 +4,4 @@ bundle:
     - filter: on-every-commit
       config:
         platform: nodejs
-        platform_version: '6.10'
+        platform_version: '8.10'
