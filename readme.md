@@ -50,7 +50,7 @@ RUN chmod +x /usr/local/bin/watchbot
 
 1. Create a Github repository for your code.
 2. Write and test the code that a worker will perform in response to a message.
-3. Write a Dockerfile at the root of your repository which defines the steps required to bootstrap a worker. Rather than specifying a `CMD` instructions, use the `command` property in the cloudformation template to indicate what will be executed when your worker is launched in response to a message. Note that message details will be provided as environment variables to your worker subprocess, and that your worker's exit code will determine whether the message is deleted or returned to the queue (see below).
+3. Write a Dockerfile at the root of your repository which defines the steps required to bootstrap a worker. Rather than specifying a `CMD` instruction, use the `command` property in the cloudformation template to indicate what will be executed when your worker is launched in response to a message. Note that message details will be provided as environment variables to your worker subprocess, and that your worker's exit code will determine whether the message is deleted or returned to the queue (see below).
 4. Use the Dockerfile to build an image and store it in an ECR repository. See [ecs-conex](https://github.com/mapbox/ecs-conex) for a CI framework to do this for you whenever you commit to the repository.
 5. Write and deploy your service using a CloudFormation template that watchbot helps you to build.
 
