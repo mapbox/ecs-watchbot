@@ -1,4 +1,9 @@
 
+### 4.15.1
+
+- Bump js-yaml from 3.12.0 to 3.13.1 for security reasons
+- Small Readme improvements (thanks @nickcordella and @ScottBrenner)
+
 ### 4.15.0
 
 - Changes the Lambda functions a watchbot stack creates to use the node 8 runtime
