@@ -9,11 +9,11 @@ A library to help run a highly-scalable AWS service that performs data processin
 Add these lines to your Dockerfile, to use the latest watchbot for the linux operating system.
 
 ```
-RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v4.11.0/watchbot -O /usr/local/bin/watchbot
+RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v4.15.1/watchbot -O /usr/local/bin/watchbot
 RUN chmod +x /usr/local/bin/watchbot
 ```
 * **os**: You can replace `linux` with other operating systems like `alpine`, `macosx` or, `windows`
-* **tag**: You can replace `v4.11.2`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent that v4.0.0
+* **tag**: You can replace `v4.15.1`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent that v4.0.0
 
 * If you are an existing user of watchbot, take a look at ["Upgrading to Watchbot 4"](https://github.com/mapbox/ecs-watchbot/blob/master/docs/upgrading-to-watchbot4.md), for a complete set of instructions to upgrade your stacks to Watchbot 4.
 
