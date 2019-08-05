@@ -10,9 +10,12 @@ once a Pull Request has been reviewed and approved.
 
 1. Merge the open PR.
 2. In your local copy, pull `master` to bring down the merge commit(s).
-3. Manually change the version number in package.json and package-lock.json.
-4. Run `npm run update-jest-snapshots` to update the test snapshots for this new version.
-5. Add an entry to the [changelog](./changelog.md) for this new version, if you haven't already.
+3. Manually change the version number in:
+  - package.json
+  - package-lock.json
+  - readme.md
+4. Add an entry to the [changelog](./changelog.md) for this new version, if you haven't already.
+5. Run `npm run update-jest-snapshots` to update the test snapshots for this new version.
 6. Commit these changes.
   - `git add package.json package-lock.json test/`
   - `git commit -m "v<new version number>"
