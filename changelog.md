@@ -27,7 +27,8 @@
 
 ### 4.13.0
 
-- Adds support for first-in-first-out (FIFO) SQS queues. https://github.com/mapbox/ecs-watchbot/pull/279
+- Adds support for first-in-first-out (FIFO) SQS queues. https://github.com/mapbox/ecs-watchbot/pull/279.
+- SNS message objects are required to have both a "Message" and a "Subject" property. Previously, "Subject" was optional.
 
 ### 4.12.0
 - Add `options.deadletterAlarm` (default=true) to disable the alarm resource for dead letter queue messages https://github.com/mapbox/ecs-watchbot/pull/288
