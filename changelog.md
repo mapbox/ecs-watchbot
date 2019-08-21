@@ -1,3 +1,7 @@
+### 4.16.1
+
+- FIX: Missing properties/type key in CW dashboard change.
+
 ### 4.16.0
 
 - Dashboard: Add queue oldest-message wait time, worker duration to CW dashboard
