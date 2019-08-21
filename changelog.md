@@ -1,3 +1,6 @@
+### 4.16.0
+
+- Dashboard: Add queue oldest-message wait time, worker duration to CW dashboard
 
 ### 4.15.1
 
