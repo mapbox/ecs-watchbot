@@ -18,4 +18,4 @@ Metric | Description | Statistics
 --- | --- | ---
 **WorkerErrors** | The total number of failed workers per minute. High levels of this error trigger the `WorkerErrors` alarm | Sum
 **MessageReceives** | A metric collected for every received message that indicates how many times the message has been pulled from the queue | Maximum
-**WorkerDuration** | The amount of time taken by a worker to run a task | `Average`, `Minimum` and `Maximum`
+**WorkerDuration** | The amount of time (msec) taken by a worker to run a task | `Average`, `Minimum` and `Maximum`
