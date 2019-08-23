@@ -54,7 +54,7 @@ test('[worker] fail', async (assert) => {
   const options = { command: 'echo hello world', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
-  const results = { code: 124, signal: 'SIGTERM', duration: 12345 };
+  const results = { code: 124, signal: 'SIGTERM', duration: 12345, response_duration: 12345 };
   await worker.fail(results);
 
   assert.ok(logger.workerFailure.calledWith(results), 'logs worker failure');
@@ -70,7 +70,7 @@ test('[worker] noop', async (assert) => {
   const options = { command: 'echo hello world', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
-  const results = { code: 4, duration: 12345 };
+  const results = { code: 4, duration: 12345, response_duration: 12345 };
   await worker.noop(results);
 
   assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
@@ -86,7 +86,7 @@ test('[worker] ignore', async (assert) => {
   const options = { command: 'echo hello world', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
-  const results = { code: 3, duration: 12345 };
+  const results = { code: 3, duration: 12345, response_duration: 12345 };
   await worker.ignore(results);
 
   assert.ok(logger.workerFailure.calledWith(results), 'logs worker result');
@@ -103,7 +103,7 @@ test('[worker] success', async (assert) => {
   const options = { command: 'echo hello world', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
-  const results = { code: 0, duration: 12345 };
+  const results = { code: 0, duration: 12345, response_duration: 12345 };
   await worker.success(results);
 
   assert.ok(logger.workerSuccess.calledWith(results), 'logs worker result');
@@ -121,7 +121,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
   const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.id = '895ab607-3767-4bbb-bd45-2a3b341cbc46';
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
 
   logger.log.restore();
   logger.stream.restore();
@@ -167,6 +167,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
   const results = logger.workerSuccess.args[0][0];
   assert.equal(results.code, 0, 'logged worker success exit code');
   assert.ok(results.duration, 'logged worker success duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.complete.callCount, 1, 'called message.complete()');
 
   assert.equal(fsExtra.emptyDir.callCount, 2, 'called fsExtra.emptyDir() twice');
@@ -189,7 +190,7 @@ test('[worker] waitFor, write to /tmp, exit 0', async (assert) => {
   const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.id = '895ab607-3767-4bbb-bd45-2a3b341cbc46';
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
 
   logger.log.restore();
   logger.stream.restore();
@@ -234,6 +235,7 @@ test('[worker] waitFor, write to /tmp, exit 0', async (assert) => {
   const results = logger.workerSuccess.args[0][0];
   assert.equal(results.code, 0, 'logged worker success exit code');
   assert.ok(results.duration, 'logged worker success duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.complete.callCount, 1, 'called message.complete()');
 
   const tmpFiles = fs.readdirSync('/tmp');
@@ -251,7 +253,7 @@ test('[worker] waitFor, exit 1', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
   const options = { command: 'exit 1', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
@@ -266,6 +268,7 @@ test('[worker] waitFor, exit 1', async (assert) => {
   const results = logger.workerFailure.args[0][0];
   assert.equal(results.code, 1, 'logged worker failure exit code');
   assert.ok(results.duration, 'logged worker failure duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
   child_process.spawn.restore();
@@ -278,7 +281,7 @@ test('[worker] waitFor, exit 3', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
   const options = { command: 'exit 3', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
@@ -293,6 +296,7 @@ test('[worker] waitFor, exit 3', async (assert) => {
   const results = logger.workerFailure.args[0][0];
   assert.equal(results.code, 3, 'logged worker failure exit code');
   assert.ok(results.duration, 'logged worker failure duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.complete.callCount, 1, 'calls message.complete()');
 
   child_process.spawn.restore();
@@ -305,7 +309,7 @@ test('[worker] waitFor, exit 4', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
   const options = { command: 'exit 4', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
@@ -320,6 +324,7 @@ test('[worker] waitFor, exit 4', async (assert) => {
   const results = logger.workerSuccess.args[0][0];
   assert.equal(results.code, 4, 'logged worker success exit code');
   assert.ok(results.duration, 'logged worker success duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
   child_process.spawn.restore();
@@ -332,7 +337,7 @@ test('[worker] waitFor, child_process.spawn failure', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
   const options = { command: 'echo ${Message}', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
   const err = new Error('foo');
@@ -364,7 +369,7 @@ test('[worker] waitFor, 0 maxJobDuration 2 second task success', async (assert) 
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
 
   const options = {
     command: 'sleep 2; exit 0',
@@ -383,6 +388,7 @@ test('[worker] waitFor, 0 maxJobDuration 2 second task success', async (assert) 
   const results = logger.workerSuccess.args[0][0];
   assert.equal(results.code, 0, 'Success!');
   assert.ok(results.duration, 'logged worker success duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.retry.callCount, 0, 'does not call message.retry()');
 
   child_process.spawn.restore();
@@ -395,7 +401,7 @@ test('[worker] waitFor, 2 second task completes', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
 
   const options = {
     command: 'sleep 2; exit 0',
@@ -414,6 +420,7 @@ test('[worker] waitFor, 2 second task completes', async (assert) => {
   const results = logger.workerSuccess.args[0][0];
   assert.equal(results.code, 0, 'Success!');
   assert.ok(results.duration, 'logged worker success duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.retry.callCount, 0, 'does not call message.retry()');
 
   child_process.spawn.restore();
@@ -426,7 +433,7 @@ test('[worker] waitFor, timeout error', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana' };
+  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
 
   const options = {
     command: 'while true; do echo ${Message}; sleep 2; done;',
@@ -445,6 +452,7 @@ test('[worker] waitFor, timeout error', async (assert) => {
   const results = logger.workerFailure.args[0][0];
   assert.equal(results.code, null, 'Timeout has null result code');
   assert.ok(results.duration, 'logged worker failure duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
   assert.equal(message.retry.callCount, 1, 'calls message.retry()');
 
   child_process.spawn.restore();
