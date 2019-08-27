@@ -77,12 +77,12 @@ test('[logger] workerSuccess', (assert) => {
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher', message);
-  logger.workerSuccess({ code: 0, duration: 12345 });
+  logger.workerSuccess({ code: 0, duration: 12345, response_duration: 12345 });
 
   const data = process.stdout.write.args[0][0];
   assert.equal(
     data,
-    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] {"code":0,"duration":12345}\n',
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] {"code":0,"duration":12345,"response_duration":12345}\n',
     'expected message'
   );
 
@@ -98,12 +98,12 @@ test('[logger] workerFailure', (assert) => {
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher', message);
-  logger.workerFailure({ code: 124, signal: 'SIGTERM', duration: 12345 });
+  logger.workerFailure({ code: 124, signal: 'SIGTERM', duration: 12345, response_duration: 12345 });
 
   const data = process.stdout.write.args[0][0];
   assert.equal(
     data,
-    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] [failure] {"code":124,"signal":"SIGTERM","duration":12345}\n',
+    '[Fri, 09 Feb 2018 21:57:55 GMT] [watcher] [895ab607-3767-4bbb-bd45-2a3b341cbc46] [failure] {"code":124,"signal":"SIGTERM","duration":12345,"response_duration":12345}\n',
     'expected message'
   );
 
