@@ -1,3 +1,7 @@
+### 4.17.0
+
+- Metrics: Adds (approximate) response duration custom metric.
+
 ### 4.16.1
 
 - FIX: Missing properties/type key in CW dashboard change.
