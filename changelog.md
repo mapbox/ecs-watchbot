@@ -1,3 +1,7 @@
+### 4.18.0
+
+- Adds cn-northwest-1 support: https://github.com/mapbox/ecs-watchbot/pull/322
+
 ### 4.17.0
 
 - Metrics: Adds (approximate) response duration custom metric.
