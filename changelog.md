@@ -1,3 +1,7 @@
+### 4.18.0
+
+- Adds cn-northwest-1 support: https://github.com/mapbox/ecs-watchbot/pull/322
+
 ### 4.17.0
 
 - Metrics: Adds (approximate) response duration custom metric.
@@ -83,7 +87,7 @@
 
 ### 4.7.0
 
-- Compatiblity with cn-north-1 https://github.com/mapbox/ecs-watchbot/pull/250
+- Compatiblity with cn-north-1 https://github.com/mapbox/ecs-watchbot/pull/251
 
 ### 4.6.0
 - Custom Cloudformation resource for watchbot service scaling. Allows maxSize to be parameterized within a template: https://github.com/mapbox/ecs-watchbot/pull/249
