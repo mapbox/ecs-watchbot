@@ -83,7 +83,7 @@
 
 ### 4.7.0
 
-- Compatiblity with cn-north-1 https://github.com/mapbox/ecs-watchbot/pull/250
+- Compatiblity with cn-north-1 https://github.com/mapbox/ecs-watchbot/pull/251
 
 ### 4.6.0
 - Custom Cloudformation resource for watchbot service scaling. Allows maxSize to be parameterized within a template: https://github.com/mapbox/ecs-watchbot/pull/249
