@@ -1,3 +1,8 @@
+### 4.19.0
+
+- Adds us-west-1 support: https://github.com/mapbox/ecs-watchbot/pull/323
+
+
 ### 4.18.0
 
 - Adds cn-northwest-1 support: https://github.com/mapbox/ecs-watchbot/pull/322
