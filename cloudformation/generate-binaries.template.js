@@ -67,7 +67,7 @@ const Resources = {
       Environment: {
         Type: 'LINUX_CONTAINER',
         ComputeType: 'BUILD_GENERAL1_SMALL',
-        Image: 'aws/codebuild/nodejs:8.11.0'
+        Image: 'aws/codebuild/amazonlinux2-x86_64-standard:2.0'
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
@@ -76,6 +76,8 @@ const Resources = {
           version: 0.2
           phases:
             install:
+              runtime-versions:
+                nodejs: 10
               commands:
                 - npm install -g npm@5.8.0
                 - npm ci --production
