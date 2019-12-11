@@ -33,30 +33,30 @@
   "devDependencies": {
     "@mapbox/eslint-config-mapbox": "^1.2.1",
     "@mapbox/mock-aws-sdk-js": "^1.0.0",
-    "cli-spinner": "^0.2.10",
+    "cli-spinner": "^0.2.8",
     "cwlogs": "^1.0.3",
     "eslint": "^5.3.0",
     "eslint-plugin-node": "^7.0.1",
     "jest": "^25.0.0",
-    "meow": "^6.0.0",
+    "meow": "^5.0.0",
     "nyc": "^14.1.1",
-    "opener": "^1.5.1",
-    "redent": "^3.0.0",
-    "sinon": "^7.5.0",
+    "opener": "^1.4.3",
+    "redent": "^2.0.0",
+    "sinon": "^6.1.4",
     "tap-spec": "^5.0.0",
-    "tape": "^4.11.0"
+    "tape": "^4.9.1"
   },
   "dependencies": {
-    "@mapbox/cloudfriend": "^4.0.0",
+    "@mapbox/cloudfriend": "^1.9.1",
     "@mapbox/watchbot-progress": "^1.1.6",
-    "aws-sdk": "^2.587.0",
-    "binary-split": "^1.0.5",
-    "fs-extra": "^8.1.0",
-    "inquirer": "^7.0.0",
-    "p-queue": "^6.2.1",
-    "remote-git-tags": "^3.0.0",
+    "aws-sdk": "^2.188.0",
+    "binary-split": "^1.0.3",
+    "fs-extra": "^6.0.1",
+    "inquirer": "^6.0.0",
+    "p-queue": "^2.4.2",
+    "remote-git-tags": "^2.0.0",
     "stream-combiner2": "^1.1.1",
-    "tree-kill": "^1.2.1"
+    "tree-kill": "^1.2.0"
   },
   "eslintConfig": {
     "extends": "@mapbox/eslint-config-mapbox"
