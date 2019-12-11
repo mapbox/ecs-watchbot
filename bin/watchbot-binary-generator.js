@@ -15,17 +15,19 @@ const wbg = { exec };
  * @return {string} tag - Returns a tag, if one exists for the gitsha
  */
 const getTagForSha = async (sha) => {
-  return new Promise(async (resolve, reject) => {
-    const data = (await wbg.exec('git ls-remote --tags https://github.com/mapbox/ecs-watchbot')).stdout.split('\n');
-    if (data.stderr) return reject(data.stderr);
-    data.forEach((ref) => {
-      ref = ref.split('\t');
-      if (ref[0] !== sha) return;
-      const tagRegex = /refs\/tags\/(v?[0-9.-]+)(\^\{(.*)\})*/;
-      return resolve(tagRegex.exec(ref[1])[1]);
+  return new Promise().resolve()
+    .then(wbg.exec('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'))
+    .then((data) => data.stdout.split('\n'))
+    .then((data) => { if (data.stderr) this.reject(data.stderr); })
+    .then((data) => {
+      data.forEach((ref) => {
+        ref = ref.split('\t');
+        if (ref[0] !== sha) return;
+        const tagRegex = /refs\/tags\/(v?[0-9.-]+)(\^\{(.*)\})*/;
+        return this.resolve(tagRegex.exec(ref[1])[1]);
+      });
+      this.resolve(null);
     });
-    return resolve(null);
-  });
 };
 wbg.getTagForSha = getTagForSha;
 
