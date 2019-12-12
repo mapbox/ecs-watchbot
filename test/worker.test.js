@@ -129,12 +129,13 @@ test('[worker] waitFor, exit 0', async (assert) => {
   logger.type = 'worker';
   logger.message = message;
 
-  const options = { command: 'echo ${Message}', volumes: ['/tmp', '/var/tmp'] };
-  const worker = new Worker(message, options);
-
   const fakeEnv = new FakeEnv({
     fake: 'environment'
   });
+
+  const options = { command: 'echo ${Message}', volumes: ['/tmp', '/var/tmp'] };
+  const worker = new Worker(message, options);
+
 
   sinon.spy(child_process, 'spawn');
   sinon.spy(process.stdout, 'write');
@@ -159,7 +160,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
 
   assert.ok(
     child_process.spawn.calledWith('echo ${Message}', {
-      env: Object.assign(message.env, fakeEnv),
+      env: Object.assign(message.env, process.env),
       shell: true,
       stdio: [process.stdin, 'pipe', 'pipe']
     }),
@@ -228,7 +229,7 @@ test('[worker] waitFor, write to /tmp, exit 0', async (assert) => {
 
   assert.ok(
     child_process.spawn.calledWith('echo ${Message} > /tmp/banana.txt && cat /tmp/banana.txt', {
-      env: Object.assign(message.env, fakeEnv),
+      env: Object.assign(message.env, process.env),
       shell: true,
       stdio: [process.stdin, 'pipe', 'pipe']
     }),
