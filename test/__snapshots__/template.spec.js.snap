@@ -910,7 +910,7 @@ Object {
         "Code": Object {
           "ZipFile": Object {
             "Fn::Sub": "
-          const response = require('cfn-response');
+          const response = require('./cfn-response');
           exports.handler = function(event,context){
             const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
             response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
@@ -2290,7 +2290,7 @@ Object {
         "Code": Object {
           "ZipFile": Object {
             "Fn::Sub": "
-          const response = require('cfn-response');
+          const response = require('./cfn-response');
           exports.handler = function(event,context){
             const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
             response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
@@ -3668,7 +3668,7 @@ Object {
         "Code": Object {
           "ZipFile": Object {
             "Fn::Sub": "
-          const response = require('cfn-response');
+          const response = require('./cfn-response');
           exports.handler = function(event,context){
             const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
             response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
@@ -5046,7 +5046,7 @@ Object {
         "Code": Object {
           "ZipFile": Object {
             "Fn::Sub": "
-          const response = require('cfn-response');
+          const response = require('./cfn-response');
           exports.handler = function(event,context){
             const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
             response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
@@ -6328,7 +6328,7 @@ Object {
         "Code": Object {
           "ZipFile": Object {
             "Fn::Sub": "
-          const response = require('cfn-response');
+          const response = require('./cfn-response');
           exports.handler = function(event,context){
             const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
             response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
@@ -7528,7 +7528,7 @@ Object {
         "Code": Object {
           "ZipFile": Object {
             "Fn::Sub": "
-          const response = require('cfn-response');
+          const response = require('./cfn-response');
           exports.handler = function(event,context){
             const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
             response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
@@ -8710,7 +8710,7 @@ Object {
         "Code": Object {
           "ZipFile": Object {
             "Fn::Sub": "
-          const response = require('cfn-response');
+          const response = require('./cfn-response');
           exports.handler = function(event,context){
             const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
             response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
