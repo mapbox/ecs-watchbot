@@ -123,13 +123,14 @@ test('[dead-letter] individual message triage', async (assert) => {
     assert.equals(fetch.args[0][0].pattern, 'message-4', 'one fetch call based on message itself');
     assert.equals(fetch.args[1][0].pattern, 'a406f47b-a0f2-49a6-a159-b0f8578104bf', 'one fetch call based on message itself');
 
+  } catch (err) {
+    assert.ifError(err);
+  } finally {
     prompt.restore();
     fetch.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
-  } catch (err) {
-    assert.ifError(err);
   }
 });
 
@@ -304,12 +305,13 @@ test('[dead-letter] return messages to work queue', async (assert) => {
       ReceiptHandle: 'handle-2'
     }), 'deletes the other message from dead letter queue');
 
+  } catch (err) {
+    assert.ifError(err, 'success');
+  } finally {
     prompt.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
-  } catch (err) {
-    assert.ifError(err, 'success');
   }
 });
 
@@ -350,12 +352,13 @@ test('[dead-letter] reject return messages confirmation', async (assert) => {
     assert.equal(send.callCount, 0, 'sends no messages');
     assert.equal(del.callCount, 0, 'deletes no messages');
 
+  } catch (err) {
+    assert.ifError(err, 'success');
+  } finally {
     prompt.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
-  } catch (err) {
-    assert.ifError(err, 'success');
   }
 });
 
@@ -409,12 +412,12 @@ test('[dead-letter] write out messages', async (assert) => {
       VisibilityTimeout: 0
     }), 'returns the second message to the dead letter queue');
 
-    prompt.restore();
-    AWS.CloudFormation.restore();
-    AWS.SQS.restore();
   } catch (err) {
     assert.ifError(err, 'success');
   } finally {
+    prompt.restore();
+    AWS.CloudFormation.restore();
+    AWS.SQS.restore();
     assert.end();
   }
 });
