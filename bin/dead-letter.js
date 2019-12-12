@@ -6,7 +6,7 @@
 const AWS = require('aws-sdk');
 const inquirer = require('inquirer');
 const stream = require('stream');
-const Queue = require('p-queue');
+const { default: Queue } = require('p-queue');
 const Spinner = require('cli-spinner').Spinner;
 const cwlogs = require('cwlogs');
 const meow = require('meow');
