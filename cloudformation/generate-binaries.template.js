@@ -79,7 +79,7 @@ const Resources = {
               runtime-versions:
                 nodejs: 10
               commands:
-                - npm install -g npm@5.8.0
+                - npm install -g npm@6.13.4
                 - npm ci --production
             build:
               commands:
