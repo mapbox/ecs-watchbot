@@ -9,7 +9,7 @@ const Logger = require('../lib/logger');
 class MockArgs {
   constructor (args) {
     this._original = process.argv;
-    process.argv = ['node', 'mbxcli2'].concat(args);
+    process.argv = ['', ''].concat(args);
   }
 
   restore() {
@@ -20,7 +20,7 @@ class MockArgs {
 test('[bin.watchbot] success', async (assert) => {
   const watcher = stubber(Watcher).setup();
 
-  const mockArgs = MockArgs(['', '', 'listen', 'echo', 'hello', 'world']);
+  const mockArgs = new MockArgs(['listen', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
   process.env.maxJobDuration = 180;
@@ -59,7 +59,7 @@ test('[bin.watchbot] error handling', async (assert) => {
   const err = new Error('foo');
   watcher.listen.returns(Promise.reject(err));
 
-  const mockArgs = MockArgs(['', '', 'listen', 'echo', 'hello', 'world']);
+  const mockArgs = new MockArgs(['listen', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
 
@@ -83,7 +83,7 @@ test('[bin.watchbot] error handling', async (assert) => {
 });
 
 test('[bin.watchbot] bad arguments', async (assert) => {
-  const mockArgs = MockArgs(['', '', 'watch', 'echo', 'hello', 'world']);
+  const mockArgs = new MockArgs(['watch', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
 
@@ -105,7 +105,7 @@ test('[bin.watchbot] bad arguments', async (assert) => {
 
 
 test('[bin.watchbot] invalid maxJobDuration', async (assert) => {
-  const mockArgs = MockArgs(['', '', 'listen', 'echo', 'hello', 'world']);
+  const mockArgs = new MockArgs(['listen', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
   process.env.maxJobDuration = 'not a number here';
