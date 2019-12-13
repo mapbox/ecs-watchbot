@@ -51,7 +51,7 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
 
   assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
   assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
-  assert.ok(execStub.calledWith('pkg --targets node8-linux,node8-alpine,node8-macos,node8-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-alpine,node10-macos,node10-win .'), 'ran expected pkg command');
   assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -108,7 +108,7 @@ test('uploadBundle: tag found (Tag created manually)', async (assert) => {
 
   assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
   assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
-  assert.ok(execStub.calledWith('pkg --targets node8-linux,node8-alpine,node8-macos,node8-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-alpine,node10-macos,node10-win .'), 'ran expected pkg command');
   assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -161,7 +161,7 @@ test('uploadBundle: tag not found', async (assert) => {
 
   assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
   assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
-  assert.ok(execStub.calledWith('pkg --targets node8-linux,node8-alpine,node8-macos,node8-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-alpine,node10-macos,node10-win .'), 'ran expected pkg command');
   assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
   assert.ok(log.calledWith('No tag found for 123456'));
 

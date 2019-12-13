@@ -1,4 +1,4 @@
-FROM node:8.10
+FROM node:10
 
 COPY ./package.json ./package.json
 COPY ./package-lock.json ./package-lock.json
