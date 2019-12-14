@@ -6,11 +6,21 @@ const watchbot = require('../bin/watchbot');
 const Watcher = require('../lib/watcher');
 const Logger = require('../lib/logger');
 
+class MockArgs {
+  constructor (args) {
+    this._original = process.argv;
+    process.argv = ['', ''].concat(args);
+  }
+
+  restore() {
+    process.argv = this._original;
+  }
+}
+
 test('[bin.watchbot] success', async (assert) => {
   const watcher = stubber(Watcher).setup();
 
-  const argv = process.argv;
-  process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
+  const mockArgs = new MockArgs(['listen', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
   process.env.maxJobDuration = 180;
@@ -38,7 +48,7 @@ test('[bin.watchbot] success', async (assert) => {
 
   delete process.env.QueueUrl;
   delete process.env.Volumes;
-  process.argv = argv;
+  mockArgs.restore();
   watcher.teardown();
   assert.end();
 });
@@ -49,8 +59,7 @@ test('[bin.watchbot] error handling', async (assert) => {
   const err = new Error('foo');
   watcher.listen.returns(Promise.reject(err));
 
-  const argv = process.argv;
-  process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
+  const mockArgs = new MockArgs(['listen', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
 
@@ -67,15 +76,14 @@ test('[bin.watchbot] error handling', async (assert) => {
 
   delete process.env.QueueUrl;
   delete process.env.Volumes;
-  process.argv = argv;
+  mockArgs.restore();
   logger.teardown();
   watcher.teardown();
   assert.end();
 });
 
 test('[bin.watchbot] bad arguments', async (assert) => {
-  const argv = process.argv;
-  process.argv = ['', '', 'watch', 'echo', 'hello', 'world'];
+  const mockArgs = new MockArgs(['watch', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
 
@@ -91,14 +99,13 @@ test('[bin.watchbot] bad arguments', async (assert) => {
 
   delete process.env.QueueUrl;
   delete process.env.Volumes;
-  process.argv = argv;
+  mockArgs.restore();
   assert.end();
 });
 
 
 test('[bin.watchbot] invalid maxJobDuration', async (assert) => {
-  const argv = process.argv;
-  process.argv = ['', '', 'listen', 'echo', 'hello', 'world'];
+  const mockArgs = new MockArgs(['listen', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
   process.env.maxJobDuration = 'not a number here';
@@ -117,7 +124,7 @@ test('[bin.watchbot] invalid maxJobDuration', async (assert) => {
   delete process.env.QueueUrl;
   delete process.env.Volumes;
   delete process.env.maxJobDuration;
-  process.argv = argv;
+  mockArgs.restore();
   assert.end();
 });
 

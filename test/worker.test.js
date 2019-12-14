@@ -7,6 +7,7 @@ const fs = require('fs');
 const fsExtra = require('fs-extra');
 const test = require('tape');
 const sinon = require('sinon');
+const FakeEnv = require('fake-env');
 const Worker = require('../lib/worker');
 const Message = require('../lib/message');
 const Logger = require('../lib/logger');
@@ -128,11 +129,13 @@ test('[worker] waitFor, exit 0', async (assert) => {
   logger.type = 'worker';
   logger.message = message;
 
+  const fakeEnv = new FakeEnv({
+    fake: 'environment'
+  });
+
   const options = { command: 'echo ${Message}', volumes: ['/tmp', '/var/tmp'] };
   const worker = new Worker(message, options);
 
-  const env = process.env;
-  process.env = { fake: 'environment' };
 
   sinon.spy(child_process, 'spawn');
   sinon.spy(process.stdout, 'write');
@@ -177,7 +180,7 @@ test('[worker] waitFor, exit 0', async (assert) => {
   fsExtra.emptyDir.restore();
   Date.prototype.toGMTString.restore();
   child_process.spawn.restore();
-  process.env = env;
+  fakeEnv.restore();
   logger.teardown();
   assert.end();
 });
@@ -200,8 +203,9 @@ test('[worker] waitFor, write to /tmp, exit 0', async (assert) => {
   const options = { command: 'echo ${Message} > /tmp/banana.txt && cat /tmp/banana.txt', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
-  const env = process.env;
-  process.env = { fake: 'environment' };
+  const fakeEnv = new FakeEnv({
+    fake: 'environment'
+  });
 
   sinon.spy(child_process, 'spawn');
   sinon.spy(process.stdout, 'write');
@@ -243,7 +247,7 @@ test('[worker] waitFor, write to /tmp, exit 0', async (assert) => {
 
   Date.prototype.toGMTString.restore();
   child_process.spawn.restore();
-  process.env = env;
+  fakeEnv.restore();
   logger.teardown();
   assert.end();
 });

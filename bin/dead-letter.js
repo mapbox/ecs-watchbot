@@ -6,7 +6,7 @@
 const AWS = require('aws-sdk');
 const inquirer = require('inquirer');
 const stream = require('stream');
-const Queue = require('p-queue');
+const { default: Queue } = require('p-queue');
 const Spinner = require('cli-spinner').Spinner;
 const cwlogs = require('cwlogs');
 const meow = require('meow');
@@ -38,15 +38,11 @@ const main = async () => {
 
   const actions = { purge, writeOut, replay, triage };
 
-  try {
-    const queues = await findQueues(cfn, cli.flags);
-    const queue = await selectQueue(queues);
-    const data = await triageSelection(queue);
+  const queues = await findQueues(cfn, cli.flags);
+  const queue = await selectQueue(queues);
+  const data = await triageSelection(queue);
 
-    await actions[data.action](sqs, data.queue);
-  } catch (err) {
-    throw err;
-  }
+  await actions[data.action](sqs, data.queue);
 };
 
 async function findQueues(cfn, options) {
