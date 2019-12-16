@@ -1,3 +1,8 @@
+### 4.20.0
+
+- Upgrades from Node 8 to Node 10: https://github.com/mapbox/ecs-watchbot/pull/325
+- Applies lint fixes and updates dependencies by several major versions: https://github.com/mapbox/ecs-watchbot/pull/325
+
 ### 4.19.0
 
 - Adds us-west-1 support: https://github.com/mapbox/ecs-watchbot/pull/323
