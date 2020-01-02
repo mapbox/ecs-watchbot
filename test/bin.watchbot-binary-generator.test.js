@@ -34,7 +34,7 @@ test('getTagForSha: commit not found', async (assert) => {
   assert.end();
 });
 
-test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major>`)', async (assert) => {
+test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major>`) for all except alpine', async (assert) => {
   process.env.CODEBUILD_RESOLVED_SOURCE_VERSION = 'f4815eb9f3bcfba88930bbe12d0888254af7cfa6';
 
   // stubs and spies
@@ -51,7 +51,7 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
 
   assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
   assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
-  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-alpine,node10-macos,node10-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-macos,node10-win .'), 'ran expected pkg command');
   assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -60,12 +60,6 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
     Body: fs.createReadStream('watchbot-linux'),
     ACL: 'public-read'
   }), 'uploaded linux binary');
-  assert.ok(s3Stub.calledWith({
-    Bucket: 'watchbot-binaries',
-    Key: 'alpine/v4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-alpine'),
-    ACL: 'public-read'
-  }), 'uploaded alpine binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'macosx/v4.1.1/watchbot',
@@ -79,7 +73,6 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
     ACL: 'public-read'
   }), 'uploaded windows binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/v4.1.1/watchbot'), 'logged upload of linux binary');
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/alpine/v4.1.1/watchbot'), 'logged upload of alpine binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/v4.1.1/watchbot'), 'logged upload of macos binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/windows/v4.1.1/watchbot'), 'logged upload of win binary');
 
@@ -91,7 +84,7 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
 });
 
 
-test('uploadBundle: tag found (Tag created manually)', async (assert) => {
+test('uploadBundle: tag found (Tag created manually) for all except alpine', async (assert) => {
   process.env.CODEBUILD_RESOLVED_SOURCE_VERSION = 'f4815eb9f3bcfba88930bbe12d0888254af7cfa6';
 
   // stubs and spies
@@ -108,7 +101,7 @@ test('uploadBundle: tag found (Tag created manually)', async (assert) => {
 
   assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
   assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
-  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-alpine,node10-macos,node10-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-macos,node10-win .'), 'ran expected pkg command');
   assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -117,12 +110,6 @@ test('uploadBundle: tag found (Tag created manually)', async (assert) => {
     Body: fs.createReadStream('watchbot-linux'),
     ACL: 'public-read'
   }), 'uploaded linux binary');
-  assert.ok(s3Stub.calledWith({
-    Bucket: 'watchbot-binaries',
-    Key: 'alpine/4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-alpine'),
-    ACL: 'public-read'
-  }), 'uploaded alpine binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'macosx/4.1.1/watchbot',
@@ -136,7 +123,6 @@ test('uploadBundle: tag found (Tag created manually)', async (assert) => {
     ACL: 'public-read'
   }), 'uploaded windows binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/4.1.1/watchbot'), 'logged upload of linux binary');
-  assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/alpine/4.1.1/watchbot'), 'logged upload of alpine binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/4.1.1/watchbot'), 'logged upload of macos binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/windows/4.1.1/watchbot'), 'logged upload of win binary');
 
@@ -147,7 +133,7 @@ test('uploadBundle: tag found (Tag created manually)', async (assert) => {
   assert.end();
 });
 
-test('uploadBundle: tag not found', async (assert) => {
+test('uploadBundle: tag not found for all except alpine', async (assert) => {
   process.env.CODEBUILD_RESOLVED_SOURCE_VERSION = '123456';
 
   // stubs and spies
@@ -161,7 +147,7 @@ test('uploadBundle: tag not found', async (assert) => {
 
   assert.ok(execStub.calledWith('npm ci --production'), 'reinstalled npm modules');
   assert.ok(execStub.calledWith('npm install -g pkg'), 'globally installed pkg');
-  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-alpine,node10-macos,node10-win .'), 'ran expected pkg command');
+  assert.ok(execStub.calledWith('pkg --targets node10-linux,node10-macos,node10-win .'), 'ran expected pkg command');
   assert.ok(execStub.calledWith('git ls-remote --tags https://github.com/mapbox/ecs-watchbot'), 'listed tags on github');
   assert.ok(log.calledWith('No tag found for 123456'));
 
