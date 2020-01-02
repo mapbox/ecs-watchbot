@@ -58,7 +58,7 @@ const uploadBundle = async () => {
   const sha = process.env.CODEBUILD_RESOLVED_SOURCE_VERSION;
 
   const tag = await getTagForSha(sha);
-  if (process.argv[2] === 'alpine' && tag) {
+  if (tag) {
     const uploads = targets.map((target) => {
       console.log(`Uploading the package to s3://${Bucket}/${target.prefix}/${tag}/watchbot`);
       return s3.putObject({
