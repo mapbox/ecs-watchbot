@@ -40,12 +40,17 @@ const uploadBundle = async () => {
   const s3 = new AWS.S3();
   const Bucket = 'watchbot-binaries';
 
-  const targets = [
+  let targets = [
     { prefix: 'linux', target: 'node10-linux', pkg: 'watchbot-linux' },
-    { prefix: 'alpine', target: 'node10-alpine', pkg: 'watchbot-alpine' },
     { prefix: 'macosx', target: 'node10-macos', pkg: 'watchbot-macos' },
     { prefix: 'windows', target: 'node10-win', pkg: 'watchbot-win.exe' }
   ];
+
+  if (process.argv[2] === 'alpine') {
+    targets = [
+      { prefix: 'alpine', target: 'node10-alpine', pkg: 'watchbot' }
+    ];
+  }
 
   await wbg.exec('npm ci --production');
   await wbg.exec('npm install -g pkg');
