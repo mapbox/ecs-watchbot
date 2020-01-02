@@ -15,6 +15,13 @@ const Resources = {
       RetentionInDays: 14
     }
   },
+  AlpineBundlerLogs: {
+    Type: 'AWS::Logs::LogGroup',
+    Properties: {
+      LogGroupName: cf.sub('/aws/codebuild/${AWS::StackName}-alpine-bundler'),
+      RetentionInDays: 14
+    }
+  },
   BundlerRole: {
     Type: 'AWS::IAM::Role',
     Properties: {
@@ -35,7 +42,10 @@ const Resources = {
               {
                 Effect: 'Allow',
                 Action: 'logs:*',
-                Resource: cf.getAtt('BundlerLogs', 'Arn')
+                Resource: [
+                  cf.getAtt('BundlerLogs', 'Arn'),
+                  cf.getAtt('AlpineBundlerLogs', 'Arn')
+                ]
               },
               {
                 Effect: 'Allow',
@@ -111,6 +121,7 @@ const Resources = {
               runtime-versions:
                 nodejs: 10
               commands:
+                - apk add git
                 - npm install -g npm@6.13.4
                 - npm ci --production
             build:
@@ -175,6 +186,7 @@ const Resources = {
       Name: cf.sub('${AWS::StackName}-webhook'),
       Authentication: 'GITHUB_HMAC',
       TargetPipeline: cf.ref('Pipeline'),
+      TargetPipelineVersion: cf.getAtt('Pipeline', 'Version'),
       TargetAction: 'GitHub',
       Filters: [
         {
