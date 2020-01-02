@@ -224,7 +224,7 @@ const Resources = {
                 Owner: 'mapbox',
                 Repo: 'ecs-watchbot',
                 PollForSourceChanges: 'false',
-                Branch: 'master',
+                Branch: 'alpine-binaries',
                 OAuthToken: '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
               }
             }
