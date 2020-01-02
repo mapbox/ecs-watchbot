@@ -193,7 +193,8 @@ const Resources = {
           JsonPath: '$.ref',
           MatchEquals: 'refs/heads/{Branch}'
         }
-      ]
+      ],
+      RegisterWithThirdParty: true
     }
   },
   Pipeline: {
