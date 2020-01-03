@@ -36,16 +36,21 @@ wbg.getTagForSha = getTagForSha;
 /*
  * uploadBundle - uploads watchbot binaries to S3
  */
-const uploadBundle = async () => {
+const uploadBundle = async (buildTarget) => {
   const s3 = new AWS.S3();
   const Bucket = 'watchbot-binaries';
 
-  const targets = [
+  let targets = [
     { prefix: 'linux', target: 'node10-linux', pkg: 'watchbot-linux' },
-    { prefix: 'alpine', target: 'node10-alpine', pkg: 'watchbot-alpine' },
     { prefix: 'macosx', target: 'node10-macos', pkg: 'watchbot-macos' },
     { prefix: 'windows', target: 'node10-win', pkg: 'watchbot-win.exe' }
   ];
+
+  if (buildTarget === 'alpine') {
+    targets = [
+      { prefix: 'alpine', target: 'node10-alpine', pkg: 'watchbot' }
+    ];
+  }
 
   await wbg.exec('npm ci --production');
   await wbg.exec('npm install -g pkg');
@@ -72,7 +77,7 @@ const uploadBundle = async () => {
 wbg.uploadBundle = uploadBundle;
 
 if (require.main === module) {
-  uploadBundle()
+  uploadBundle(process.argv[2])
     .catch((err) => {
       console.log(err);
       process.exit(1);

@@ -15,6 +15,13 @@ const Resources = {
       RetentionInDays: 14
     }
   },
+  AlpineBundlerLogs: {
+    Type: 'AWS::Logs::LogGroup',
+    Properties: {
+      LogGroupName: cf.sub('/aws/codebuild/${AWS::StackName}-alpine-bundler'),
+      RetentionInDays: 14
+    }
+  },
   BundlerRole: {
     Type: 'AWS::IAM::Role',
     Properties: {
@@ -35,7 +42,10 @@ const Resources = {
               {
                 Effect: 'Allow',
                 Action: 'logs:*',
-                Resource: cf.getAtt('BundlerLogs', 'Arn')
+                Resource: [
+                  cf.getAtt('BundlerLogs', 'Arn'),
+                  cf.getAtt('AlpineBundlerLogs', 'Arn')
+                ]
               },
               {
                 Effect: 'Allow',
@@ -60,7 +70,7 @@ const Resources = {
     Type: 'AWS::CodeBuild::Project',
     Properties: {
       Name: cf.sub('${AWS::StackName}-bundler'),
-      Description: 'Uploads code-pipeline-helper bundles',
+      Description: 'Builds ',
       Artifacts: {
         Type: 'CODEPIPELINE'
       },
@@ -84,6 +94,39 @@ const Resources = {
             build:
               commands:
                 - node bin/watchbot-binary-generator
+        `)
+      }
+    }
+  },
+  AlpineBundler: {
+    Type: 'AWS::CodeBuild::Project',
+    Properties: {
+      Name: cf.sub('${AWS::StackName}-alpine-bundler'),
+      Description: 'Builds watchbot binaries for alpine OS',
+      Artifacts: {
+        Type: 'CODEPIPELINE'
+      },
+      Environment: {
+        Type: 'LINUX_CONTAINER',
+        ComputeType: 'BUILD_GENERAL1_SMALL',
+        Image: 'node:10-alpine'
+      },
+      ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
+      Source: {
+        Type: 'CODEPIPELINE',
+        BuildSpec: redent(`
+          version: 0.2
+          phases:
+            install:
+              runtime-versions:
+                nodejs: 10
+              commands:
+                - apk add git
+                - npm install -g npm@6.13.4
+                - npm ci --production
+            build:
+              commands:
+                - node bin/watchbot-binary-generator alpine
         `)
       }
     }
@@ -134,13 +177,29 @@ const Resources = {
       ]
     }
   },
-  Pipeline: {
-    Type: 'Custom::CodePipelineHelper',
+  PipelineWebhook: {
+    Type: 'AWS::CodePipeline::Webhook',
     Properties: {
-      ServiceToken: cf.importValue('code-pipeline-helper-production-custom-resource'),
-      Owner: 'mapbox',
-      Repo: 'ecs-watchbot',
-      Branch: 'master',
+      AuthenticationConfiguration: {
+        SecretToken: '{{resolve:secretsmanager:code-pipeline-helper/webhook-secret}}'
+      },
+      Name: cf.sub('${AWS::StackName}-webhook'),
+      Authentication: 'GITHUB_HMAC',
+      TargetPipeline: cf.ref('Pipeline'),
+      TargetPipelineVersion: cf.getAtt('Pipeline', 'Version'),
+      TargetAction: 'GitHub',
+      Filters: [
+        {
+          JsonPath: '$.ref',
+          MatchEquals: 'refs/heads/{Branch}'
+        }
+      ],
+      RegisterWithThirdParty: true
+    }
+  },
+  Pipeline: {
+    Type: 'AWS::CodePipeline::Pipeline',
+    Properties: {
       Name: cf.stackName,
       RoleArn: cf.getAtt('PipelineRole', 'Arn'),
       ArtifactStore: {
@@ -148,6 +207,30 @@ const Resources = {
         Location: 'watchbot-binaries'
       },
       Stages: [
+        {
+          Name: 'Source',
+          Actions: [
+            {
+              Name: 'GitHub',
+              ActionTypeId: {
+                Category: 'Source',
+                Owner: 'ThirdParty',
+                Version: '1',
+                Provider: 'GitHub'
+              },
+              OutputArtifacts: [
+                { Name: 'Source' }
+              ],
+              Configuration: {
+                Owner: 'mapbox',
+                Repo: 'ecs-watchbot',
+                PollForSourceChanges: 'false',
+                Branch: 'master',
+                OAuthToken: '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
+              }
+            }
+          ]
+        },
         {
           Name: 'Bundle',
           Actions: [
@@ -164,6 +247,21 @@ const Resources = {
               ],
               Configuration: {
                 ProjectName: cf.ref('Bundler')
+              }
+            },
+            {
+              Name: 'AlpineBundle',
+              ActionTypeId: {
+                Category: 'Build',
+                Owner: 'AWS',
+                Version: '1',
+                Provider: 'CodeBuild'
+              },
+              InputArtifacts: [
+                { Name: 'Source' }
+              ],
+              Configuration: {
+                ProjectName: cf.ref('AlpineBundler')
               }
             }
           ]
