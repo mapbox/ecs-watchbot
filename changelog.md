@@ -1,3 +1,8 @@
+### 4.20.1
+
+- Fixes for alpine binary: https://github.com/mapbox/ecs-watchbot/pull/328/files
+- Use native code pipeline with alpine-specific target instead of all targets
+
 ### 4.20.0
 
 - Upgrades from Node 8 to Node 10: https://github.com/mapbox/ecs-watchbot/pull/325
