@@ -1,3 +1,7 @@
+### 4.20.2
+
+- Using InChina instead of NotInChina Cloudformation condition
+
 ### 4.20.1
 
 - Fixes for alpine binary: https://github.com/mapbox/ecs-watchbot/pull/328/files
