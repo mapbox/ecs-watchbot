@@ -4,26 +4,22 @@ exports[`[template]: all-properties 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {
-    "NotInChina": Object {
-      "Fn::Not": Array [
+    "InChina": Object {
+      "Fn::Equals": Array [
         Object {
-          "Fn::Equals": Array [
+          "Fn::Select": Array [
+            "0",
             Object {
-              "Fn::Select": Array [
-                "0",
+              "Fn::Split": Array [
+                "-",
                 Object {
-                  "Fn::Split": Array [
-                    "-",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                  ],
+                  "Ref": "AWS::Region",
                 },
               ],
             },
-            "cn",
           ],
         },
+        "cn",
       ],
     },
   },
@@ -714,16 +710,16 @@ Object {
                 },
                 Object {
                   "Fn::If": Array [
-                    "NotInChina",
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
                     Object {
                       "Action": "kms:Decrypt",
                       "Effect": "Allow",
                       "Resource": Object {
                         "Fn::ImportValue": "cloudformation-kms-production",
                       },
-                    },
-                    Object {
-                      "Ref": "AWS::NoValue",
                     },
                   ],
                 },
@@ -1384,26 +1380,22 @@ exports[`[template]: all-properties-CPU 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {
-    "NotInChina": Object {
-      "Fn::Not": Array [
+    "InChina": Object {
+      "Fn::Equals": Array [
         Object {
-          "Fn::Equals": Array [
+          "Fn::Select": Array [
+            "0",
             Object {
-              "Fn::Select": Array [
-                "0",
+              "Fn::Split": Array [
+                "-",
                 Object {
-                  "Fn::Split": Array [
-                    "-",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                  ],
+                  "Ref": "AWS::Region",
                 },
               ],
             },
-            "cn",
           ],
         },
+        "cn",
       ],
     },
   },
@@ -2094,16 +2086,16 @@ Object {
                 },
                 Object {
                   "Fn::If": Array [
-                    "NotInChina",
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
                     Object {
                       "Action": "kms:Decrypt",
                       "Effect": "Allow",
                       "Resource": Object {
                         "Fn::ImportValue": "cloudformation-kms-production",
                       },
-                    },
-                    Object {
-                      "Ref": "AWS::NoValue",
                     },
                   ],
                 },
@@ -2762,26 +2754,22 @@ exports[`[template]: all-properties-low-CPU 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {
-    "NotInChina": Object {
-      "Fn::Not": Array [
+    "InChina": Object {
+      "Fn::Equals": Array [
         Object {
-          "Fn::Equals": Array [
+          "Fn::Select": Array [
+            "0",
             Object {
-              "Fn::Select": Array [
-                "0",
+              "Fn::Split": Array [
+                "-",
                 Object {
-                  "Fn::Split": Array [
-                    "-",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                  ],
+                  "Ref": "AWS::Region",
                 },
               ],
             },
-            "cn",
           ],
         },
+        "cn",
       ],
     },
   },
@@ -3472,16 +3460,16 @@ Object {
                 },
                 Object {
                   "Fn::If": Array [
-                    "NotInChina",
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
                     Object {
                       "Action": "kms:Decrypt",
                       "Effect": "Allow",
                       "Resource": Object {
                         "Fn::ImportValue": "cloudformation-kms-production",
                       },
-                    },
-                    Object {
-                      "Ref": "AWS::NoValue",
                     },
                   ],
                 },
@@ -4140,26 +4128,22 @@ exports[`[template]: all-properties-no-CPU 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {
-    "NotInChina": Object {
-      "Fn::Not": Array [
+    "InChina": Object {
+      "Fn::Equals": Array [
         Object {
-          "Fn::Equals": Array [
+          "Fn::Select": Array [
+            "0",
             Object {
-              "Fn::Select": Array [
-                "0",
+              "Fn::Split": Array [
+                "-",
                 Object {
-                  "Fn::Split": Array [
-                    "-",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                  ],
+                  "Ref": "AWS::Region",
                 },
               ],
             },
-            "cn",
           ],
         },
+        "cn",
       ],
     },
   },
@@ -4850,16 +4834,16 @@ Object {
                 },
                 Object {
                   "Fn::If": Array [
-                    "NotInChina",
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
                     Object {
                       "Action": "kms:Decrypt",
                       "Effect": "Allow",
                       "Resource": Object {
                         "Fn::ImportValue": "cloudformation-kms-production",
                       },
-                    },
-                    Object {
-                      "Ref": "AWS::NoValue",
                     },
                   ],
                 },
@@ -5518,26 +5502,22 @@ exports[`[template]: defaults 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {
-    "NotInChina": Object {
-      "Fn::Not": Array [
+    "InChina": Object {
+      "Fn::Equals": Array [
         Object {
-          "Fn::Equals": Array [
+          "Fn::Select": Array [
+            "0",
             Object {
-              "Fn::Select": Array [
-                "0",
+              "Fn::Split": Array [
+                "-",
                 Object {
-                  "Fn::Split": Array [
-                    "-",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                  ],
+                  "Ref": "AWS::Region",
                 },
               ],
             },
-            "cn",
           ],
         },
+        "cn",
       ],
     },
   },
@@ -6154,16 +6134,16 @@ Object {
                 },
                 Object {
                   "Fn::If": Array [
-                    "NotInChina",
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
                     Object {
                       "Action": "kms:Decrypt",
                       "Effect": "Allow",
                       "Resource": Object {
                         "Fn::ImportValue": "cloudformation-kms-production",
                       },
-                    },
-                    Object {
-                      "Ref": "AWS::NoValue",
                     },
                   ],
                 },
@@ -6758,26 +6738,22 @@ exports[`[template]: fifo 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {
-    "NotInChina": Object {
-      "Fn::Not": Array [
+    "InChina": Object {
+      "Fn::Equals": Array [
         Object {
-          "Fn::Equals": Array [
+          "Fn::Select": Array [
+            "0",
             Object {
-              "Fn::Select": Array [
-                "0",
+              "Fn::Split": Array [
+                "-",
                 Object {
-                  "Fn::Split": Array [
-                    "-",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                  ],
+                  "Ref": "AWS::Region",
                 },
               ],
             },
-            "cn",
           ],
         },
+        "cn",
       ],
     },
   },
@@ -7361,16 +7337,16 @@ Object {
                 },
                 Object {
                   "Fn::If": Array [
-                    "NotInChina",
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
                     Object {
                       "Action": "kms:Decrypt",
                       "Effect": "Allow",
                       "Resource": Object {
                         "Fn::ImportValue": "cloudformation-kms-production",
                       },
-                    },
-                    Object {
-                      "Ref": "AWS::NoValue",
                     },
                   ],
                 },
@@ -7940,26 +7916,22 @@ exports[`[template]: fifoMaxSize 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Conditions": Object {
-    "NotInChina": Object {
-      "Fn::Not": Array [
+    "InChina": Object {
+      "Fn::Equals": Array [
         Object {
-          "Fn::Equals": Array [
+          "Fn::Select": Array [
+            "0",
             Object {
-              "Fn::Select": Array [
-                "0",
+              "Fn::Split": Array [
+                "-",
                 Object {
-                  "Fn::Split": Array [
-                    "-",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                  ],
+                  "Ref": "AWS::Region",
                 },
               ],
             },
-            "cn",
           ],
         },
+        "cn",
       ],
     },
   },
@@ -8543,16 +8515,16 @@ Object {
                 },
                 Object {
                   "Fn::If": Array [
-                    "NotInChina",
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
                     Object {
                       "Action": "kms:Decrypt",
                       "Effect": "Allow",
                       "Resource": Object {
                         "Fn::ImportValue": "cloudformation-kms-production",
                       },
-                    },
-                    Object {
-                      "Ref": "AWS::NoValue",
                     },
                   ],
                 },
