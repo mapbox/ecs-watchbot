@@ -1,0 +1,9 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+  build:
+    commands:
+      - docker build -q -t ecs-watchbot -f test/Dockerfile ./ && docker run -t ecs-watchbot npm run test-container
