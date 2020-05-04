@@ -33,8 +33,6 @@
   "devDependencies": {
     "@mapbox/eslint-config-mapbox": "^2.0.1",
     "@mapbox/mock-aws-sdk-js": "^1.0.0",
-    "cli-spinner": "^0.2.10",
-    "cwlogs": "^1.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-node": "^10.0.0",
     "fake-env": "^1.0.0",
@@ -52,6 +50,8 @@
     "@mapbox/watchbot-progress": "^1.1.6",
     "aws-sdk": "^2.587.0",
     "binary-split": "^1.0.5",
+    "cli-spinner": "^0.2.10",
+    "cwlogs": "^1.0.3",
     "fs-extra": "^8.1.0",
     "inquirer": "^7.0.0",
     "p-queue": "^6.2.1",
