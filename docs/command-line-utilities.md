@@ -1,5 +1,4 @@
 ## Command-line utilities
-
 ```
 > watchbot-dead-letter --help
 
@@ -18,6 +17,15 @@
 You must provide both a service region and stack name to execute this command. Note
 that your stack will need to expose the cluster ARN in your Watchbot stack `Outputs`
 property. Pre-2.0 versions of Watchbot do not expose these outputs.
+
+### Installing watchbot-dead-letter
+Install the CLI from source.
+```
+> git clone git@github.com:mapbox/ecs-watchbot.git
+> cd ecs-watchbot
+> npm install -g
+```
+You cannot install the CLI from the `@mapbox/watchbot` package.  It depends on dev-only dependencies.  This is to keep the CLI 'runtime' separate from the watchbot Docker runtime.
 
 ### Dead letter workflow
 
