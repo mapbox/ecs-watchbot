@@ -336,6 +336,34 @@ test('[worker] waitFor, exit 4', async (assert) => {
   assert.end();
 });
 
+test('[worker] waitFor, exit 120', async (assert) => {
+  const logger = stubber(Logger).setup();
+  logger.log.restore();
+  logger.stream.restore();
+  const message = sinon.createStubInstance(Message);
+  message.env = { Message: 'forty bananas', SentTimestamp: '2020-11-03T21:57:55.000Z' };
+  const options = { command: 'exit 120', volumes: ['/tmp'] };
+  const worker = new Worker(message, options);
+
+  sinon.spy(child_process, 'spawn');
+
+  try {
+    await worker.waitFor();
+  } catch (err) {
+    assert.ifError(err, 'failed');
+  }
+
+  const results = logger.workerFailure.args[0][0];
+  assert.equal(results.code, 120, 'logged worker failure exit code');
+  assert.ok(results.duration, 'logged worker failure duration');
+  assert.ok(results.response_duration, 'logged worker response duration');
+  assert.equal(message.complete.callCount, 1, 'calls message.complete()');
+
+  child_process.spawn.restore();
+  logger.teardown();
+  assert.end();
+});
+
 test('[worker] waitFor, child_process.spawn failure', async (assert) => {
   const logger = stubber(Logger).setup();
   logger.log.restore();
