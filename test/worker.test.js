@@ -341,7 +341,7 @@ test('[worker] waitFor, exit 120', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'forty bananas', SentTimestamp: '2020-11-03T21:57:55.000Z' };
+  message.env = { Message: 'forty bananas', SentTimestamp: '2019-02-09T21:57:55.000Z' };
   const options = { command: 'exit 120', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
