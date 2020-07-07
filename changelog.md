@@ -1,3 +1,7 @@
+### 4.20.3
+
+- Treat a rare python exit code of 120 as a special case of exit code 3 (#340).
+
 ### 4.20.2
 
 - Using InChina instead of NotInChina Cloudformation condition: https://github.com/mapbox/ecs-watchbot/pull/329
