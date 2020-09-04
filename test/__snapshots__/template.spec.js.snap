@@ -1001,6 +1001,7 @@ Object {
       "Properties": Object {
         "Cluster": "processing",
         "DesiredCount": 0,
+        "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "SoupTask",
         },
@@ -2377,6 +2378,7 @@ Object {
       "Properties": Object {
         "Cluster": "processing",
         "DesiredCount": 0,
+        "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "SoupTask",
         },
@@ -3751,6 +3753,7 @@ Object {
       "Properties": Object {
         "Cluster": "processing",
         "DesiredCount": 0,
+        "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "SoupTask",
         },
@@ -5125,6 +5128,7 @@ Object {
       "Properties": Object {
         "Cluster": "processing",
         "DesiredCount": 0,
+        "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "SoupTask",
         },
@@ -6403,6 +6407,7 @@ Object {
       "Properties": Object {
         "Cluster": "processing",
         "DesiredCount": 0,
+        "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "WatchbotTask",
         },
@@ -7599,6 +7604,7 @@ Object {
       "Properties": Object {
         "Cluster": "processing",
         "DesiredCount": 0,
+        "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "WatchbotTask",
         },
@@ -8777,6 +8783,7 @@ Object {
       "Properties": Object {
         "Cluster": "processing",
         "DesiredCount": 0,
+        "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "WatchbotTask",
         },
