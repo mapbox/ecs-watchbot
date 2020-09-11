@@ -1,3 +1,18 @@
+
+### 5.0.0
+
+-  Sets `PropagateTags` to `TASK_DEFINITION` on the ECS Service. If you are on the old ARN and the AWS account you are in has opted into the new format this version move you to the new ARN format by replacing your current service with a new one.
+
+**ECS Service**
+
+- Old: arn:aws:ecs:region:account-id:service/service-name
+- New: arn:aws:ecs:region:account-id:service/cluster-name/service-name
+
+**ECS Task**
+
+- Old: arn:aws:ecs:region:account-id:task/task-id
+- New: arn:aws:ecs:region:account-id:task/cluster-name/task-id
+
 ### 4.20.2
 
 - Using InChina instead of NotInChina Cloudformation condition: https://github.com/mapbox/ecs-watchbot/pull/329
