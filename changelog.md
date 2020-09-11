@@ -1,7 +1,7 @@
 
 ### 5.0.0
 
--  Sets `PropagateTags` to `TASK_DEFINITION` on the ECS Service. If you are on the old ARN format currently this will move you to the new ARN format by replacing your current service with a new service. This replacement is safe as AWS directs traffic to the new service before taking down the old one. Details on the new ARN format are below.
+-  Sets `PropagateTags` to `TASK_DEFINITION` on the ECS Service. If you are on the old ARN and the AWS account you are in has opted into the new format this version move you to the new ARN format by replacing your current service with a new one.
 
 **ECS Service**
 
