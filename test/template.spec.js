@@ -1,6 +1,6 @@
 'use strict';
 
-/* NOTE: this scipt is meant to be run via Jest, not Tape */
+/* NOTE: this script is meant to be run via Jest, not Tape */
 /* eslint-disable no-undef */
 
 const assert = require('assert');
@@ -23,6 +23,40 @@ test('[template]', () => {
   }));
 
   expect(builtWithDefaults).toMatchSnapshot('defaults');
+
+  const fargateDefaults = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com',
+    reservation: {
+      memory: 512,
+      cpu: 256
+    },
+    fargate: {}
+  }));
+
+  expect(fargateDefaults).toMatchSnapshot('fargateDefaults');
+
+  const fargateSecureSpot = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com',
+    reservation: {
+      memory: 512,
+      cpu: 256
+    },
+    fargate: {
+      spot: true,
+      securityGroups: ['mock-security-group-id'],
+      subnets: ['mock-subnet-id-']
+    }
+  }));
+
+  expect(fargateSecureSpot).toMatchSnapshot('fargateSecureSpot');
 
   const setsAllOptions = cf.merge(template({
     service: 'example',
