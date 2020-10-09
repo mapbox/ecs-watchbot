@@ -103,7 +103,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 
 If you use the `fargate` option, Watchbot will launch tasks on Fargate capacity, rather than EC2 capacity.
 
-The choice to use `fargate` affects several other options above. Not all ECS task and service options are available on Fargate, and some must be specified. For example, the options `reservations.softMemory`, `privileged`, `writableFileSystem`, `placementConstraints`, and `placementStrategies` cannot be used alongside `fargate`. `reservations.memory` and `reservations.cpu` must be set, and they must be [values that are allows for Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html).
+The choice to use `fargate` affects several other options above. Not all ECS task and service options are available on Fargate, and some must be specified. For example, the options `reservations.softMemory`, `privileged`, `writableFileSystem`, `placementConstraints`, and `placementStrategies` cannot be used alongside `fargate`. `reservations.memory` and `reservations.cpu` must be set, and they must be [values that are allowed for Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html).
 
 ### writableFilesystem mode explained
 
