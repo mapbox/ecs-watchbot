@@ -54,6 +54,56 @@ test('[template]', () => {
 
   expect(fargateSecureSpot).toMatchSnapshot('fargateSecureSpot');
 
+  expect(() => {
+    template({
+      service: 'example',
+      serviceVersion: '1',
+      command: 'echo hello world',
+      cluster: 'processing',
+      notificationEmail: 'hello@mapbox.pagerduty.com',
+      reservation: {
+        softMemory: 2048
+      },
+      fargate: {}
+    });
+  }).toThrow('reservation.softMemory is not compatible with Fargate');
+
+  expect(() => {
+    template({
+      service: 'example',
+      serviceVersion: '1',
+      command: 'echo hello world',
+      cluster: 'processing',
+      notificationEmail: 'hello@mapbox.pagerduty.com',
+      fargate: {},
+      placementConstraints: { Ref: 'SomePlacementConstraints' }
+    });
+  }).toThrow('placementConstraints is not compatible with Fargate');
+
+  expect(() => {
+    template({
+      service: 'example',
+      serviceVersion: '1',
+      command: 'echo hello world',
+      cluster: 'processing',
+      notificationEmail: 'hello@mapbox.pagerduty.com',
+      fargate: {},
+      placementStrategies: { Ref: 'SomePlacementStrategies' }
+    });
+  }).toThrow('placementStrategies is not compatible with Fargate');
+
+  expect(() => {
+    template({
+      service: 'example',
+      serviceVersion: '1',
+      command: 'echo hello world',
+      cluster: 'processing',
+      notificationEmail: 'hello@mapbox.pagerduty.com',
+      fargate: {},
+      writableFilesystem: { Ref: 'WritableFilesystem' }
+    });
+  }).toThrow('writableFilesystem is not compatible with Fargate');
+
   const setsAllOptions = cf.merge(template({
     service: 'example',
     serviceVersion: '1',

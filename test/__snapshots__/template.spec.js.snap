@@ -7037,7 +7037,7 @@ Object {
                   "Effect": "Allow",
                   "Resource": Object {
                     "Fn::GetAtt": Array [
-                      "LogGroup",
+                      "WatchbotLogGroup",
                       "Arn",
                     ],
                   },
@@ -8357,7 +8357,7 @@ Object {
                   "Effect": "Allow",
                   "Resource": Object {
                     "Fn::GetAtt": Array [
-                      "LogGroup",
+                      "WatchbotLogGroup",
                       "Arn",
                     ],
                   },
