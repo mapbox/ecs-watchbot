@@ -30,10 +30,6 @@ test('[template]', () => {
     command: 'echo hello world',
     cluster: 'processing',
     notificationEmail: 'hello@mapbox.pagerduty.com',
-    reservation: {
-      memory: 512,
-      cpu: 256
-    },
     fargate: {}
   }));
 
@@ -46,8 +42,8 @@ test('[template]', () => {
     cluster: 'processing',
     notificationEmail: 'hello@mapbox.pagerduty.com',
     reservation: {
-      memory: 512,
-      cpu: 256
+      memory: 2048,
+      cpu: 1024
     },
     fargate: {
       spot: true,

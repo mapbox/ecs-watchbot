@@ -9058,7 +9058,7 @@ Object {
               "listen",
               "echo hello world",
             ],
-            "Cpu": 256,
+            "Cpu": 1024,
             "Environment": Array [
               Object {
                 "Name": "WorkTopic",
@@ -9165,7 +9165,7 @@ Object {
             ],
           },
         ],
-        "Cpu": 256,
+        "Cpu": 1024,
         "ExecutionRoleArn": Object {
           "Fn::GetAtt": Array [
             "WatchbotExecutionRole",
@@ -9173,7 +9173,7 @@ Object {
           ],
         },
         "Family": "example",
-        "Memory": 512,
+        "Memory": 2048,
         "NetworkMode": "awsvpc",
         "RequiresCompatibilities": Array [
           "FARGATE",
