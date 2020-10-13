@@ -30,10 +30,11 @@ test('[template]', () => {
     command: 'echo hello world',
     cluster: 'processing',
     notificationEmail: 'hello@mapbox.pagerduty.com',
-    fargate: {}
+    capacity: 'FARGATE'
   }));
 
-  expect(fargateDefaults).toMatchSnapshot('fargateDefaults');
+  // Only the conditions change.
+  expect(fargateDefaults.Conditions).toMatchSnapshot('fargateDefaults');
 
   const fargateSecureSpot = cf.merge(template({
     service: 'example',
@@ -45,64 +46,13 @@ test('[template]', () => {
       memory: 2048,
       cpu: 1024
     },
-    fargate: {
-      spot: true,
-      securityGroups: ['mock-security-group-id'],
-      subnets: ['mock-subnet-id-']
-    }
+    capacity: 'FARGATE_SPOT',
+    fargateSecurityGroups: ['mock-security-group-id'],
+    fargateSubnets: ['mock-subnet-id-']
   }));
 
-  expect(fargateSecureSpot).toMatchSnapshot('fargateSecureSpot');
-
-  expect(() => {
-    template({
-      service: 'example',
-      serviceVersion: '1',
-      command: 'echo hello world',
-      cluster: 'processing',
-      notificationEmail: 'hello@mapbox.pagerduty.com',
-      reservation: {
-        softMemory: 2048
-      },
-      fargate: {}
-    });
-  }).toThrow('reservation.softMemory is not compatible with Fargate');
-
-  expect(() => {
-    template({
-      service: 'example',
-      serviceVersion: '1',
-      command: 'echo hello world',
-      cluster: 'processing',
-      notificationEmail: 'hello@mapbox.pagerduty.com',
-      fargate: {},
-      placementConstraints: { Ref: 'SomePlacementConstraints' }
-    });
-  }).toThrow('placementConstraints is not compatible with Fargate');
-
-  expect(() => {
-    template({
-      service: 'example',
-      serviceVersion: '1',
-      command: 'echo hello world',
-      cluster: 'processing',
-      notificationEmail: 'hello@mapbox.pagerduty.com',
-      fargate: {},
-      placementStrategies: { Ref: 'SomePlacementStrategies' }
-    });
-  }).toThrow('placementStrategies is not compatible with Fargate');
-
-  expect(() => {
-    template({
-      service: 'example',
-      serviceVersion: '1',
-      command: 'echo hello world',
-      cluster: 'processing',
-      notificationEmail: 'hello@mapbox.pagerduty.com',
-      fargate: {},
-      writableFilesystem: { Ref: 'WritableFilesystem' }
-    });
-  }).toThrow('writableFilesystem is not compatible with Fargate');
+  expect(fargateSecureSpot.Conditions).toMatchSnapshot('fargateSecureSpotConditions');
+  expect(fargateSecureSpot.Resources.WatchbotService.Properties.NetworkConfiguration).toMatchSnapshot('fargateSecureSpotNetworkConfiguration');
 
   const setsAllOptions = cf.merge(template({
     service: 'example',
