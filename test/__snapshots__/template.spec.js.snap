@@ -287,69 +287,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
-    "SoupExecutionRole": Object {
-      "Condition": "SoupCapacityIsNotEC2",
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:GetAuthorizationToken",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "SoupLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-execution-role",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "SoupLambdaScalingRole": Object {
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
@@ -1148,7 +1085,9 @@ Object {
             "Cpu": Object {
               "Fn::If": Array [
                 "SoupCapacityIsEC2",
-                NaN,
+                Object {
+                  "Ref": "Gitsha",
+                },
                 Object {
                   "Ref": "AWS::NoValue",
                 },
@@ -1313,7 +1252,9 @@ Object {
         "Cpu": Object {
           "Fn::If": Array [
             "SoupCapacityIsNotEC2",
-            NaN,
+            Object {
+              "Ref": "Gitsha",
+            },
             Object {
               "Ref": "AWS::NoValue",
             },
@@ -1323,10 +1264,7 @@ Object {
           "Fn::If": Array [
             "SoupCapacityIsNotEC2",
             Object {
-              "Fn::GetAtt": Array [
-                "SoupExecutionRole",
-                "Arn",
-              ],
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
             },
             Object {
               "Ref": "AWS::NoValue",
@@ -1865,69 +1803,6 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "SoupExecutionRole": Object {
-      "Condition": "SoupCapacityIsNotEC2",
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:GetAuthorizationToken",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "SoupLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-execution-role",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "SoupLambdaScalingRole": Object {
       "Properties": Object {
@@ -2902,10 +2777,7 @@ Object {
           "Fn::If": Array [
             "SoupCapacityIsNotEC2",
             Object {
-              "Fn::GetAtt": Array [
-                "SoupExecutionRole",
-                "Arn",
-              ],
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
             },
             Object {
               "Ref": "AWS::NoValue",
@@ -3445,69 +3317,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
-    "SoupExecutionRole": Object {
-      "Condition": "SoupCapacityIsNotEC2",
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:GetAuthorizationToken",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "SoupLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-execution-role",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "SoupLambdaScalingRole": Object {
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
@@ -4493,10 +4302,7 @@ Object {
           "Fn::If": Array [
             "SoupCapacityIsNotEC2",
             Object {
-              "Fn::GetAtt": Array [
-                "SoupExecutionRole",
-                "Arn",
-              ],
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
             },
             Object {
               "Ref": "AWS::NoValue",
@@ -5036,69 +4842,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
     },
-    "SoupExecutionRole": Object {
-      "Condition": "SoupCapacityIsNotEC2",
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:GetAuthorizationToken",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "SoupLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-execution-role",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "SoupLambdaScalingRole": Object {
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
@@ -6084,10 +5827,7 @@ Object {
           "Fn::If": Array [
             "SoupCapacityIsNotEC2",
             Object {
-              "Fn::GetAtt": Array [
-                "SoupExecutionRole",
-                "Arn",
-              ],
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
             },
             Object {
               "Ref": "AWS::NoValue",
@@ -6626,69 +6366,6 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "WatchbotExecutionRole": Object {
-      "Condition": "WatchbotCapacityIsNotEC2",
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:GetAuthorizationToken",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "WatchbotLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-execution-role",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "WatchbotLambdaScalingRole": Object {
       "Properties": Object {
@@ -7555,10 +7232,7 @@ Object {
           "Fn::If": Array [
             "WatchbotCapacityIsNotEC2",
             Object {
-              "Fn::GetAtt": Array [
-                "WatchbotExecutionRole",
-                "Arn",
-              ],
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
             },
             Object {
               "Ref": "AWS::NoValue",
@@ -8225,69 +7899,6 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "WatchbotExecutionRole": Object {
-      "Condition": "WatchbotCapacityIsNotEC2",
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:GetAuthorizationToken",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "WatchbotLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-execution-role",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "WatchbotLambdaScalingRole": Object {
       "Properties": Object {
@@ -9109,10 +8720,7 @@ Object {
           "Fn::If": Array [
             "WatchbotCapacityIsNotEC2",
             Object {
-              "Fn::GetAtt": Array [
-                "WatchbotExecutionRole",
-                "Arn",
-              ],
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
             },
             Object {
               "Ref": "AWS::NoValue",
@@ -9640,69 +9248,6 @@ Object {
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "WatchbotExecutionRole": Object {
-      "Condition": "WatchbotCapacityIsNotEC2",
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "ecr:BatchCheckLayerAvailability",
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:GetAuthorizationToken",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "WatchbotLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-execution-role",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "WatchbotLambdaScalingRole": Object {
       "Properties": Object {
@@ -10524,10 +10069,7 @@ Object {
           "Fn::If": Array [
             "WatchbotCapacityIsNotEC2",
             Object {
-              "Fn::GetAtt": Array [
-                "WatchbotExecutionRole",
-                "Arn",
-              ],
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
             },
             Object {
               "Ref": "AWS::NoValue",
