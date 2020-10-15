@@ -22,6 +22,34 @@ Object {
         "cn",
       ],
     },
+    "SoupCapacityIsEC2": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "EC2",
+      ],
+    },
+    "SoupCapacityIsFargate": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE",
+      ],
+    },
+    "SoupCapacityIsFargateSpot": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE_SPOT",
+      ],
+    },
+    "SoupCapacityIsNotEC2": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            "EC2",
+            "EC2",
+          ],
+        },
+      ],
+    },
   },
   "Mappings": Object {
     "EcrRegion": Object {
@@ -999,8 +1027,45 @@ Object {
     },
     "SoupService": Object {
       "Properties": Object {
+        "CapacityProviderStrategy": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargateSpot",
+            Array [
+              Object {
+                "CapacityProvider": "FARGATE_SPOT",
+                "Weight": 1,
+              },
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Cluster": "processing",
         "DesiredCount": 0,
+        "LaunchType": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargate",
+            "FARGATE",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkConfiguration": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "AwsvpcConfiguration": Object {
+                "SecurityGroups": undefined,
+                "Subnets": undefined,
+              },
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "SoupTask",
@@ -1018,7 +1083,15 @@ Object {
               "echo hello world",
             ],
             "Cpu": Object {
-              "Ref": "Gitsha",
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                Object {
+                  "Ref": "Gitsha",
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
             },
             "Environment": Array [
               Object {
@@ -1122,7 +1195,15 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
-            "Memory": 512,
+            "Memory": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                512,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "MemoryReservation": 128,
             "MountPoints": Array [
               Object {
@@ -1150,7 +1231,15 @@ Object {
               ],
             },
             "Privileged": true,
-            "ReadonlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                true,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -1160,7 +1249,58 @@ Object {
             ],
           },
         ],
+        "Cpu": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "Ref": "Gitsha",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "ExecutionRoleArn": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Family": "abc-123",
+        "Memory": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            512,
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkMode": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            "awsvpc",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "RequiresCompatibilities": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Array [
+              "FARGATE",
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "TaskRoleArn": Object {
           "Ref": "SoupRole",
         },
@@ -1399,6 +1539,34 @@ Object {
         "cn",
       ],
     },
+    "SoupCapacityIsEC2": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "EC2",
+      ],
+    },
+    "SoupCapacityIsFargate": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE",
+      ],
+    },
+    "SoupCapacityIsFargateSpot": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE_SPOT",
+      ],
+    },
+    "SoupCapacityIsNotEC2": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            "EC2",
+            "EC2",
+          ],
+        },
+      ],
+    },
   },
   "Mappings": Object {
     "EcrRegion": Object {
@@ -2376,8 +2544,45 @@ Object {
     },
     "SoupService": Object {
       "Properties": Object {
+        "CapacityProviderStrategy": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargateSpot",
+            Array [
+              Object {
+                "CapacityProvider": "FARGATE_SPOT",
+                "Weight": 1,
+              },
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Cluster": "processing",
         "DesiredCount": 0,
+        "LaunchType": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargate",
+            "FARGATE",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkConfiguration": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "AwsvpcConfiguration": Object {
+                "SecurityGroups": undefined,
+                "Subnets": undefined,
+              },
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "SoupTask",
@@ -2394,7 +2599,15 @@ Object {
               "listen",
               "echo hello world",
             ],
-            "Cpu": 1024,
+            "Cpu": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                1024,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Environment": Array [
               Object {
                 "Name": "WorkTopic",
@@ -2497,7 +2710,15 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
-            "Memory": 512,
+            "Memory": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                512,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "MemoryReservation": 128,
             "MountPoints": Array [
               Object {
@@ -2525,7 +2746,15 @@ Object {
               ],
             },
             "Privileged": true,
-            "ReadonlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                true,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -2535,7 +2764,56 @@ Object {
             ],
           },
         ],
+        "Cpu": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            1024,
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "ExecutionRoleArn": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Family": "abc-123",
+        "Memory": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            512,
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkMode": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            "awsvpc",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "RequiresCompatibilities": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Array [
+              "FARGATE",
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "TaskRoleArn": Object {
           "Ref": "SoupRole",
         },
@@ -2774,1379 +3052,32 @@ Object {
         "cn",
       ],
     },
-  },
-  "Mappings": Object {
-    "EcrRegion": Object {
-      "ap-northeast-1": Object {
-        "Region": "us-west-2",
-      },
-      "ap-southeast-1": Object {
-        "Region": "us-west-2",
-      },
-      "ap-southeast-2": Object {
-        "Region": "us-west-2",
-      },
-      "cn-north-1": Object {
-        "Region": "cn-north-1",
-      },
-      "cn-northwest-1": Object {
-        "Region": "cn-northwest-1",
-      },
-      "eu-central-1": Object {
-        "Region": "eu-west-1",
-      },
-      "eu-west-1": Object {
-        "Region": "eu-west-1",
-      },
-      "us-east-1": Object {
-        "Region": "us-east-1",
-      },
-      "us-east-2": Object {
-        "Region": "us-east-1",
-      },
-      "us-west-1": Object {
-        "Region": "us-west-2",
-      },
-      "us-west-2": Object {
-        "Region": "us-west-2",
-      },
-    },
-  },
-  "Metadata": Object {
-    "EcsWatchbotVersion": "5.0.0",
-  },
-  "Outputs": Object {
-    "ClusterArn": Object {
-      "Description": "Service cluster ARN",
-      "Value": "processing",
-    },
-    "SoupDeadLetterQueueUrl": Object {
-      "Description": "The URL for the dead letter queue",
-      "Value": Object {
-        "Ref": "SoupDeadLetterQueue",
-      },
-    },
-    "SoupLogGroup": Object {
-      "Description": "The ARN of Watchbot's log group",
-      "Value": Object {
-        "Fn::GetAtt": Array [
-          "SoupLogGroup",
-          "Arn",
-        ],
-      },
-    },
-    "SoupQueueUrl": Object {
-      "Description": "The URL for the primary work queue",
-      "Value": Object {
-        "Ref": "SoupQueue",
-      },
-    },
-  },
-  "Parameters": Object {},
-  "Resources": Object {
-    "SoupAlarmMemoryUtilization": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v5.0.0/docs/alarms.md#memoryutilization",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "SoupMemoryUtilization",
-              Object {
-                "Ref": "AWS::Region",
-              },
-            ],
-          ],
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "Dimensions": Array [
-          Object {
-            "Name": "ClusterName",
-            "Value": "processing",
-          },
-          Object {
-            "Name": "ServiceName",
-            "Value": Object {
-              "Fn::GetAtt": Array [
-                "SoupService",
-                "Name",
-              ],
-            },
-          },
-        ],
-        "EvaluationPeriods": 10,
-        "MetricName": "MemoryUtilization",
-        "Namespace": "AWS/ECS",
-        "Period": 60,
-        "Statistic": "Average",
-        "Threshold": 100,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "SoupCustomScalingResource": Object {
-      "Properties": Object {
-        "ServiceToken": Object {
-          "Fn::GetAtt": Array [
-            "SoupScalingLambda",
-            "Arn",
-          ],
-        },
-        "maxSize": 90,
-      },
-      "Type": "AWS::CloudFormation::CustomResource",
-    },
-    "SoupDashboard": Object {
-      "Properties": Object {
-        "DashboardBody": Object {
-          "Fn::Sub": Array [
-            "{\\"widgets\\":[{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":0,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Visible and NotVisible Messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesNotVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateAgeOfOldestMessage\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"stat\\":\\"Maximum\\"}],[\\"...\\",{\\"stat\\":\\"p99\\"}],[\\"...\\"],[\\"...\\",{\\"stat\\":\\"p50\\"}]],\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Age of Oldest Message (sec)\\",\\"stat\\":\\"Average\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Worker Duration (msec)\\",\\"metrics\\":[[\\"Mapbox/ecs-watchbot\\",\\"\${Prefix}WorkerDuration-\${AWS::StackName}\\",{\\"stat\\":\\"Maximum\\"}],[\\"...\\",{\\"stat\\":\\"p99\\"}],[\\"...\\"],[\\"...\\",{\\"stat\\":\\"p50\\"}]],\\"region\\":\\"\${AWS::Region}\\",\\"stat\\":\\"Average\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Response Duration (msec)\\",\\"metrics\\":[[\\"Mapbox/ecs-watchbot\\",\\"\${Prefix}ResponseDuration-\${AWS::StackName}\\",{\\"stat\\":\\"Maximum\\"}],[\\"...\\",{\\"stat\\":\\"p99\\"}],[\\"...\\"],[\\"...\\",{\\"stat\\":\\"p50\\"}]],\\"region\\":\\"\${AWS::Region}\\",\\"stat\\":\\"Average\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Deleted messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"NumberOfMessagesDeleted\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotService: RunningCapacity, DesiredCapacity\\",\\"metrics\\":[[\\"Mapbox/ecs-cluster\\",\\"RunningCapacity\\",\\"ClusterName\\",\\"\${Cluster}\\",\\"ServiceName\\",\\"\${WatchbotService}\\",{\\"period\\":60}],[\\".\\",\\"DesiredCapacity\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"Concurrency vs Throughput\\",\\"metrics\\":[[\\"Mapbox/ecs-cluster\\",\\"RunningCapacity\\",\\"ClusterName\\",\\"\${Cluster}\\",\\"ServiceName\\",\\"\${WatchbotService}\\",{\\"period\\":60,\\"yAxis\\":\\"right\\"}],[\\".\\",\\"DesiredCapacity\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60,\\"yAxis\\":\\"right\\"}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60,\\"stat\\":\\"Sum\\",\\"yAxis\\":\\"left\\"}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"right\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":18,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotService: CPUUtilization, MemoryUtilization\\",\\"metrics\\":[[\\"AWS/ECS\\",\\"CPUUtilization\\",\\"ServiceName\\",\\"\${WatchbotService}\\",\\"ClusterName\\",\\"\${Cluster}\\",{\\"period\\":60}],[\\".\\",\\"MemoryUtilization\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":300}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":18,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotDeadLetterQueue: Visible and NotVisible Messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesNotVisible\\",\\"QueueName\\",\\"\${WatchbotDeadLetterQueue}\\",{\\"period\\":60}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotDeadLetterQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}}]}",
-            Object {
-              "Cluster": "processing",
-              "Prefix": "Soup",
-              "WatchbotDeadLetterQueue": Object {
-                "Fn::GetAtt": Array [
-                  "SoupDeadLetterQueue",
-                  "QueueName",
-                ],
-              },
-              "WatchbotQueue": Object {
-                "Fn::GetAtt": Array [
-                  "SoupQueue",
-                  "QueueName",
-                ],
-              },
-              "WatchbotService": Object {
-                "Fn::GetAtt": Array [
-                  "SoupService",
-                  "Name",
-                ],
-              },
-            },
-          ],
-        },
-        "DashboardName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup",
-              Object {
-                "Ref": "AWS::Region",
-              },
-            ],
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Dashboard",
-    },
-    "SoupDeadLetterAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "Provides notification when messages are visible in the dead letter queue",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup-dead-letter",
-              Object {
-                "Ref": "AWS::Region",
-              },
-            ],
-          ],
-        },
-        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "Dimensions": Array [
-          Object {
-            "Name": "QueueName",
-            "Value": Object {
-              "Fn::GetAtt": Array [
-                "SoupDeadLetterQueue",
-                "QueueName",
-              ],
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "ApproximateNumberOfMessagesVisible",
-        "Namespace": "AWS/SQS",
-        "Period": "60",
-        "Statistic": "Minimum",
-        "Threshold": 1,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "SoupDeadLetterQueue": Object {
-      "Description": "List of messages that failed to process 14 times",
-      "Properties": Object {
-        "MessageRetentionPeriod": 1209600,
-        "QueueName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "-",
-              "SoupDeadLetterQueue",
-            ],
-          ],
-        },
-      },
-      "Type": "AWS::SQS::Queue",
-    },
-    "SoupLambdaScalingRole": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::Join": Array [
-                      "",
-                      Array [
-                        "arn:",
-                        Object {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupLambdaTotalMessagesRole": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::Join": Array [
-                      "",
-                      Array [
-                        "arn:",
-                        Object {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                Object {
-                  "Action": Array [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                Object {
-                  "Action": Array [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "SoupQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupLogGroup": Object {
-      "Properties": Object {
-        "LogGroupName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              Object {
-                "Ref": "AWS::Region",
-              },
-              "soup",
-            ],
-          ],
-        },
-        "RetentionInDays": 14,
-      },
-      "Type": "AWS::Logs::LogGroup",
-    },
-    "SoupMessageReceivesMetric": Object {
-      "Properties": Object {
-        "FilterPattern": "{ $.receives = * }",
-        "LogGroupName": Object {
-          "Ref": "SoupLogGroup",
-        },
-        "MetricTransformations": Array [
-          Object {
-            "MetricName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  "SoupMessageReceives-",
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                ],
-              ],
-            },
-            "MetricNamespace": "Mapbox/ecs-watchbot",
-            "MetricValue": "$.receives",
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-    "SoupMetricSchedulePermission": Object {
-      "Properties": Object {
-        "Action": "lambda:InvokeFunction",
-        "FunctionName": Object {
-          "Fn::GetAtt": Array [
-            "SoupTotalMessagesLambda",
-            "Arn",
-          ],
-        },
-        "Principal": "events.amazonaws.com",
-        "SourceArn": Object {
-          "Fn::GetAtt": Array [
-            "SoupTotalMessagesSchedule",
-            "Arn",
-          ],
-        },
-      },
-      "Type": "AWS::Lambda::Permission",
-    },
-    "SoupNotificationTopic": Object {
-      "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
-      "Properties": Object {
-        "Subscription": Array [
-          Object {
-            "Endpoint": "hello@mapbox.pagerduty.com",
-            "Protocol": "email",
-          },
-        ],
-      },
-      "Type": "AWS::SNS::Topic",
-    },
-    "SoupProgressTable": Object {
-      "Properties": Object {
-        "AttributeDefinitions": Array [
-          Object {
-            "AttributeName": "id",
-            "AttributeType": "S",
-          },
-        ],
-        "KeySchema": Array [
-          Object {
-            "AttributeName": "id",
-            "KeyType": "HASH",
-          },
-        ],
-        "ProvisionedThroughput": Object {
-          "ReadCapacityUnits": 30,
-          "WriteCapacityUnits": 30,
-        },
-        "TableName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup-progress",
-            ],
-          ],
-        },
-      },
-      "Type": "AWS::DynamoDB::Table",
-    },
-    "SoupProgressTablePermission": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "dynamodb:GetItem",
-                "dynamodb:PutItem",
-                "dynamodb:UpdateItem",
-              ],
-              "Effect": "Allow",
-              "Resource": Object {
-                "Fn::Join": Array [
-                  "",
-                  Array [
-                    "arn:aws:dynamodb:",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                    ":",
-                    Object {
-                      "Ref": "AWS::AccountId",
-                    },
-                    ":table/",
-                    Object {
-                      "Ref": "SoupProgressTable",
-                    },
-                  ],
-                ],
-              },
-            },
-          ],
-        },
-        "PolicyName": "watchbot-progress",
-        "Roles": Array [
-          Object {
-            "Ref": "SoupRole",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "SoupQueue": Object {
-      "Properties": Object {
-        "MessageRetentionPeriod": 1096,
-        "QueueName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "-",
-              "SoupQueue",
-            ],
-          ],
-        },
-        "RedrivePolicy": Object {
-          "deadLetterTargetArn": Object {
-            "Fn::GetAtt": Array [
-              "SoupDeadLetterQueue",
-              "Arn",
-            ],
-          },
-          "maxReceiveCount": 50,
-        },
-        "VisibilityTimeout": 180,
-      },
-      "Type": "AWS::SQS::Queue",
-    },
-    "SoupQueuePolicy": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Id": "SoupWatchbotQueue",
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sqs:SendMessage",
-              ],
-              "Condition": Object {
-                "ArnEquals": Object {
-                  "aws:SourceArn": Object {
-                    "Ref": "SoupTopic",
-                  },
-                },
-              },
-              "Effect": "Allow",
-              "Principal": Object {
-                "AWS": "*",
-              },
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "SoupQueue",
-                  "Arn",
-                ],
-              },
-              "Sid": "SendSomeMessages",
-            },
-          ],
-          "Version": "2008-10-17",
-        },
-        "Queues": Array [
-          Object {
-            "Ref": "SoupQueue",
-          },
-        ],
-      },
-      "Type": "AWS::SQS::QueuePolicy",
-    },
-    "SoupQueueSizeAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v5.0.0/docs/alarms.md#queuesize",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup-queue-size",
-              Object {
-                "Ref": "AWS::Region",
-              },
-            ],
-          ],
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "Dimensions": Array [
-          Object {
-            "Name": "QueueName",
-            "Value": Object {
-              "Fn::GetAtt": Array [
-                "SoupQueue",
-                "QueueName",
-              ],
-            },
-          },
-        ],
-        "EvaluationPeriods": 24,
-        "MetricName": "ApproximateNumberOfMessagesVisible",
-        "Namespace": "AWS/SQS",
-        "Period": "300",
-        "Statistic": "Average",
-        "Threshold": 40,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "SoupResponseDurationMetric": Object {
-      "Properties": Object {
-        "FilterPattern": "{ $.response_duration = * }",
-        "LogGroupName": Object {
-          "Ref": "SoupLogGroup",
-        },
-        "MetricTransformations": Array [
-          Object {
-            "MetricName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  "SoupResponseDuration-",
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                ],
-              ],
-            },
-            "MetricNamespace": "Mapbox/ecs-watchbot",
-            "MetricValue": "$.response_duration",
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-    "SoupRole": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "ecs-tasks.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "sqs:ReceiveMessage",
-                    "sqs:DeleteMessage",
-                    "sqs:ChangeMessageVisibility",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "SoupQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-                Object {
-                  "Action": Array [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                    "logs:FilterLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::GetAtt": Array [
-                      "SoupLogGroup",
-                      "Arn",
-                    ],
-                  },
-                },
-                Object {
-                  "Fn::If": Array [
-                    "InChina",
-                    Object {
-                      "Ref": "AWS::NoValue",
-                    },
-                    Object {
-                      "Action": "kms:Decrypt",
-                      "Effect": "Allow",
-                      "Resource": Object {
-                        "Fn::ImportValue": "cloudformation-kms-production",
-                      },
-                    },
-                  ],
-                },
-                Object {
-                  "Action": "sns:Publish",
-                  "Effect": "Allow",
-                  "Resource": Object {
-                    "Ref": "SoupTopic",
-                  },
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-default-worker",
-                ],
-              ],
-            },
-          },
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": "s3:GetObject",
-                  "Effect": "Allow",
-                  "Resource": "arn:aws:s3:::bucket/*",
-                },
-              ],
-            },
-            "PolicyName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                  "-user-defined-worker",
-                ],
-              ],
-            },
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupScaleDown": Object {
-      "Properties": Object {
-        "PolicyName": Object {
-          "Fn::Sub": "Soup\${AWS::StackName}-scale-down",
-        },
-        "PolicyType": "StepScaling",
-        "ScalingTargetId": Object {
-          "Ref": "SoupScalingTarget",
-        },
-        "StepScalingPolicyConfiguration": Object {
-          "AdjustmentType": "PercentChangeInCapacity",
-          "Cooldown": 300,
-          "MetricAggregationType": "Average",
-          "StepAdjustments": Array [
-            Object {
-              "MetricIntervalUpperBound": 0,
-              "ScalingAdjustment": -100,
-            },
-          ],
-        },
-      },
-      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
-    },
-    "SoupScaleDownTrigger": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupScaleDown",
-          },
-        ],
-        "AlarmDescription": "Scale down due to lack of in-flight messages in queue",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup-scale-down",
-            ],
-          ],
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": Array [
-          Object {
-            "Name": "QueueName",
-            "Value": Object {
-              "Fn::GetAtt": Array [
-                "SoupQueue",
-                "QueueName",
-              ],
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "TotalMessages",
-        "Namespace": "Mapbox/ecs-watchbot",
-        "Period": 600,
-        "Statistic": "Maximum",
-        "Threshold": 1,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "SoupScaleUp": Object {
-      "Properties": Object {
-        "PolicyName": Object {
-          "Fn::Sub": "\${AWS::StackName}-scale-up",
-        },
-        "PolicyType": "StepScaling",
-        "ScalingTargetId": Object {
-          "Ref": "SoupScalingTarget",
-        },
-        "StepScalingPolicyConfiguration": Object {
-          "AdjustmentType": "ChangeInCapacity",
-          "Cooldown": 300,
-          "MetricAggregationType": "Average",
-          "StepAdjustments": Array [
-            Object {
-              "MetricIntervalLowerBound": 0,
-              "ScalingAdjustment": Object {
-                "Fn::GetAtt": Array [
-                  "SoupCustomScalingResource",
-                  "ScalingAdjustment",
-                ],
-              },
-            },
-          ],
-        },
-      },
-      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
-    },
-    "SoupScaleUpTrigger": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupScaleUp",
-          },
-        ],
-        "AlarmDescription": "Scale up due to visible messages in queue",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup-scale-up",
-            ],
-          ],
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "Dimensions": Array [
-          Object {
-            "Name": "QueueName",
-            "Value": Object {
-              "Fn::GetAtt": Array [
-                "SoupQueue",
-                "QueueName",
-              ],
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "ApproximateNumberOfMessagesVisible",
-        "Namespace": "AWS/SQS",
-        "Period": 300,
-        "Statistic": "Maximum",
-        "Threshold": 0,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "SoupScalingLambda": Object {
-      "Properties": Object {
-        "Code": Object {
-          "ZipFile": Object {
-            "Fn::Sub": "
-          const response = require('./cfn-response');
-          exports.handler = function(event,context){
-            const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
-            response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
-          }
-          ",
-          },
-        },
-        "Handler": "index.handler",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "SoupLambdaScalingRole",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs10.x",
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "SoupScalingRole": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Array [
-                  "application-autoscaling.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Path": "/",
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
-                  "Action": Array [
-                    "application-autoscaling:*",
-                    "cloudwatch:DescribeAlarms",
-                    "cloudwatch:PutMetricAlarm",
-                    "ecs:UpdateService",
-                    "ecs:DescribeServices",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-              ],
-            },
-            "PolicyName": "watchbot-autoscaling",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupScalingTarget": Object {
-      "Properties": Object {
-        "MaxCapacity": 90,
-        "MinCapacity": 0,
-        "ResourceId": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "service/",
-              "processing",
-              "/",
-              Object {
-                "Fn::GetAtt": Array [
-                  "SoupService",
-                  "Name",
-                ],
-              },
-            ],
-          ],
-        },
-        "RoleARN": Object {
-          "Fn::GetAtt": Array [
-            "SoupScalingRole",
-            "Arn",
-          ],
-        },
-        "ScalableDimension": "ecs:service:DesiredCount",
-        "ServiceNamespace": "ecs",
-      },
-      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
-    },
-    "SoupService": Object {
-      "Properties": Object {
-        "Cluster": "processing",
-        "DesiredCount": 0,
-        "PropagateTags": "TASK_DEFINITION",
-        "TaskDefinition": Object {
-          "Ref": "SoupTask",
-        },
-      },
-      "Type": "AWS::ECS::Service",
-    },
-    "SoupTask": Object {
-      "Properties": Object {
-        "ContainerDefinitions": Array [
-          Object {
-            "Command": Array [
-              "watchbot",
-              "listen",
-              "echo hello world",
-            ],
-            "Cpu": 128,
-            "Environment": Array [
-              Object {
-                "Name": "WorkTopic",
-                "Value": Object {
-                  "Ref": "SoupTopic",
-                },
-              },
-              Object {
-                "Name": "QueueUrl",
-                "Value": Object {
-                  "Ref": "SoupQueue",
-                },
-              },
-              Object {
-                "Name": "LogGroup",
-                "Value": Object {
-                  "Ref": "SoupLogGroup",
-                },
-              },
-              Object {
-                "Name": "writableFilesystem",
-                "Value": false,
-              },
-              Object {
-                "Name": "maxJobDuration",
-                "Value": 0,
-              },
-              Object {
-                "Name": "Volumes",
-                "Value": "/tmp,/data,/ephemeral",
-              },
-              Object {
-                "Name": "Fifo",
-                "Value": "false",
-              },
-              Object {
-                "Name": "MyKey",
-                "Value": "MyValue",
-              },
-              Object {
-                "Name": "ProgressTable",
-                "Value": Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      "arn:aws:dynamodb:",
-                      Object {
-                        "Ref": "AWS::Region",
-                      },
-                      ":",
-                      Object {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/",
-                      Object {
-                        "Ref": "SoupProgressTable",
-                      },
-                    ],
-                  ],
-                },
-              },
-            ],
-            "Image": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "AWS::AccountId",
-                  },
-                  ".dkr.ecr.",
-                  Object {
-                    "Fn::FindInMap": Array [
-                      "EcrRegion",
-                      Object {
-                        "Ref": "AWS::Region",
-                      },
-                      "Region",
-                    ],
-                  },
-                  ".",
-                  Object {
-                    "Ref": "AWS::URLSuffix",
-                  },
-                  "/",
-                  "example",
-                  ":",
-                  "1",
-                ],
-              ],
-            },
-            "LogConfiguration": Object {
-              "LogDriver": "awslogs",
-              "Options": Object {
-                "awslogs-group": Object {
-                  "Ref": "SoupLogGroup",
-                },
-                "awslogs-region": Object {
-                  "Ref": "AWS::Region",
-                },
-                "awslogs-stream-prefix": "1",
-              },
-            },
-            "Memory": 512,
-            "MemoryReservation": 128,
-            "MountPoints": Array [
-              Object {
-                "ContainerPath": "/tmp",
-                "SourceVolume": "tmp",
-              },
-              Object {
-                "ContainerPath": "/data",
-                "SourceVolume": "mnt-0",
-              },
-              Object {
-                "ContainerPath": "/ephemeral",
-                "SourceVolume": "mnt-1",
-              },
-            ],
-            "Name": Object {
-              "Fn::Join": Array [
-                "-",
-                Array [
-                  "Soup",
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                ],
-              ],
-            },
-            "Privileged": true,
-            "ReadonlyRootFilesystem": true,
-            "Ulimits": Array [
-              Object {
-                "HardLimit": 10240,
-                "Name": "nofile",
-                "SoftLimit": 10240,
-              },
-            ],
-          },
-        ],
-        "Family": "abc-123",
-        "TaskRoleArn": Object {
-          "Ref": "SoupRole",
-        },
-        "Volumes": Array [
-          Object {
-            "Name": "tmp",
-          },
-          Object {
-            "Name": "mnt-0",
-          },
-          Object {
-            "Name": "mnt-1",
-          },
-        ],
-      },
-      "Type": "AWS::ECS::TaskDefinition",
-    },
-    "SoupTopic": Object {
-      "Properties": Object {
-        "Subscription": Array [
-          Object {
-            "Endpoint": Object {
-              "Fn::GetAtt": Array [
-                "SoupQueue",
-                "Arn",
-              ],
-            },
-            "Protocol": "sqs",
-          },
-        ],
-      },
-      "Type": "AWS::SNS::Topic",
-    },
-    "SoupTotalMessagesLambda": Object {
-      "Properties": Object {
-        "Code": Object {
-          "ZipFile": Object {
-            "Fn::Sub": Array [
-              "
-          const AWS = require('aws-sdk');
-          exports.handler = function(event, context, callback) {
-            const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
-            const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
-
-            return sqs.getQueueAttributes({
-              QueueUrl: '\${QueueUrl}',
-              AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
-            }).promise()
-              .then((attrs) => {
-                return cw.putMetricData({
-                  Namespace: 'Mapbox/ecs-watchbot',
-                  MetricData: [{
-                    MetricName: 'TotalMessages',
-                    Dimensions: [{ Name: 'QueueName', Value: '\${QueueName}' }],
-                    Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
-                            Number(attrs.Attributes.ApproximateNumberOfMessages)
-                  }]
-                }).promise();
-              })
-              .then((metric) => callback(null, metric))
-              .catch((err) => callback(err));
-          }
-        ",
-              Object {
-                "QueueName": Object {
-                  "Fn::GetAtt": Array [
-                    "SoupQueue",
-                    "QueueName",
-                  ],
-                },
-                "QueueUrl": Object {
-                  "Ref": "SoupQueue",
-                },
-              },
-            ],
-          },
-        },
-        "Handler": "index.handler",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "SoupLambdaTotalMessagesRole",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs10.x",
-        "Timeout": 60,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "SoupTotalMessagesSchedule": Object {
-      "Properties": Object {
-        "Description": "Update TotalMessages metric every minute",
-        "Name": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup-total-messages",
-            ],
-          ],
-        },
-        "ScheduleExpression": "cron(0/1 * * * ? *)",
-        "Targets": Array [
-          Object {
-            "Arn": Object {
-              "Fn::GetAtt": Array [
-                "SoupTotalMessagesLambda",
-                "Arn",
-              ],
-            },
-            "Id": "SoupTotalMessagesLambda",
-          },
-        ],
-      },
-      "Type": "AWS::Events::Rule",
-    },
-    "SoupWorkerDurationMetric": Object {
-      "Properties": Object {
-        "FilterPattern": "{ $.duration = * }",
-        "LogGroupName": Object {
-          "Ref": "SoupLogGroup",
-        },
-        "MetricTransformations": Array [
-          Object {
-            "MetricName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  "SoupWorkerDuration-",
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                ],
-              ],
-            },
-            "MetricNamespace": "Mapbox/ecs-watchbot",
-            "MetricValue": "$.duration",
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-    "SoupWorkerErrorsAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
-            "Ref": "SoupNotificationTopic",
-          },
-        ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v5.0.0/docs/alarms.md#workererrors",
-        "AlarmName": Object {
-          "Fn::Join": Array [
-            "-",
-            Array [
-              Object {
-                "Ref": "AWS::StackName",
-              },
-              "Soup-worker-errors",
-              Object {
-                "Ref": "AWS::Region",
-              },
-            ],
-          ],
-        },
-        "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
-        "MetricName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "SoupWorkerErrors-",
-              Object {
-                "Ref": "AWS::StackName",
-              },
-            ],
-          ],
-        },
-        "Namespace": "Mapbox/ecs-watchbot",
-        "Period": "60",
-        "Statistic": "Sum",
-        "Threshold": 10,
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "SoupWorkerErrorsMetric": Object {
-      "Properties": Object {
-        "FilterPattern": "\\"[failure]\\"",
-        "LogGroupName": Object {
-          "Ref": "SoupLogGroup",
-        },
-        "MetricTransformations": Array [
-          Object {
-            "MetricName": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  "SoupWorkerErrors-",
-                  Object {
-                    "Ref": "AWS::StackName",
-                  },
-                ],
-              ],
-            },
-            "MetricNamespace": "Mapbox/ecs-watchbot",
-            "MetricValue": 1,
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-  },
-}
-`;
-
-exports[`[template]: all-properties-no-CPU 1`] = `
-Object {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Conditions": Object {
-    "InChina": Object {
+    "SoupCapacityIsEC2": Object {
       "Fn::Equals": Array [
+        "EC2",
+        "EC2",
+      ],
+    },
+    "SoupCapacityIsFargate": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE",
+      ],
+    },
+    "SoupCapacityIsFargateSpot": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE_SPOT",
+      ],
+    },
+    "SoupCapacityIsNotEC2": Object {
+      "Fn::Not": Array [
         Object {
-          "Fn::Select": Array [
-            "0",
-            Object {
-              "Fn::Split": Array [
-                "-",
-                Object {
-                  "Ref": "AWS::Region",
-                },
-              ],
-            },
+          "Fn::Equals": Array [
+            "EC2",
+            "EC2",
           ],
         },
-        "cn",
       ],
     },
   },
@@ -5126,8 +4057,45 @@ Object {
     },
     "SoupService": Object {
       "Properties": Object {
+        "CapacityProviderStrategy": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargateSpot",
+            Array [
+              Object {
+                "CapacityProvider": "FARGATE_SPOT",
+                "Weight": 1,
+              },
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Cluster": "processing",
         "DesiredCount": 0,
+        "LaunchType": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargate",
+            "FARGATE",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkConfiguration": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "AwsvpcConfiguration": Object {
+                "SecurityGroups": undefined,
+                "Subnets": undefined,
+              },
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "SoupTask",
@@ -5144,7 +4112,21 @@ Object {
               "listen",
               "echo hello world",
             ],
-            "Cpu": 128,
+            "Cpu": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "SoupCapacityIsNotEC2",
+                    256,
+                    128,
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Environment": Array [
               Object {
                 "Name": "WorkTopic",
@@ -5247,7 +4229,15 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
-            "Memory": 512,
+            "Memory": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                512,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "MemoryReservation": 128,
             "MountPoints": Array [
               Object {
@@ -5275,7 +4265,15 @@ Object {
               ],
             },
             "Privileged": true,
-            "ReadonlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                true,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -5285,7 +4283,1587 @@ Object {
             ],
           },
         ],
+        "Cpu": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "SoupCapacityIsNotEC2",
+                256,
+                128,
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "ExecutionRoleArn": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Family": "abc-123",
+        "Memory": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            512,
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkMode": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            "awsvpc",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "RequiresCompatibilities": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Array [
+              "FARGATE",
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "TaskRoleArn": Object {
+          "Ref": "SoupRole",
+        },
+        "Volumes": Array [
+          Object {
+            "Name": "tmp",
+          },
+          Object {
+            "Name": "mnt-0",
+          },
+          Object {
+            "Name": "mnt-1",
+          },
+        ],
+      },
+      "Type": "AWS::ECS::TaskDefinition",
+    },
+    "SoupTopic": Object {
+      "Properties": Object {
+        "Subscription": Array [
+          Object {
+            "Endpoint": Object {
+              "Fn::GetAtt": Array [
+                "SoupQueue",
+                "Arn",
+              ],
+            },
+            "Protocol": "sqs",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+    "SoupTotalMessagesLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": Array [
+              "
+          const AWS = require('aws-sdk');
+          exports.handler = function(event, context, callback) {
+            const sqs = new AWS.SQS({ region: process.env.AWS_DEFAULT_REGION });
+            const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+
+            return sqs.getQueueAttributes({
+              QueueUrl: '\${QueueUrl}',
+              AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+            }).promise()
+              .then((attrs) => {
+                return cw.putMetricData({
+                  Namespace: 'Mapbox/ecs-watchbot',
+                  MetricData: [{
+                    MetricName: 'TotalMessages',
+                    Dimensions: [{ Name: 'QueueName', Value: '\${QueueName}' }],
+                    Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                            Number(attrs.Attributes.ApproximateNumberOfMessages)
+                  }]
+                }).promise();
+              })
+              .then((metric) => callback(null, metric))
+              .catch((err) => callback(err));
+          }
+        ",
+              Object {
+                "QueueName": Object {
+                  "Fn::GetAtt": Array [
+                    "SoupQueue",
+                    "QueueName",
+                  ],
+                },
+                "QueueUrl": Object {
+                  "Ref": "SoupQueue",
+                },
+              },
+            ],
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "SoupLambdaTotalMessagesRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs10.x",
+        "Timeout": 60,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SoupTotalMessagesSchedule": Object {
+      "Properties": Object {
+        "Description": "Update TotalMessages metric every minute",
+        "Name": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-total-messages",
+            ],
+          ],
+        },
+        "ScheduleExpression": "cron(0/1 * * * ? *)",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "SoupTotalMessagesLambda",
+                "Arn",
+              ],
+            },
+            "Id": "SoupTotalMessagesLambda",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "SoupWorkerDurationMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "{ $.duration = * }",
+        "LogGroupName": Object {
+          "Ref": "SoupLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "SoupWorkerDuration-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": "$.duration",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "SoupWorkerErrorsAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v5.0.0/docs/alarms.md#workererrors",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-worker-errors",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "MetricName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "SoupWorkerErrors-",
+              Object {
+                "Ref": "AWS::StackName",
+              },
+            ],
+          ],
+        },
+        "Namespace": "Mapbox/ecs-watchbot",
+        "Period": "60",
+        "Statistic": "Sum",
+        "Threshold": 10,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupWorkerErrorsMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "\\"[failure]\\"",
+        "LogGroupName": Object {
+          "Ref": "SoupLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "SoupWorkerErrors-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": 1,
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+  },
+}
+`;
+
+exports[`[template]: all-properties-no-CPU 1`] = `
+Object {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": Object {
+    "InChina": Object {
+      "Fn::Equals": Array [
+        Object {
+          "Fn::Select": Array [
+            "0",
+            Object {
+              "Fn::Split": Array [
+                "-",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+              ],
+            },
+          ],
+        },
+        "cn",
+      ],
+    },
+    "SoupCapacityIsEC2": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "EC2",
+      ],
+    },
+    "SoupCapacityIsFargate": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE",
+      ],
+    },
+    "SoupCapacityIsFargateSpot": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE_SPOT",
+      ],
+    },
+    "SoupCapacityIsNotEC2": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            "EC2",
+            "EC2",
+          ],
+        },
+      ],
+    },
+  },
+  "Mappings": Object {
+    "EcrRegion": Object {
+      "ap-northeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-1": Object {
+        "Region": "us-west-2",
+      },
+      "ap-southeast-2": Object {
+        "Region": "us-west-2",
+      },
+      "cn-north-1": Object {
+        "Region": "cn-north-1",
+      },
+      "cn-northwest-1": Object {
+        "Region": "cn-northwest-1",
+      },
+      "eu-central-1": Object {
+        "Region": "eu-west-1",
+      },
+      "eu-west-1": Object {
+        "Region": "eu-west-1",
+      },
+      "us-east-1": Object {
+        "Region": "us-east-1",
+      },
+      "us-east-2": Object {
+        "Region": "us-east-1",
+      },
+      "us-west-1": Object {
+        "Region": "us-west-2",
+      },
+      "us-west-2": Object {
+        "Region": "us-west-2",
+      },
+    },
+  },
+  "Metadata": Object {
+    "EcsWatchbotVersion": "5.0.0",
+  },
+  "Outputs": Object {
+    "ClusterArn": Object {
+      "Description": "Service cluster ARN",
+      "Value": "processing",
+    },
+    "SoupDeadLetterQueueUrl": Object {
+      "Description": "The URL for the dead letter queue",
+      "Value": Object {
+        "Ref": "SoupDeadLetterQueue",
+      },
+    },
+    "SoupLogGroup": Object {
+      "Description": "The ARN of Watchbot's log group",
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "SoupLogGroup",
+          "Arn",
+        ],
+      },
+    },
+    "SoupQueueUrl": Object {
+      "Description": "The URL for the primary work queue",
+      "Value": Object {
+        "Ref": "SoupQueue",
+      },
+    },
+  },
+  "Parameters": Object {},
+  "Resources": Object {
+    "SoupAlarmMemoryUtilization": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v5.0.0/docs/alarms.md#memoryutilization",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "SoupMemoryUtilization",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "ClusterName",
+            "Value": "processing",
+          },
+          Object {
+            "Name": "ServiceName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SoupService",
+                "Name",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 10,
+        "MetricName": "MemoryUtilization",
+        "Namespace": "AWS/ECS",
+        "Period": 60,
+        "Statistic": "Average",
+        "Threshold": 100,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupCustomScalingResource": Object {
+      "Properties": Object {
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "SoupScalingLambda",
+            "Arn",
+          ],
+        },
+        "maxSize": 90,
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
+    },
+    "SoupDashboard": Object {
+      "Properties": Object {
+        "DashboardBody": Object {
+          "Fn::Sub": Array [
+            "{\\"widgets\\":[{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":0,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Visible and NotVisible Messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesNotVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateAgeOfOldestMessage\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"stat\\":\\"Maximum\\"}],[\\"...\\",{\\"stat\\":\\"p99\\"}],[\\"...\\"],[\\"...\\",{\\"stat\\":\\"p50\\"}]],\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Age of Oldest Message (sec)\\",\\"stat\\":\\"Average\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Worker Duration (msec)\\",\\"metrics\\":[[\\"Mapbox/ecs-watchbot\\",\\"\${Prefix}WorkerDuration-\${AWS::StackName}\\",{\\"stat\\":\\"Maximum\\"}],[\\"...\\",{\\"stat\\":\\"p99\\"}],[\\"...\\"],[\\"...\\",{\\"stat\\":\\"p50\\"}]],\\"region\\":\\"\${AWS::Region}\\",\\"stat\\":\\"Average\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Response Duration (msec)\\",\\"metrics\\":[[\\"Mapbox/ecs-watchbot\\",\\"\${Prefix}ResponseDuration-\${AWS::StackName}\\",{\\"stat\\":\\"Maximum\\"}],[\\"...\\",{\\"stat\\":\\"p99\\"}],[\\"...\\"],[\\"...\\",{\\"stat\\":\\"p50\\"}]],\\"region\\":\\"\${AWS::Region}\\",\\"stat\\":\\"Average\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotQueue: Deleted messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"NumberOfMessagesDeleted\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotService: RunningCapacity, DesiredCapacity\\",\\"metrics\\":[[\\"Mapbox/ecs-cluster\\",\\"RunningCapacity\\",\\"ClusterName\\",\\"\${Cluster}\\",\\"ServiceName\\",\\"\${WatchbotService}\\",{\\"period\\":60}],[\\".\\",\\"DesiredCapacity\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":12,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"Concurrency vs Throughput\\",\\"metrics\\":[[\\"Mapbox/ecs-cluster\\",\\"RunningCapacity\\",\\"ClusterName\\",\\"\${Cluster}\\",\\"ServiceName\\",\\"\${WatchbotService}\\",{\\"period\\":60,\\"yAxis\\":\\"right\\"}],[\\".\\",\\"DesiredCapacity\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60,\\"yAxis\\":\\"right\\"}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotQueue}\\",{\\"period\\":60,\\"stat\\":\\"Sum\\",\\"yAxis\\":\\"left\\"}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"right\\":{\\"min\\":0}}}},{\\"type\\":\\"metric\\",\\"x\\":0,\\"y\\":18,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotService: CPUUtilization, MemoryUtilization\\",\\"metrics\\":[[\\"AWS/ECS\\",\\"CPUUtilization\\",\\"ServiceName\\",\\"\${WatchbotService}\\",\\"ClusterName\\",\\"\${Cluster}\\",{\\"period\\":60}],[\\".\\",\\"MemoryUtilization\\",\\".\\",\\".\\",\\".\\",\\".\\",{\\"period\\":60}]],\\"region\\":\\"\${AWS::Region}\\",\\"period\\":300}},{\\"type\\":\\"metric\\",\\"x\\":12,\\"y\\":18,\\"width\\":12,\\"height\\":6,\\"properties\\":{\\"view\\":\\"timeSeries\\",\\"stacked\\":false,\\"title\\":\\"WatchbotDeadLetterQueue: Visible and NotVisible Messages\\",\\"metrics\\":[[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesNotVisible\\",\\"QueueName\\",\\"\${WatchbotDeadLetterQueue}\\",{\\"period\\":60}],[\\"AWS/SQS\\",\\"ApproximateNumberOfMessagesVisible\\",\\"QueueName\\",\\"\${WatchbotDeadLetterQueue}\\",{\\"period\\":60}]],\\"stat\\":\\"Sum\\",\\"region\\":\\"\${AWS::Region}\\",\\"period\\":60,\\"yAxis\\":{\\"left\\":{\\"min\\":0}}}}]}",
+            Object {
+              "Cluster": "processing",
+              "Prefix": "Soup",
+              "WatchbotDeadLetterQueue": Object {
+                "Fn::GetAtt": Array [
+                  "SoupDeadLetterQueue",
+                  "QueueName",
+                ],
+              },
+              "WatchbotQueue": Object {
+                "Fn::GetAtt": Array [
+                  "SoupQueue",
+                  "QueueName",
+                ],
+              },
+              "WatchbotService": Object {
+                "Fn::GetAtt": Array [
+                  "SoupService",
+                  "Name",
+                ],
+              },
+            },
+          ],
+        },
+        "DashboardName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
+    "SoupDeadLetterAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "Provides notification when messages are visible in the dead letter queue",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-dead-letter",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SoupDeadLetterQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": "60",
+        "Statistic": "Minimum",
+        "Threshold": 1,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupDeadLetterQueue": Object {
+      "Description": "List of messages that failed to process 14 times",
+      "Properties": Object {
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "SoupDeadLetterQueue",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "SoupLambdaScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "CustomcfnScalingLambdaLogs",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "SoupLambdaTotalMessagesRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "lambda.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:",
+                        Object {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "LambdaTotalMessagesMetric",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "SoupLogGroup": Object {
+      "Properties": Object {
+        "LogGroupName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              Object {
+                "Ref": "AWS::Region",
+              },
+              "soup",
+            ],
+          ],
+        },
+        "RetentionInDays": 14,
+      },
+      "Type": "AWS::Logs::LogGroup",
+    },
+    "SoupMessageReceivesMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "{ $.receives = * }",
+        "LogGroupName": Object {
+          "Ref": "SoupLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "SoupMessageReceives-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": "$.receives",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "SoupMetricSchedulePermission": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "SoupTotalMessagesLambda",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "SoupTotalMessagesSchedule",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "SoupNotificationTopic": Object {
+      "Description": "Subscribe to this topic to receive emails when tasks fail or retry",
+      "Properties": Object {
+        "Subscription": Array [
+          Object {
+            "Endpoint": "hello@mapbox.pagerduty.com",
+            "Protocol": "email",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+    "SoupProgressTable": Object {
+      "Properties": Object {
+        "AttributeDefinitions": Array [
+          Object {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+        ],
+        "KeySchema": Array [
+          Object {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "ProvisionedThroughput": Object {
+          "ReadCapacityUnits": 30,
+          "WriteCapacityUnits": 30,
+        },
+        "TableName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-progress",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+    },
+    "SoupProgressTablePermission": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:dynamodb:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":table/",
+                    Object {
+                      "Ref": "SoupProgressTable",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+        },
+        "PolicyName": "watchbot-progress",
+        "Roles": Array [
+          Object {
+            "Ref": "SoupRole",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SoupQueue": Object {
+      "Properties": Object {
+        "MessageRetentionPeriod": 1096,
+        "QueueName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "-",
+              "SoupQueue",
+            ],
+          ],
+        },
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SoupDeadLetterQueue",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 50,
+        },
+        "VisibilityTimeout": 180,
+      },
+      "Type": "AWS::SQS::Queue",
+    },
+    "SoupQueuePolicy": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Id": "SoupWatchbotQueue",
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sqs:SendMessage",
+              ],
+              "Condition": Object {
+                "ArnEquals": Object {
+                  "aws:SourceArn": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": "*",
+              },
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SoupQueue",
+                  "Arn",
+                ],
+              },
+              "Sid": "SendSomeMessages",
+            },
+          ],
+          "Version": "2008-10-17",
+        },
+        "Queues": Array [
+          Object {
+            "Ref": "SoupQueue",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::QueuePolicy",
+    },
+    "SoupQueueSizeAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupNotificationTopic",
+          },
+        ],
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v5.0.0/docs/alarms.md#queuesize",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-queue-size",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SoupQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 24,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": "300",
+        "Statistic": "Average",
+        "Threshold": 40,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupResponseDurationMetric": Object {
+      "Properties": Object {
+        "FilterPattern": "{ $.response_duration = * }",
+        "LogGroupName": Object {
+          "Ref": "SoupLogGroup",
+        },
+        "MetricTransformations": Array [
+          Object {
+            "MetricName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "SoupResponseDuration-",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "MetricNamespace": "Mapbox/ecs-watchbot",
+            "MetricValue": "$.response_duration",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "SoupRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "ecs-tasks.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:ChangeMessageVisibility",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "logs:FilterLogEvents",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "SoupLogGroup",
+                      "Arn",
+                    ],
+                  },
+                },
+                Object {
+                  "Fn::If": Array [
+                    "InChina",
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
+                    Object {
+                      "Action": "kms:Decrypt",
+                      "Effect": "Allow",
+                      "Resource": Object {
+                        "Fn::ImportValue": "cloudformation-kms-production",
+                      },
+                    },
+                  ],
+                },
+                Object {
+                  "Action": "sns:Publish",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "SoupTopic",
+                  },
+                },
+              ],
+            },
+            "PolicyName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-default-worker",
+                ],
+              ],
+            },
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:s3:::bucket/*",
+                },
+              ],
+            },
+            "PolicyName": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-user-defined-worker",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "SoupScaleDown": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "Soup\${AWS::StackName}-scale-down",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "SoupScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "PercentChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalUpperBound": 0,
+              "ScalingAdjustment": -100,
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "SoupScaleDownTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupScaleDown",
+          },
+        ],
+        "AlarmDescription": "Scale down due to lack of in-flight messages in queue",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-scale-down",
+            ],
+          ],
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SoupQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "TotalMessages",
+        "Namespace": "Mapbox/ecs-watchbot",
+        "Period": 600,
+        "Statistic": "Maximum",
+        "Threshold": 1,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupScaleUp": Object {
+      "Properties": Object {
+        "PolicyName": Object {
+          "Fn::Sub": "\${AWS::StackName}-scale-up",
+        },
+        "PolicyType": "StepScaling",
+        "ScalingTargetId": Object {
+          "Ref": "SoupScalingTarget",
+        },
+        "StepScalingPolicyConfiguration": Object {
+          "AdjustmentType": "ChangeInCapacity",
+          "Cooldown": 300,
+          "MetricAggregationType": "Average",
+          "StepAdjustments": Array [
+            Object {
+              "MetricIntervalLowerBound": 0,
+              "ScalingAdjustment": Object {
+                "Fn::GetAtt": Array [
+                  "SoupCustomScalingResource",
+                  "ScalingAdjustment",
+                ],
+              },
+            },
+          ],
+        },
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+    },
+    "SoupScaleUpTrigger": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "SoupScaleUp",
+          },
+        ],
+        "AlarmDescription": "Scale up due to visible messages in queue",
+        "AlarmName": Object {
+          "Fn::Join": Array [
+            "-",
+            Array [
+              Object {
+                "Ref": "AWS::StackName",
+              },
+              "Soup-scale-up",
+            ],
+          ],
+        },
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SoupQueue",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Namespace": "AWS/SQS",
+        "Period": 300,
+        "Statistic": "Maximum",
+        "Threshold": 0,
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SoupScalingLambda": Object {
+      "Properties": Object {
+        "Code": Object {
+          "ZipFile": Object {
+            "Fn::Sub": "
+          const response = require('./cfn-response');
+          exports.handler = function(event,context){
+            const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
+            response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
+          }
+          ",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "SoupLambdaScalingRole",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs10.x",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SoupScalingRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "sts:AssumeRole",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Array [
+                  "application-autoscaling.amazonaws.com",
+                ],
+              },
+            },
+          ],
+        },
+        "Path": "/",
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": Array [
+                    "application-autoscaling:*",
+                    "cloudwatch:DescribeAlarms",
+                    "cloudwatch:PutMetricAlarm",
+                    "ecs:UpdateService",
+                    "ecs:DescribeServices",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+              ],
+            },
+            "PolicyName": "watchbot-autoscaling",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "SoupScalingTarget": Object {
+      "Properties": Object {
+        "MaxCapacity": 90,
+        "MinCapacity": 0,
+        "ResourceId": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "service/",
+              "processing",
+              "/",
+              Object {
+                "Fn::GetAtt": Array [
+                  "SoupService",
+                  "Name",
+                ],
+              },
+            ],
+          ],
+        },
+        "RoleARN": Object {
+          "Fn::GetAtt": Array [
+            "SoupScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "ecs:service:DesiredCount",
+        "ServiceNamespace": "ecs",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    },
+    "SoupService": Object {
+      "Properties": Object {
+        "CapacityProviderStrategy": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargateSpot",
+            Array [
+              Object {
+                "CapacityProvider": "FARGATE_SPOT",
+                "Weight": 1,
+              },
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "Cluster": "processing",
+        "DesiredCount": 0,
+        "LaunchType": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsFargate",
+            "FARGATE",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkConfiguration": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "AwsvpcConfiguration": Object {
+                "SecurityGroups": undefined,
+                "Subnets": undefined,
+              },
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "PropagateTags": "TASK_DEFINITION",
+        "TaskDefinition": Object {
+          "Ref": "SoupTask",
+        },
+      },
+      "Type": "AWS::ECS::Service",
+    },
+    "SoupTask": Object {
+      "Properties": Object {
+        "ContainerDefinitions": Array [
+          Object {
+            "Command": Array [
+              "watchbot",
+              "listen",
+              "echo hello world",
+            ],
+            "Cpu": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "SoupCapacityIsNotEC2",
+                    256,
+                    128,
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            "Environment": Array [
+              Object {
+                "Name": "WorkTopic",
+                "Value": Object {
+                  "Ref": "SoupTopic",
+                },
+              },
+              Object {
+                "Name": "QueueUrl",
+                "Value": Object {
+                  "Ref": "SoupQueue",
+                },
+              },
+              Object {
+                "Name": "LogGroup",
+                "Value": Object {
+                  "Ref": "SoupLogGroup",
+                },
+              },
+              Object {
+                "Name": "writableFilesystem",
+                "Value": false,
+              },
+              Object {
+                "Name": "maxJobDuration",
+                "Value": 0,
+              },
+              Object {
+                "Name": "Volumes",
+                "Value": "/tmp,/data,/ephemeral",
+              },
+              Object {
+                "Name": "Fifo",
+                "Value": "false",
+              },
+              Object {
+                "Name": "MyKey",
+                "Value": "MyValue",
+              },
+              Object {
+                "Name": "ProgressTable",
+                "Value": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:aws:dynamodb:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/",
+                      Object {
+                        "Ref": "SoupProgressTable",
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
+            "Image": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "AWS::AccountId",
+                  },
+                  ".dkr.ecr.",
+                  Object {
+                    "Fn::FindInMap": Array [
+                      "EcrRegion",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      "Region",
+                    ],
+                  },
+                  ".",
+                  Object {
+                    "Ref": "AWS::URLSuffix",
+                  },
+                  "/",
+                  "example",
+                  ":",
+                  "1",
+                ],
+              ],
+            },
+            "LogConfiguration": Object {
+              "LogDriver": "awslogs",
+              "Options": Object {
+                "awslogs-group": Object {
+                  "Ref": "SoupLogGroup",
+                },
+                "awslogs-region": Object {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "1",
+              },
+            },
+            "Memory": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                512,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            "MemoryReservation": 128,
+            "MountPoints": Array [
+              Object {
+                "ContainerPath": "/tmp",
+                "SourceVolume": "tmp",
+              },
+              Object {
+                "ContainerPath": "/data",
+                "SourceVolume": "mnt-0",
+              },
+              Object {
+                "ContainerPath": "/ephemeral",
+                "SourceVolume": "mnt-1",
+              },
+            ],
+            "Name": Object {
+              "Fn::Join": Array [
+                "-",
+                Array [
+                  "Soup",
+                  Object {
+                    "Ref": "AWS::StackName",
+                  },
+                ],
+              ],
+            },
+            "Privileged": true,
+            "ReadonlyRootFilesystem": Object {
+              "Fn::If": Array [
+                "SoupCapacityIsEC2",
+                true,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            "Ulimits": Array [
+              Object {
+                "HardLimit": 10240,
+                "Name": "nofile",
+                "SoftLimit": 10240,
+              },
+            ],
+          },
+        ],
+        "Cpu": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "SoupCapacityIsNotEC2",
+                256,
+                128,
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "ExecutionRoleArn": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Object {
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "Family": "abc-123",
+        "Memory": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            512,
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkMode": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            "awsvpc",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "RequiresCompatibilities": Object {
+          "Fn::If": Array [
+            "SoupCapacityIsNotEC2",
+            Array [
+              "FARGATE",
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "TaskRoleArn": Object {
           "Ref": "SoupRole",
         },
@@ -5522,6 +6100,34 @@ Object {
           ],
         },
         "cn",
+      ],
+    },
+    "WatchbotCapacityIsEC2": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "EC2",
+      ],
+    },
+    "WatchbotCapacityIsFargate": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE",
+      ],
+    },
+    "WatchbotCapacityIsFargateSpot": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE_SPOT",
+      ],
+    },
+    "WatchbotCapacityIsNotEC2": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            "EC2",
+            "EC2",
+          ],
+        },
       ],
     },
   },
@@ -6405,8 +7011,45 @@ Object {
     },
     "WatchbotService": Object {
       "Properties": Object {
+        "CapacityProviderStrategy": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsFargateSpot",
+            Array [
+              Object {
+                "CapacityProvider": "FARGATE_SPOT",
+                "Weight": 1,
+              },
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Cluster": "processing",
         "DesiredCount": 0,
+        "LaunchType": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsFargate",
+            "FARGATE",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkConfiguration": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "AwsvpcConfiguration": Object {
+                "SecurityGroups": undefined,
+                "Subnets": undefined,
+              },
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "WatchbotTask",
@@ -6423,7 +7066,21 @@ Object {
               "listen",
               "echo hello world",
             ],
-            "Cpu": 128,
+            "Cpu": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "WatchbotCapacityIsNotEC2",
+                    256,
+                    128,
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Environment": Array [
               Object {
                 "Name": "WorkTopic",
@@ -6500,6 +7157,26 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
+            "Memory": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "WatchbotCapacityIsNotEC2",
+                    512,
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            "MemoryReservation": Object {
+              "Ref": "AWS::NoValue",
+            },
             "MountPoints": Array [
               Object {
                 "ContainerPath": "/tmp",
@@ -6518,7 +7195,15 @@ Object {
               ],
             },
             "Privileged": false,
-            "ReadonlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                true,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -6528,7 +7213,70 @@ Object {
             ],
           },
         ],
+        "Cpu": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsNotEC2",
+                256,
+                128,
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "ExecutionRoleArn": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Family": "example",
+        "Memory": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsNotEC2",
+                512,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkMode": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            "awsvpc",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "RequiresCompatibilities": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Array [
+              "FARGATE",
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "TaskRoleArn": Object {
           "Ref": "WatchbotRole",
         },
@@ -6739,6 +7487,129 @@ Object {
 }
 `;
 
+exports[`[template]: fargateDefaults 1`] = `
+Object {
+  "InChina": Object {
+    "Fn::Equals": Array [
+      Object {
+        "Fn::Select": Array [
+          "0",
+          Object {
+            "Fn::Split": Array [
+              "-",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          },
+        ],
+      },
+      "cn",
+    ],
+  },
+  "WatchbotCapacityIsEC2": Object {
+    "Fn::Equals": Array [
+      "FARGATE",
+      "EC2",
+    ],
+  },
+  "WatchbotCapacityIsFargate": Object {
+    "Fn::Equals": Array [
+      "FARGATE",
+      "FARGATE",
+    ],
+  },
+  "WatchbotCapacityIsFargateSpot": Object {
+    "Fn::Equals": Array [
+      "FARGATE",
+      "FARGATE_SPOT",
+    ],
+  },
+  "WatchbotCapacityIsNotEC2": Object {
+    "Fn::Not": Array [
+      Object {
+        "Fn::Equals": Array [
+          "FARGATE",
+          "EC2",
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`[template]: fargateSecureSpotConditions 1`] = `
+Object {
+  "InChina": Object {
+    "Fn::Equals": Array [
+      Object {
+        "Fn::Select": Array [
+          "0",
+          Object {
+            "Fn::Split": Array [
+              "-",
+              Object {
+                "Ref": "AWS::Region",
+              },
+            ],
+          },
+        ],
+      },
+      "cn",
+    ],
+  },
+  "WatchbotCapacityIsEC2": Object {
+    "Fn::Equals": Array [
+      "FARGATE_SPOT",
+      "EC2",
+    ],
+  },
+  "WatchbotCapacityIsFargate": Object {
+    "Fn::Equals": Array [
+      "FARGATE_SPOT",
+      "FARGATE",
+    ],
+  },
+  "WatchbotCapacityIsFargateSpot": Object {
+    "Fn::Equals": Array [
+      "FARGATE_SPOT",
+      "FARGATE_SPOT",
+    ],
+  },
+  "WatchbotCapacityIsNotEC2": Object {
+    "Fn::Not": Array [
+      Object {
+        "Fn::Equals": Array [
+          "FARGATE_SPOT",
+          "EC2",
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`[template]: fargateSecureSpotNetworkConfiguration 1`] = `
+Object {
+  "Fn::If": Array [
+    "WatchbotCapacityIsNotEC2",
+    Object {
+      "AwsvpcConfiguration": Object {
+        "SecurityGroups": Array [
+          "mock-security-group-id",
+        ],
+        "Subnets": Array [
+          "mock-subnet-id-",
+        ],
+      },
+    },
+    Object {
+      "Ref": "AWS::NoValue",
+    },
+  ],
+}
+`;
+
 exports[`[template]: fifo 1`] = `
 Object {
   "AWSTemplateFormatVersion": "2010-09-09",
@@ -6759,6 +7630,34 @@ Object {
           ],
         },
         "cn",
+      ],
+    },
+    "WatchbotCapacityIsEC2": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "EC2",
+      ],
+    },
+    "WatchbotCapacityIsFargate": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE",
+      ],
+    },
+    "WatchbotCapacityIsFargateSpot": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE_SPOT",
+      ],
+    },
+    "WatchbotCapacityIsNotEC2": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            "EC2",
+            "EC2",
+          ],
+        },
       ],
     },
   },
@@ -7602,8 +8501,45 @@ Object {
     },
     "WatchbotService": Object {
       "Properties": Object {
+        "CapacityProviderStrategy": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsFargateSpot",
+            Array [
+              Object {
+                "CapacityProvider": "FARGATE_SPOT",
+                "Weight": 1,
+              },
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Cluster": "processing",
         "DesiredCount": 0,
+        "LaunchType": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsFargate",
+            "FARGATE",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkConfiguration": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "AwsvpcConfiguration": Object {
+                "SecurityGroups": undefined,
+                "Subnets": undefined,
+              },
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "WatchbotTask",
@@ -7620,7 +8556,21 @@ Object {
               "listen",
               "echo hello world",
             ],
-            "Cpu": 128,
+            "Cpu": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "WatchbotCapacityIsNotEC2",
+                    256,
+                    128,
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Environment": Array [
               Object {
                 "Name": "WorkTopic",
@@ -7695,6 +8645,26 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
+            "Memory": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "WatchbotCapacityIsNotEC2",
+                    512,
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            "MemoryReservation": Object {
+              "Ref": "AWS::NoValue",
+            },
             "MountPoints": Array [
               Object {
                 "ContainerPath": "/tmp",
@@ -7713,7 +8683,15 @@ Object {
               ],
             },
             "Privileged": false,
-            "ReadonlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                true,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -7723,7 +8701,70 @@ Object {
             ],
           },
         ],
+        "Cpu": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsNotEC2",
+                256,
+                128,
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "ExecutionRoleArn": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Family": "example",
+        "Memory": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsNotEC2",
+                512,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkMode": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            "awsvpc",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "RequiresCompatibilities": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Array [
+              "FARGATE",
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "TaskRoleArn": Object {
           "Ref": "WatchbotRole",
         },
@@ -7938,6 +8979,34 @@ Object {
           ],
         },
         "cn",
+      ],
+    },
+    "WatchbotCapacityIsEC2": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "EC2",
+      ],
+    },
+    "WatchbotCapacityIsFargate": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE",
+      ],
+    },
+    "WatchbotCapacityIsFargateSpot": Object {
+      "Fn::Equals": Array [
+        "EC2",
+        "FARGATE_SPOT",
+      ],
+    },
+    "WatchbotCapacityIsNotEC2": Object {
+      "Fn::Not": Array [
+        Object {
+          "Fn::Equals": Array [
+            "EC2",
+            "EC2",
+          ],
+        },
       ],
     },
   },
@@ -8781,8 +9850,45 @@ Object {
     },
     "WatchbotService": Object {
       "Properties": Object {
+        "CapacityProviderStrategy": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsFargateSpot",
+            Array [
+              Object {
+                "CapacityProvider": "FARGATE_SPOT",
+                "Weight": 1,
+              },
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Cluster": "processing",
         "DesiredCount": 0,
+        "LaunchType": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsFargate",
+            "FARGATE",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkConfiguration": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "AwsvpcConfiguration": Object {
+                "SecurityGroups": undefined,
+                "Subnets": undefined,
+              },
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "PropagateTags": "TASK_DEFINITION",
         "TaskDefinition": Object {
           "Ref": "WatchbotTask",
@@ -8799,7 +9905,21 @@ Object {
               "listen",
               "echo hello world",
             ],
-            "Cpu": 128,
+            "Cpu": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "WatchbotCapacityIsNotEC2",
+                    256,
+                    128,
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Environment": Array [
               Object {
                 "Name": "WorkTopic",
@@ -8874,6 +9994,26 @@ Object {
                 "awslogs-stream-prefix": "1",
               },
             },
+            "Memory": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                Object {
+                  "Fn::If": Array [
+                    "WatchbotCapacityIsNotEC2",
+                    512,
+                    Object {
+                      "Ref": "AWS::NoValue",
+                    },
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            "MemoryReservation": Object {
+              "Ref": "AWS::NoValue",
+            },
             "MountPoints": Array [
               Object {
                 "ContainerPath": "/tmp",
@@ -8892,7 +10032,15 @@ Object {
               ],
             },
             "Privileged": false,
-            "ReadonlyRootFilesystem": true,
+            "ReadonlyRootFilesystem": Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsEC2",
+                true,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
             "Ulimits": Array [
               Object {
                 "HardLimit": 10240,
@@ -8902,7 +10050,70 @@ Object {
             ],
           },
         ],
+        "Cpu": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsNotEC2",
+                256,
+                128,
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "ExecutionRoleArn": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::Sub": "arn:\${AWS::Partition}:iam::\${AWS::AccountId}:role/ecsTaskExecutionRole",
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "Family": "example",
+        "Memory": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Object {
+              "Fn::If": Array [
+                "WatchbotCapacityIsNotEC2",
+                512,
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "NetworkMode": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            "awsvpc",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
+        "RequiresCompatibilities": Object {
+          "Fn::If": Array [
+            "WatchbotCapacityIsNotEC2",
+            Array [
+              "FARGATE",
+            ],
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+          ],
+        },
         "TaskRoleArn": Object {
           "Ref": "WatchbotRole",
         },
