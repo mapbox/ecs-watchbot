@@ -1,4 +1,4 @@
-### HEAD
+### 6.0.0
 
 - Adds the `capacity`, `fargateSecurityGroups`, and `fargateSubnets` options, which can be used to run tasks on Fargate or Fargate Spot capacity, instead of EC2 — which was the only option before and remains the default.
 - If you set the option `reservations.cpu` lower than `128`, that will no longer be raised up to `128` in the output template. This was never done before if your `reservations.cpu` value was a CloudFormation intrinsic function.
