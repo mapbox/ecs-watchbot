@@ -1,6 +1,7 @@
 ### 6.0.0
 
 - Adds the `capacity`, `fargateSecurityGroups`, and `fargateSubnets` options, which can be used to run tasks on Fargate or Fargate Spot capacity, instead of EC2 — which was the only option before and remains the default.
+  - Switching `capacity` values can be disruptive. Switching between `EC2` and `FARGATE` or between `FARGATE` and `FARGATE_SPOT` will cause the ECS service to be replaced during the CloudFormation update: a new service will be created, then the old service will be deleted. You cannot switch between `EC2` and `FARGATE_SPOT` without deleting and re-creating the CloudFormation stack; but you can make the transition with updates through a multi-step deployment: first change `EC2` to `FARGATE`, then change `FARGATE` to `FARGATE_SPOT`, or vice versa.
 - If you set the option `reservations.cpu` lower than `128`, that will no longer be raised up to `128` in the output template. This was never done before if your `reservations.cpu` value was a CloudFormation intrinsic function.
 
 ### 5.0.0
