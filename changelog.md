@@ -1,3 +1,7 @@
+### HEAD
+
+- Adds `fargatePublicIp` option. Its default value is `'DISABLED'`, so default behavior is no different than in 6.0.0, but now the property is adjustable.
+
 ### 6.0.0
 
 - Adds the `capacity`, `fargateSecurityGroups`, and `fargateSubnets` options, which can be used to run tasks on Fargate or Fargate Spot capacity, instead of EC2 — which was the only option before and remains the default.

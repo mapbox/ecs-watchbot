@@ -1057,6 +1057,7 @@ Object {
             "SoupCapacityIsNotEC2",
             Object {
               "AwsvpcConfiguration": Object {
+                "AssignPublicIp": "DISABLED",
                 "SecurityGroups": undefined,
                 "Subnets": undefined,
               },
@@ -2574,6 +2575,7 @@ Object {
             "SoupCapacityIsNotEC2",
             Object {
               "AwsvpcConfiguration": Object {
+                "AssignPublicIp": "DISABLED",
                 "SecurityGroups": undefined,
                 "Subnets": undefined,
               },
@@ -4087,6 +4089,7 @@ Object {
             "SoupCapacityIsNotEC2",
             Object {
               "AwsvpcConfiguration": Object {
+                "AssignPublicIp": "DISABLED",
                 "SecurityGroups": undefined,
                 "Subnets": undefined,
               },
@@ -5612,6 +5615,7 @@ Object {
             "SoupCapacityIsNotEC2",
             Object {
               "AwsvpcConfiguration": Object {
+                "AssignPublicIp": "DISABLED",
                 "SecurityGroups": undefined,
                 "Subnets": undefined,
               },
@@ -7041,6 +7045,7 @@ Object {
             "WatchbotCapacityIsNotEC2",
             Object {
               "AwsvpcConfiguration": Object {
+                "AssignPublicIp": "DISABLED",
                 "SecurityGroups": undefined,
                 "Subnets": undefined,
               },
@@ -7595,11 +7600,12 @@ Object {
     "WatchbotCapacityIsNotEC2",
     Object {
       "AwsvpcConfiguration": Object {
+        "AssignPublicIp": "ENABLED",
         "SecurityGroups": Array [
           "mock-security-group-id",
         ],
         "Subnets": Array [
-          "mock-subnet-id-",
+          "mock-subnet-id",
         ],
       },
     },
@@ -8531,6 +8537,7 @@ Object {
             "WatchbotCapacityIsNotEC2",
             Object {
               "AwsvpcConfiguration": Object {
+                "AssignPublicIp": "DISABLED",
                 "SecurityGroups": undefined,
                 "Subnets": undefined,
               },
@@ -9880,6 +9887,7 @@ Object {
             "WatchbotCapacityIsNotEC2",
             Object {
               "AwsvpcConfiguration": Object {
+                "AssignPublicIp": "DISABLED",
                 "SecurityGroups": undefined,
                 "Subnets": undefined,
               },

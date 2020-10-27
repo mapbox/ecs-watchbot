@@ -48,7 +48,8 @@ test('[template]', () => {
     },
     capacity: 'FARGATE_SPOT',
     fargateSecurityGroups: ['mock-security-group-id'],
-    fargateSubnets: ['mock-subnet-id-']
+    fargateSubnets: ['mock-subnet-id'],
+    fargatePublicIp: 'ENABLED'
   }));
 
   expect(fargateSecureSpot.Conditions).toMatchSnapshot('fargateSecureSpotConditions');
