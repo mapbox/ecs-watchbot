@@ -1,4 +1,4 @@
-### HEAD
+### 6.1.0
 
 - Adds `fargatePublicIp` option. Its default value is `'DISABLED'`, so default behavior is no different than in 6.0.0, but now the property is adjustable.
 
