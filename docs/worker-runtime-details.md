@@ -20,7 +20,7 @@ LogGroup | the name of the CloudWatch LogGroup where logs are sent
 
 **:lock: Encrypting & decrypting environment variables**
 
-The recommended flow for deploying Watchbot stacks is to use [cfn-config(http://github.com/mapbox/cfn-config) which provides a `--kms` option for automatically encrypting CloudFormation parameters marked with `[secure]`. To decrypt at runtime, install [decrypt-kms-env](https://github.com/mapbox/decrypt-kms-env) as a dependency in your Dockerfile and invoke it in your `CMD`. Example:
+The recommended flow for deploying Watchbot stacks is to use [cfn-config](http://github.com/mapbox/cfn-config) which provides a `--kms` option for automatically encrypting CloudFormation parameters marked with `[secure]`. To decrypt at runtime, install [decrypt-kms-env](https://github.com/mapbox/decrypt-kms-env) as a dependency in your Dockerfile and invoke it in your `CMD`. Example:
 
 ```Dockerfile
 RUN eval $(./node_modules/.bin/decrypt-kms-env) && npm start
