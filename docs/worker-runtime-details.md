@@ -4,8 +4,8 @@ In addition to any environment variables pre-configured for your worker via `wat
 
 Name | Description
 --- | ---
-Subject | the message's subject
-Message | the message's body
+Subject | the message's subject, parsed by `JSON.parse`
+Message | the message's body, parsed by `JSON.parse`
 MessageId | the message's ID defined by SQS
 SentTimestamp | the time the message was sent
 ApproximateFirstReceiveTimestamp | the time the message was first attempted
