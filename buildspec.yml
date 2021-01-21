@@ -6,7 +6,8 @@ phases:
       nodejs: 10
   pre_build:
     commands:
-      docker build -q -t ecs-watchbot -f test/Dockerfile ./
+      - aws secretsmanager get-secret-value --secret-id ${DOCKER_HUB_TOKEN_KEY} --region us-east-1 --query SecretString --output text | docker login --username mapboxmachinereadonly --password-stdin
+      - docker build -q -t ecs-watchbot -f test/Dockerfile ./
   build:
     commands:
       - docker run -t ecs-watchbot npm run test-container
