@@ -120,7 +120,7 @@ test('[dead-letter] individual message triage', async (assert) => {
     }), 'returns the fourth message to the dead letter queue');
 
     assert.equal(fetch.callCount, 2, 'two calls to fetch recent logs');
-    assert.equals(fetch.args[0][0].pattern, 'message-4', 'one fetch call based on message itself');
+    assert.equals(fetch.args[0][0].pattern, 'id-4', 'one fetch call based on message itself');
     assert.equals(fetch.args[1][0].pattern, 'a406f47b-a0f2-49a6-a159-b0f8578104bf', 'one fetch call based on message itself');
 
   } catch (err) {

@@ -348,7 +348,7 @@ async function getLogs(sqs, queue, message) {
   spinner.start();
 
   return new Promise((resolve, reject) => {
-    fetchLogs(queue.logs, message.message, (err, data) => {
+    fetchLogs(queue.logs, message.id, (err, data) => {
       if (err) return reject(err);
 
       const re = new RegExp(`\\[watchbot\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
