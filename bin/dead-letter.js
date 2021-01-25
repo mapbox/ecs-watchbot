@@ -102,21 +102,15 @@ async function triageSelection(queue) {
     name: 'action',
     message: 'Would you like to:',
     choices: [
-      'Triage dead messages individually?',
-      'Print out all dead messages?',
-      'Return all dead messages to the work queue?',
-      'Purge the dead letter queue?'
+      { name: 'Triage dead messages individually?', value: 'triage' },
+      { name: 'Print out all dead messages?', value: 'writeOut' },
+      { name: 'Return all dead messages to the work queue?', value: 'replay' },
+      { name: 'Purge the dead letter queue?', value: 'purge' }
     ]
   });
 
-  const mapping = {
-    'Purge the dead letter queue?': 'purge',
-    'Return all dead messages to the work queue?': 'replay',
-    'Triage dead messages individually?': 'triage',
-    'Print out all dead messages?': 'writeOut'
-  };
 
-  return { queue, action: mapping[answers.action] };
+  return { queue, action: answers.action };
 }
 
 async function purge(sqs, queue) {
@@ -133,7 +127,7 @@ async function purge(sqs, queue) {
 }
 
 async function writeOut(sqs, queue) {
-  const reciever = receiveAll(sqs, queue.deadLetter);
+  const receiver = receiveAll(sqs, queue.deadLetter);
 
   const stringifier = new stream.Transform({
     objectMode: true,
@@ -156,7 +150,7 @@ async function writeOut(sqs, queue) {
       }
     };
 
-    reciever
+    receiver
       .pipe(stringifier)
       .on('end', done)
       .pipe(process.stdout);
@@ -176,7 +170,7 @@ async function replay(sqs, queue) {
   spinner.setSpinnerString('⠄⠆⠇⠋⠙⠸⠰⠠⠰⠸⠙⠋⠇⠆');
   spinner.start();
 
-  const reciever = receiveAll(sqs, queue.deadLetter);
+  const receiver = receiveAll(sqs, queue.deadLetter);
 
   const replayer = new stream.Writable({
     objectMode: true,
@@ -192,7 +186,7 @@ async function replay(sqs, queue) {
   });
 
   await new Promise((resolve, reject) => {
-    reciever
+    receiver
       .on('error', reject)
       .pipe(replayer)
       .on('error', reject)
@@ -217,22 +211,15 @@ async function triagePrompts(sqs, queue, message) {
     name: 'action',
     message: 'Would you like to:',
     choices: [
-      'Return this message to the work queue?',
-      'Return this message to the dead letter queue?',
-      'Delete this message entirely?',
-      'View this message\'s recent logs?',
-      'Stop individual triage?'
+      { name: 'Return this message to the work queue?', value: 'replayOne' },
+      { name: 'Return this message to the dead letter queue?', value: 'returnOne' },
+      { name: 'Delete this message entirely?', value: 'deleteOne' },
+      { name: 'View this message\'s recent logs?', value: 'logs' },
+      { name: 'Stop individual triage?', value: 'stop' }
     ]
   });
-  const mapping = {
-    'Return this message to the work queue?': 'replayOne',
-    'Return this message to the dead letter queue?': 'returnOne',
-    'View this message\'s recent logs?': 'logs',
-    'Delete this message entirely?': 'deleteOne',
-    'Stop individual triage?': 'stop'
-  };
 
-  const choice = mapping[answers.action];
+  const choice = answers.action;
   const queueUrl = choice === 'replayOne' ? queue.work : queue.deadLetter;
 
   if (choice === 'logs') {
@@ -361,18 +348,9 @@ async function getLogs(sqs, queue, message) {
   spinner.start();
 
   return new Promise((resolve, reject) => {
-    fetchLogs(queue.logs, message.message, (err, data) => {
-      if (err) return reject(err);
-
-      const re = new RegExp(`\\[watchbot\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
-      const line = data.split('\n').find((line) => re.test(line));
-      if (!line) return resolve('Could not find any matching logs\n');
-
-      const id = line.match(re)[1];
-      fetchLogs(queue.logs, id, (err, data) => {
-        if (err) return reject(err);
-        resolve(data);
-      });
+    fetchLogs(queue.logs, message.id, (err, data) => {
+      if (err) { return reject(err); }
+      resolve(data);
     });
   }).then(async (data) => {
     spinner.stop(true);

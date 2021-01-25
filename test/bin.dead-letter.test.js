@@ -30,12 +30,12 @@ test('[dead-letter] individual message triage', async (assert) => {
   process.argv = ['node', 'bin/whatever', '--stack-name', 'stackName', '--region', 'regionName'];
   process.argv.QueueUrl = 'https://something';
   const prompt = sinon.stub(inquirer, 'prompt');
-  prompt.onCall(0).returns(Promise.resolve({ action: 'Triage dead messages individually?' }));
-  prompt.onCall(1).returns(Promise.resolve({ action: 'Return this message to the work queue?' }));
-  prompt.onCall(2).returns(Promise.resolve({ action: 'Return this message to the dead letter queue?' }));
-  prompt.onCall(3).returns(Promise.resolve({ action: 'Delete this message entirely?' }));
-  prompt.onCall(4).returns(Promise.resolve({ action: 'View this message\'s recent logs?' }));
-  prompt.onCall(5).returns(Promise.resolve({ action: 'Stop individual triage?' }));
+  prompt.onCall(0).returns(Promise.resolve({ action: 'triage' }));
+  prompt.onCall(1).returns(Promise.resolve({ action: 'replayOne' }));
+  prompt.onCall(2).returns(Promise.resolve({ action: 'returnOne' }));
+  prompt.onCall(3).returns(Promise.resolve({ action: 'deleteOne' }));
+  prompt.onCall(4).returns(Promise.resolve({ action: 'logs' }));
+  prompt.onCall(5).returns(Promise.resolve({ action: 'stop' }));
   AWS.stub('CloudFormation', 'describeStacks', function() {
     this.request.promise.returns(Promise.resolve({
       Stacks: [
@@ -79,8 +79,7 @@ test('[dead-letter] individual message triage', async (assert) => {
     read: function() {
       if (count === 0) {
         this.push([
-          '[Sun, 12 Feb 2017 00:24:41 GMT] [watchbot] [a406f47b-a0f2-49a6-a159-b0f8578104bf] {"subject":"bozo","message":"message-4","receives":"1"}',
-          '[Sun, 12 Feb 2017 00:24:42 GMT] [watchbot] [436d13dc-a666-44fd-a2df-70f1f4b3f107] {"subject":"bozo","message":"message-5","receives":"1"}'
+          '[Sun, 12 Feb 2017 00:24:41 GMT] [watcher] [id-4] {"subject":"bozo","message":"message-4","receives":"1"}'
         ].join('\n'));
         count++;
       }
@@ -119,9 +118,8 @@ test('[dead-letter] individual message triage', async (assert) => {
       VisibilityTimeout: 0
     }), 'returns the fourth message to the dead letter queue');
 
-    assert.equal(fetch.callCount, 2, 'two calls to fetch recent logs');
-    assert.equals(fetch.args[0][0].pattern, 'message-4', 'one fetch call based on message itself');
-    assert.equals(fetch.args[1][0].pattern, 'a406f47b-a0f2-49a6-a159-b0f8578104bf', 'one fetch call based on message itself');
+    assert.equal(fetch.callCount, 1, 'one calls to fetch recent logs');
+    assert.equals(fetch.args[0][0].pattern, 'id-4', 'one fetch call based on message id');
 
   } catch (err) {
     assert.ifError(err);
@@ -136,7 +134,7 @@ test('[dead-letter] individual message triage', async (assert) => {
 
 test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
-  prompt.onCall(0).returns(Promise.resolve({ action: 'Purge the dead letter queue?' }));
+  prompt.onCall(0).returns(Promise.resolve({ action: 'purge' }));
   prompt.onCall(1).returns(Promise.resolve({ purge: true }));
 
   AWS.stub('CloudFormation', 'describeStacks', function() {
@@ -164,11 +162,12 @@ test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async
 
     assert.equal(prompt.args[0][0].type, 'list', 'first prompt type = list');
     assert.deepEqual(prompt.args[0][0].choices, [
-      'Triage dead messages individually?',
-      'Print out all dead messages?',
-      'Return all dead messages to the work queue?',
-      'Purge the dead letter queue?'
-    ], 'first prompt expected actions');
+      { name: 'Triage dead messages individually?', value: 'triage' },
+      { name: 'Print out all dead messages?', value: 'writeOut' },
+      { name: 'Return all dead messages to the work queue?', value: 'replay' },
+      { name: 'Purge the dead letter queue?', value: 'purge' }
+    ],
+    'first prompt expected actions');
 
     assert.equal(prompt.args[1][0].type, 'confirm', 'second prompt type = confirm');
 
@@ -186,7 +185,7 @@ test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async
 
 test('[dead-letter] reject purge confirmation', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
-  prompt.onCall(0).returns(Promise.resolve({ action: 'Purge the dead letter queue?' }));
+  prompt.onCall(0).returns(Promise.resolve({ action: 'purge' }));
   prompt.onCall(1).returns(Promise.resolve({ purge: false }));
 
   AWS.stub('CloudFormation', 'describeStacks', function() {
@@ -222,7 +221,7 @@ test('[dead-letter] reject purge confirmation', async (assert) => {
 
 test('[dead-letter] return messages to work queue', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
-  prompt.onCall(0).returns(Promise.resolve({ action: 'Return all dead messages to the work queue?' }));
+  prompt.onCall(0).returns(Promise.resolve({ action: 'replay' }));
   prompt.onCall(1).returns(Promise.resolve({ replayAll: true }));
 
   AWS.stub('CloudFormation', 'describeStacks', function() {
@@ -317,7 +316,7 @@ test('[dead-letter] return messages to work queue', async (assert) => {
 
 test('[dead-letter] reject return messages confirmation', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
-  prompt.onCall(0).returns(Promise.resolve({ action: 'Return all dead messages to the work queue?' }));
+  prompt.onCall(0).returns(Promise.resolve({ action: 'replay' }));
   prompt.onCall(1).returns(Promise.resolve({ replayAll: false }));
 
   AWS.stub('CloudFormation', 'describeStacks', function() {
@@ -364,7 +363,7 @@ test('[dead-letter] reject return messages confirmation', async (assert) => {
 
 test('[dead-letter] write out messages', async (assert) => {
   const prompt = sinon.stub(inquirer, 'prompt');
-  prompt.onCall(0).returns(Promise.resolve({ action: 'Print out all dead messages?' }));
+  prompt.onCall(0).returns(Promise.resolve({ action: 'writeOut' }));
 
   AWS.stub('CloudFormation', 'describeStacks', function() {
     this.request.promise.returns(Promise.resolve({
