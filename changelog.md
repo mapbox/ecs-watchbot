@@ -1,3 +1,9 @@
+### 6.1.1
+
+- Fix bug with `watchbot-dead-letter` command's fetching of recent logs (https://github.com/mapbox/ecs-watchbot/issues/350)
+- Fix dashboard widget for showing running/desired/pending tasks (https://github.com/mapbox/ecs-watchbot/issues/351)
+- Fix issue causing task scaledown on deployment (https://github.com/mapbox/ecs-watchbot/issues/349)
+
 ### 6.1.0
 
 - Adds `fargatePublicIp` option. Its default value is `'DISABLED'`, so default behavior is no different than in 6.0.0, but now the property is adjustable.
