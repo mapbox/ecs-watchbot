@@ -351,7 +351,7 @@ async function getLogs(sqs, queue, message) {
     fetchLogs(queue.logs, message.id, (err, data) => {
       if (err) return reject(err);
 
-      const re = new RegExp(`\\[watchbot\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
+      const re = new RegExp(`\\[worker\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
       const line = data.split('\n').find((line) => re.test(line));
       if (!line) return resolve('Could not find any matching logs\n');
 
