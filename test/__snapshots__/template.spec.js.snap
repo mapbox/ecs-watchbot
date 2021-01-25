@@ -1042,7 +1042,6 @@ Object {
           ],
         },
         "Cluster": "processing",
-        "DesiredCount": 0,
         "LaunchType": Object {
           "Fn::If": Array [
             "SoupCapacityIsFargate",
@@ -2560,7 +2559,6 @@ Object {
           ],
         },
         "Cluster": "processing",
-        "DesiredCount": 0,
         "LaunchType": Object {
           "Fn::If": Array [
             "SoupCapacityIsFargate",
@@ -4074,7 +4072,6 @@ Object {
           ],
         },
         "Cluster": "processing",
-        "DesiredCount": 0,
         "LaunchType": Object {
           "Fn::If": Array [
             "SoupCapacityIsFargate",
@@ -5600,7 +5597,6 @@ Object {
           ],
         },
         "Cluster": "processing",
-        "DesiredCount": 0,
         "LaunchType": Object {
           "Fn::If": Array [
             "SoupCapacityIsFargate",
@@ -7030,7 +7026,6 @@ Object {
           ],
         },
         "Cluster": "processing",
-        "DesiredCount": 0,
         "LaunchType": Object {
           "Fn::If": Array [
             "WatchbotCapacityIsFargate",
@@ -8522,7 +8517,6 @@ Object {
           ],
         },
         "Cluster": "processing",
-        "DesiredCount": 0,
         "LaunchType": Object {
           "Fn::If": Array [
             "WatchbotCapacityIsFargate",
@@ -9872,7 +9866,6 @@ Object {
           ],
         },
         "Cluster": "processing",
-        "DesiredCount": 0,
         "LaunchType": Object {
           "Fn::If": Array [
             "WatchbotCapacityIsFargate",
