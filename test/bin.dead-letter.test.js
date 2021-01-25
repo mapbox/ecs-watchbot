@@ -79,8 +79,7 @@ test('[dead-letter] individual message triage', async (assert) => {
     read: function() {
       if (count === 0) {
         this.push([
-          '[Sun, 12 Feb 2017 00:24:41 GMT] [worker] [a406f47b-a0f2-49a6-a159-b0f8578104bf] {"subject":"bozo","message":"message-4","receives":"1"}',
-          '[Sun, 12 Feb 2017 00:24:42 GMT] [worker] [436d13dc-a666-44fd-a2df-70f1f4b3f107] {"subject":"bozo","message":"message-5","receives":"1"}'
+          '[Sun, 12 Feb 2017 00:24:41 GMT] [watcher] [id-4] {"subject":"bozo","message":"message-4","receives":"1"}'
         ].join('\n'));
         count++;
       }
@@ -119,9 +118,8 @@ test('[dead-letter] individual message triage', async (assert) => {
       VisibilityTimeout: 0
     }), 'returns the fourth message to the dead letter queue');
 
-    assert.equal(fetch.callCount, 2, 'two calls to fetch recent logs');
-    assert.equals(fetch.args[0][0].pattern, 'id-4', 'one fetch call based on message itself');
-    assert.equals(fetch.args[1][0].pattern, 'a406f47b-a0f2-49a6-a159-b0f8578104bf', 'one fetch call based on message itself');
+    assert.equal(fetch.callCount, 1, 'one calls to fetch recent logs');
+    assert.equals(fetch.args[0][0].pattern, 'id-4', 'one fetch call based on message id');
 
   } catch (err) {
     assert.ifError(err);

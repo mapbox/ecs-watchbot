@@ -349,17 +349,8 @@ async function getLogs(sqs, queue, message) {
 
   return new Promise((resolve, reject) => {
     fetchLogs(queue.logs, message.id, (err, data) => {
-      if (err) return reject(err);
-
-      const re = new RegExp(`\\[worker\\] \\[(.*?)\\] {"subject":".*?","message":"${message.message}"`);
-      const line = data.split('\n').find((line) => re.test(line));
-      if (!line) return resolve('Could not find any matching logs\n');
-
-      const id = line.match(re)[1];
-      fetchLogs(queue.logs, id, (err, data) => {
-        if (err) return reject(err);
-        resolve(data);
-      });
+      if (err) { return reject(err); }
+      resolve(data);
     });
   }).then(async (data) => {
     spinner.stop(true);
