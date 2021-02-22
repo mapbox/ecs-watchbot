@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 10
+      nodejs: 12
   pre_build:
     commands:
       - aws secretsmanager get-secret-value --secret-id ${DOCKER_HUB_TOKEN_KEY} --region us-east-1 --query SecretString --output text | docker login --username mapboxmachinereadonly --password-stdin
