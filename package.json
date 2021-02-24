@@ -1,15 +1,15 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "6.1.1",
+  "version": "7.0.0-0",
   "description": "",
   "main": "index.js",
   "engines": {
     "node": ">=12"
   },
   "bin": {
-    "watchbot": "./bin/watchbot.js",
+    "watchbot": "bin/watchbot.js",
     "watchbot-progress": "bin/watchbot-progress.sh",
-    "watchbot-dead-letter": "./bin/dead-letter.js"
+    "watchbot-dead-letter": "bin/dead-letter.js"
   },
   "scripts": {
     "pretest": "npm run lint && npm run validate-templates",
