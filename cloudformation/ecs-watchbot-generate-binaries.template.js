@@ -87,7 +87,7 @@ const Resources = {
           phases:
             install:
               runtime-versions:
-                nodejs: 10
+                nodejs: 12
               commands:
                 - npm install -g npm@6.13.4
                 - npm ci --production
@@ -109,7 +109,7 @@ const Resources = {
       Environment: {
         Type: 'LINUX_CONTAINER',
         ComputeType: 'BUILD_GENERAL1_SMALL',
-        Image: 'node:10-alpine'
+        Image: 'node:12-alpine'
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
@@ -119,7 +119,7 @@ const Resources = {
           phases:
             install:
               runtime-versions:
-                nodejs: 10
+                nodejs: 12
               commands:
                 - apk add git
                 - npm install -g npm@6.13.4
