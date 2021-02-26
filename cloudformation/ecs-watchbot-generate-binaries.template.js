@@ -59,6 +59,15 @@ const Resources = {
                   cf.sub('arn:${AWS::Partition}:s3:::watchbot-binaries'),
                   cf.sub('arn:${AWS::Partition}:s3:::watchbot-binaries/*')
                 ]
+              },
+              {
+                Effect: 'Allow',
+                Action: [
+                  'secretsmanager:GetSecretValue'
+                ],
+                Resource: [
+                  cf.arn('secretsmanager', 'secret:general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/*')
+                ]
               }
             ]
           }
@@ -109,7 +118,12 @@ const Resources = {
       Environment: {
         Type: 'LINUX_CONTAINER',
         ComputeType: 'BUILD_GENERAL1_SMALL',
-        Image: 'node:12-alpine'
+        Image: 'node:12-alpine',
+        ImagePullCredentialsType: 'SERVICE_ROLE',
+        RegistryCredential: {
+          Credential: 'general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/accesstoken',
+          CredentialProvider: 'SECRETS_MANAGER'
+        }
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
