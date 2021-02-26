@@ -121,7 +121,7 @@ const Resources = {
         Image: 'node:12-alpine',
         ImagePullCredentialsType: 'SERVICE_ROLE',
         RegistryCredential: {
-          Credential: 'general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/accesstoken',
+          Credential: 'general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/credentials',
           CredentialProvider: 'SECRETS_MANAGER'
         }
       },
