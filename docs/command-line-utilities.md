@@ -10,9 +10,9 @@
     -r, --region        the region of the stack (default us-east-1)
 ```
 
-### dead-letter
+### watchbot-dead-letter
 
-`dead-letter` is an interactive tool for dealing with messages in Watchbot's [dead letter queue](./worker-retry-cycle.md#the-dead-letter-queue).
+`watchbot-dead-letter` is an interactive tool for dealing with messages in Watchbot's [dead letter queue](./worker-retry-cycle.md#the-dead-letter-queue).
 
 You must provide both a service region and stack name to execute this command. Note
 that your stack will need to expose the cluster ARN in your Watchbot stack `Outputs`
