@@ -132,7 +132,10 @@ async function writeOut(sqs, queue) {
   const stringifier = new stream.Transform({
     objectMode: true,
     transform: function(msg, _, callback) {
-      const data = { subject: msg.subject, message: msg.message };
+      let data = msg.body;
+      if (msg.subject && msg.message) {
+        data = { subject: msg.subject, message: msg.message };
+      }
       this.push(`${JSON.stringify(data)}\n`);
       stringifier.handles.push(msg.handle);
       callback();
@@ -243,15 +246,19 @@ async function triagePrompts(sqs, queue, message) {
 async function triageOne(sqs, queue) {
   const messages = await receive(sqs, 1, queue.deadLetter);
   const message = messages[0];
+  console.log('');
+
   if (!message) {
-    console.log('');
     console.log('No messages found');
     return true;
   }
 
-  console.log('');
-  console.log(`Subject: ${message.subject}`);
-  console.log(`Message: ${message.message}`);
+  if (message.subject && message.message) {
+    console.log(`Subject: ${message.subject}`);
+    console.log(`Message: ${message.message}`);
+  } else {
+    console.log(`\nMessage: ${message.body}`);
+  }
 
   return await triagePrompts(sqs, queue, message);
 }
@@ -267,8 +274,6 @@ async function receive(sqs, count, queueUrl) {
   return (data.Messages || []).map((message) => ({
     id: message.MessageId,
     body: message.Body,
-    subject: JSON.parse(message.Body).Subject,
-    message: JSON.parse(message.Body).Message,
     handle: message.ReceiptHandle
   }));
 }
