@@ -1,3 +1,7 @@
+### 7.0.0
+
+- Breaking change: use Node 12 for lambdas and binaries going forward
+
 ### 6.1.1
 
 - Fix bug with `watchbot-dead-letter` command's fetching of recent logs (https://github.com/mapbox/ecs-watchbot/issues/350)
