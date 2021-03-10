@@ -133,7 +133,7 @@ test('[dead-letter] individual message triage', async (assert) => {
     assert.ifError(err);
   } finally {
     prompt.restore();
-    sinon.restore();
+    logSpy.restore();
     fetch.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
@@ -435,8 +435,8 @@ test('[dead-letter] write out messages', async (assert) => {
   } catch (err) {
     assert.ifError(err, 'success');
   } finally {
-    sinon.restore();
     prompt.restore();
+    writeSpy.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
     assert.end();
