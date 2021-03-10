@@ -257,7 +257,7 @@ async function triageOne(sqs, queue) {
     console.log(`Subject: ${message.subject}`);
     console.log(`Message: ${message.message}`);
   } else {
-    console.log(`\nMessage: ${message.body}`);
+    console.log(`Message: ${message.body}`);
   }
 
   return await triagePrompts(sqs, queue, message);
