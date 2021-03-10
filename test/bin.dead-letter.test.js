@@ -29,6 +29,9 @@ test('[bin.watchbot-dead-letter] stack not found', async (assert) => {
 test('[dead-letter] individual message triage', async (assert) => {
   process.argv = ['node', 'bin/whatever', '--stack-name', 'stackName', '--region', 'regionName'];
   process.argv.QueueUrl = 'https://something';
+
+  const logSpy = sinon.spy(console, 'log');
+
   const prompt = sinon.stub(inquirer, 'prompt');
   prompt.onCall(0).returns(Promise.resolve({ action: 'triage' }));
   prompt.onCall(1).returns(Promise.resolve({ action: 'replayOne' }));
@@ -60,7 +63,7 @@ test('[dead-letter] individual message triage', async (assert) => {
     promise: () => Promise.resolve({ Messages: [{ MessageId: 'id-3', Body: JSON.stringify({ Subject: 'subject-3', Message: 'message-3' }), ReceiptHandle: 'handle-3' }] })
   });
   receive.onCall(3).returns({
-    promise: () => Promise.resolve({ Messages: [{ MessageId: 'id-4', Body: JSON.stringify({ Subject: 'subject-4', Message: 'message-4' }), ReceiptHandle: 'handle-4' }] })
+    promise: () => Promise.resolve({ Messages: [{ MessageId: 'id-4', Body: JSON.stringify({ DifferentFormat: 'no-subject-or-message' }), ReceiptHandle: 'handle-4' }] })
   });
 
   const send = AWS.stub('SQS', 'sendMessage', function() {
@@ -96,6 +99,11 @@ test('[dead-letter] individual message triage', async (assert) => {
       MessageBody: JSON.stringify({ Subject: 'subject-1', Message: 'message-1' })
     }), 'returns the first message to work queue');
 
+    assert.ok(logSpy.calledWith('Message: {"Subject":"subject-1","Message":"message-1"}'));
+    assert.ok(logSpy.calledWith('Message: {"Subject":"subject-2","Message":"message-2"}'));
+    assert.ok(logSpy.calledWith('Message: {"Subject":"subject-3","Message":"message-3"}'));
+    assert.ok(logSpy.calledWith('Message: {"DifferentFormat":"no-subject-or-message"}'), 'logs message without Subject and Message');
+
     assert.equal(del.callCount, 2, 'two deleteMessage requests');
     assert.ok(del.calledWith({
       QueueUrl: 'oneDead',
@@ -125,6 +133,7 @@ test('[dead-letter] individual message triage', async (assert) => {
     assert.ifError(err);
   } finally {
     prompt.restore();
+    sinon.restore();
     fetch.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
@@ -384,7 +393,8 @@ test('[dead-letter] write out messages', async (assert) => {
     promise: () => Promise.resolve({
       Messages: [
         { MessageId: 'id-1', Body: JSON.stringify({ Subject: 'subject-1', Message: 'message-1' }), ReceiptHandle: 'handle-1' },
-        { MessageId: 'id-2', Body: JSON.stringify({ Subject: 'subject-2', Message: 'message-2' }), ReceiptHandle: 'handle-2' }
+        { MessageId: 'id-2', Body: JSON.stringify({ Subject: 'subject-2', Message: 'message-2' }), ReceiptHandle: 'handle-2' },
+        { MessageId: 'id-3', Body: JSON.stringify({ DifferentFormat: 'no-subject-or-message' }), ReceiptHandle: 'handle-3' }
       ]
     })
   });
@@ -396,10 +406,16 @@ test('[dead-letter] write out messages', async (assert) => {
     this.request.promise.returns(Promise.resolve());
   });
 
+  const writeSpy = sinon.spy(process.stdout, 'write');
+
   try {
     await watchbotDeadletter();
 
-    assert.equal(vis.callCount, 2, 'two changeMessageVisibility requests');
+    assert.ok(writeSpy.calledWith('"{\\"Subject\\":\\"subject-1\\",\\"Message\\":\\"message-1\\"}"\n'), 'writes first message');
+    assert.ok(writeSpy.calledWith('"{\\"Subject\\":\\"subject-2\\",\\"Message\\":\\"message-2\\"}"\n'), 'writes second message');
+    assert.ok(writeSpy.calledWith('"{\\"DifferentFormat\\":\\"no-subject-or-message\\"}"\n'), 'write third message, without Subject or Message');
+
+    assert.equal(vis.callCount, 3, 'three changeMessageVisibility requests');
     assert.ok(vis.calledWith({
       QueueUrl: 'oneDead',
       ReceiptHandle: 'handle-1',
@@ -410,10 +426,16 @@ test('[dead-letter] write out messages', async (assert) => {
       ReceiptHandle: 'handle-2',
       VisibilityTimeout: 0
     }), 'returns the second message to the dead letter queue');
+    assert.ok(vis.calledWith({
+      QueueUrl: 'oneDead',
+      ReceiptHandle: 'handle-3',
+      VisibilityTimeout: 0
+    }), 'returns the third message to the dead letter queue');
 
   } catch (err) {
     assert.ifError(err, 'success');
   } finally {
+    sinon.restore();
     prompt.restore();
     AWS.CloudFormation.restore();
     AWS.SQS.restore();
