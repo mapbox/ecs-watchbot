@@ -1,3 +1,7 @@
+### 7.1.0
+
+- Add support for JSON structured logging via the 'structuredLogging' boolean option (defaults to off)
+
 ### 7.0.0
 
 - Breaking change: use Node 12 for lambdas and binaries going forward
