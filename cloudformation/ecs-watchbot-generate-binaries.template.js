@@ -86,7 +86,7 @@ const Resources = {
       Environment: {
         Type: 'LINUX_CONTAINER',
         ComputeType: 'BUILD_GENERAL1_SMALL',
-        Image: 'aws/codebuild/amazonlinux2-x86_64-standard:2.0'
+        Image: 'aws/codebuild/standard:5.0'
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
@@ -96,9 +96,8 @@ const Resources = {
           phases:
             install:
               runtime-versions:
-                nodejs: 12
+                nodejs: 14
               commands:
-                - npm install -g npm@6.13.4
                 - npm ci --production
             build:
               commands:
@@ -118,12 +117,8 @@ const Resources = {
       Environment: {
         Type: 'LINUX_CONTAINER',
         ComputeType: 'BUILD_GENERAL1_SMALL',
-        Image: 'node:12-alpine',
-        ImagePullCredentialsType: 'SERVICE_ROLE',
-        RegistryCredential: {
-          Credential: 'general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/credentials',
-          CredentialProvider: 'SECRETS_MANAGER'
-        }
+        Image: 'public.ecr.aws/docker/library/node:14-alpine',
+        ImagePullCredentialsType: 'CODEBUILD'
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
@@ -133,10 +128,9 @@ const Resources = {
           phases:
             install:
               runtime-versions:
-                nodejs: 12
+                nodejs: 14
               commands:
                 - apk add git
-                - npm install -g npm@6.13.4
                 - npm ci --production
             build:
               commands:
