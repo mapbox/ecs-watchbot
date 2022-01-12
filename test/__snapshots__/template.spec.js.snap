@@ -1129,6 +1129,10 @@ Object {
                 "Value": "false",
               },
               Object {
+                "Name": "structuredLogging",
+                "Value": "false",
+              },
+              Object {
                 "Name": "MyKey",
                 "Value": "MyValue",
               },
@@ -2641,6 +2645,10 @@ Object {
               },
               Object {
                 "Name": "Fifo",
+                "Value": "false",
+              },
+              Object {
+                "Name": "structuredLogging",
                 "Value": "false",
               },
               Object {
@@ -4160,6 +4168,10 @@ Object {
               },
               Object {
                 "Name": "Fifo",
+                "Value": "false",
+              },
+              Object {
+                "Name": "structuredLogging",
                 "Value": "false",
               },
               Object {
@@ -5688,6 +5700,10 @@ Object {
                 "Value": "false",
               },
               Object {
+                "Name": "structuredLogging",
+                "Value": "false",
+              },
+              Object {
                 "Name": "MyKey",
                 "Value": "MyValue",
               },
@@ -7114,6 +7130,10 @@ Object {
               },
               Object {
                 "Name": "Fifo",
+                "Value": "false",
+              },
+              Object {
+                "Name": "structuredLogging",
                 "Value": "false",
               },
             ],
@@ -8605,6 +8625,10 @@ Object {
                 "Name": "Fifo",
                 "Value": "true",
               },
+              Object {
+                "Name": "structuredLogging",
+                "Value": "false",
+              },
             ],
             "Image": Object {
               "Fn::Join": Array [
@@ -9953,6 +9977,10 @@ Object {
               Object {
                 "Name": "Fifo",
                 "Value": "true",
+              },
+              Object {
+                "Name": "structuredLogging",
+                "Value": "false",
               },
             ],
             "Image": Object {
