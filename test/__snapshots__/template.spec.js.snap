@@ -89,7 +89,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "8.0.0",
+    "EcsWatchbotVersion": "8.0.0-rc.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -127,7 +127,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -625,7 +625,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -949,7 +949,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -1389,7 +1389,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -1456,7 +1456,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -1610,7 +1610,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "8.0.0",
+    "EcsWatchbotVersion": "8.0.0-rc.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -1648,7 +1648,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -2146,7 +2146,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -2470,7 +2470,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -2906,7 +2906,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -2973,7 +2973,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -3127,7 +3127,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "8.0.0",
+    "EcsWatchbotVersion": "8.0.0-rc.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -3165,7 +3165,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -3663,7 +3663,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -3987,7 +3987,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -4435,7 +4435,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -4502,7 +4502,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -4656,7 +4656,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "8.0.0",
+    "EcsWatchbotVersion": "8.0.0-rc.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -4694,7 +4694,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -5192,7 +5192,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -5516,7 +5516,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -5964,7 +5964,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -6031,7 +6031,7 @@ Object {
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -6185,7 +6185,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "8.0.0",
+    "EcsWatchbotVersion": "8.0.0-rc.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -6223,7 +6223,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -6647,7 +6647,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -6949,7 +6949,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -7375,7 +7375,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -7442,7 +7442,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -7720,7 +7720,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "8.0.0",
+    "EcsWatchbotVersion": "8.0.0-rc.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -7758,7 +7758,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -8149,7 +8149,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -8444,7 +8444,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -8852,7 +8852,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -8919,7 +8919,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -9073,7 +9073,7 @@ Object {
     },
   },
   "Metadata": Object {
-    "EcsWatchbotVersion": "8.0.0",
+    "EcsWatchbotVersion": "8.0.0-rc.3",
   },
   "Outputs": Object {
     "ClusterArn": Object {
@@ -9111,7 +9111,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#memoryutilization",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -9502,7 +9502,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#queuesize",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
@@ -9797,7 +9797,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -10205,7 +10205,7 @@ Object {
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -10272,7 +10272,7 @@ Object {
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v8.0.0-rc.3/docs/alarms.md#workererrors",
         "AlarmName": Object {
           "Fn::Join": Array [
             "-",
