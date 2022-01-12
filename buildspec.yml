@@ -1,12 +1,8 @@
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      nodejs: 12
   pre_build:
     commands:
-      - docker login --username mapboxmachinereadonly --password ${DOCKER_HUB_TOKEN_KEY}
       - docker build -q -t ecs-watchbot -f test/Dockerfile ./
   build:
     commands:
