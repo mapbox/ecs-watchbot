@@ -48,7 +48,7 @@ const uploadBundle = async (buildTarget) => {
 
   if (buildTarget === 'alpine') {
     targets = [
-      { prefix: 'alpine', target: 'node12-alpine', pkg: 'watchbot' }
+      { prefix: 'alpine', target: 'node14-alpine', pkg: 'watchbot' }
     ];
   }
 
