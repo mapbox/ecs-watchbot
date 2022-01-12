@@ -41,9 +41,9 @@ const uploadBundle = async (buildTarget) => {
   const Bucket = 'watchbot-binaries';
 
   let targets = [
-    { prefix: 'linux', target: 'node12-linux', pkg: 'watchbot-linux' },
-    { prefix: 'macosx', target: 'node12-macos', pkg: 'watchbot-macos' },
-    { prefix: 'windows', target: 'node12-win', pkg: 'watchbot-win.exe' }
+    { prefix: 'linux', target: 'node14-linux', pkg: 'watchbot-linux' },
+    { prefix: 'macosx', target: 'node14-macos', pkg: 'watchbot-macos' },
+    { prefix: 'windows', target: 'node14-win', pkg: 'watchbot-win.exe' }
   ];
 
   if (buildTarget === 'alpine') {

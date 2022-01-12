@@ -51,7 +51,7 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
 
   assert.equals(execStub.args[0][0], 'npm ci --production', 'reinstalled npm modules');
   assert.equals(execStub.args[1][0], 'npm install -g pkg', 'globally installed pkg');
-  assert.equals(execStub.args[2][0], 'pkg --targets node12-linux,node12-macos,node12-win .', 'ran expected pkg command');
+  assert.equals(execStub.args[2][0], 'pkg --targets node14-linux,node14-macos,node14-win .', 'ran expected pkg command');
   assert.equals(execStub.args[3][0], 'git ls-remote --tags https://github.com/mapbox/ecs-watchbot', 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -100,7 +100,7 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
 
   assert.equals(execStub.args[0][0], 'npm ci --production', 'reinstalled npm modules');
   assert.equals(execStub.args[1][0], 'npm install -g pkg', 'globally installed pkg');
-  assert.equals(execStub.args[2][0], 'pkg --targets node12-alpine .', 'ran expected pkg command');
+  assert.equals(execStub.args[2][0], 'pkg --targets node14-alpine .', 'ran expected pkg command');
   assert.equals(execStub.args[3][0], 'git ls-remote --tags https://github.com/mapbox/ecs-watchbot', 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -135,7 +135,7 @@ test('uploadBundle: tag found (Tag created manually) for all except alpine', asy
 
   assert.equals(execStub.args[0][0], 'npm ci --production', 'reinstalled npm modules');
   assert.equals(execStub.args[1][0], 'npm install -g pkg', 'globally installed pkg');
-  assert.equals(execStub.args[2][0], 'pkg --targets node12-linux,node12-macos,node12-win .', 'ran expected pkg command');
+  assert.equals(execStub.args[2][0], 'pkg --targets node14-linux,node14-macos,node14-win .', 'ran expected pkg command');
   assert.equals(execStub.args[3][0], 'git ls-remote --tags https://github.com/mapbox/ecs-watchbot', 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -183,7 +183,7 @@ test('uploadBundle: tag found (Tag created manually) for alpine', async (assert)
 
   assert.equals(execStub.args[0][0], 'npm ci --production', 'reinstalled npm modules');
   assert.equals(execStub.args[1][0], 'npm install -g pkg', 'globally installed pkg');
-  assert.equals(execStub.args[2][0], 'pkg --targets node12-alpine .', 'ran expected pkg command');
+  assert.equals(execStub.args[2][0], 'pkg --targets node14-alpine .', 'ran expected pkg command');
   assert.equals(execStub.args[3][0], 'git ls-remote --tags https://github.com/mapbox/ecs-watchbot', 'listed tags on github');
 
   assert.ok(s3Stub.calledWith({
@@ -214,7 +214,7 @@ test('uploadBundle: tag not found for all except alpine', async (assert) => {
 
   assert.equals(execStub.args[0][0], 'npm ci --production', 'reinstalled npm modules');
   assert.equals(execStub.args[1][0], 'npm install -g pkg', 'globally installed pkg');
-  assert.equals(execStub.args[2][0], 'pkg --targets node12-linux,node12-macos,node12-win .', 'ran expected pkg command');
+  assert.equals(execStub.args[2][0], 'pkg --targets node14-linux,node14-macos,node14-win .', 'ran expected pkg command');
   assert.equals(execStub.args[3][0], 'git ls-remote --tags https://github.com/mapbox/ecs-watchbot', 'listed tags on github');
   assert.ok(log.calledWith('No tag found for 123456'));
 
@@ -237,7 +237,7 @@ test('uploadBundle: tag not found for alpine', async (assert) => {
 
   assert.equals(execStub.args[0][0], 'npm ci --production', 'reinstalled npm modules');
   assert.equals(execStub.args[1][0], 'npm install -g pkg', 'globally installed pkg');
-  assert.equals(execStub.args[2][0], 'pkg --targets node12-alpine .', 'ran expected pkg command');
+  assert.equals(execStub.args[2][0], 'pkg --targets node14-alpine .', 'ran expected pkg command');
   assert.equals(execStub.args[3][0], 'git ls-remote --tags https://github.com/mapbox/ecs-watchbot', 'listed tags on github');
   assert.ok(log.calledWith('No tag found for 123456'));
 
