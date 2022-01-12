@@ -196,12 +196,6 @@ const Resources = {
       TargetPipeline: cf.ref('Pipeline'),
       TargetPipelineVersion: cf.getAtt('Pipeline', 'Version'),
       TargetAction: 'GitHub',
-      Filters: [
-        {
-          JsonPath: '$.ref',
-          MatchEquals: 'refs/heads/{Branch}'
-        }
-      ],
       RegisterWithThirdParty: true
     }
   },
@@ -233,7 +227,6 @@ const Resources = {
                 Owner: 'mapbox',
                 Repo: 'ecs-watchbot',
                 PollForSourceChanges: 'false',
-                Branch: 'master',
                 OAuthToken: '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
               }
             }
