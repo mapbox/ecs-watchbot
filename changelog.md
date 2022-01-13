@@ -1,3 +1,7 @@
+### 8.0.0
+
+- Breaking change: use Node 14 for lambdas and binaries going forward
+
 ### 7.0.0
 
 - Breaking change: use Node 12 for lambdas and binaries going forward
