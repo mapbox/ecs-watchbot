@@ -98,6 +98,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **fifo** | Whether you want Watchbot's SQS queue to be first-in-first-out (FIFO). By default, Watchbot creates a standard SQS queue, in which the order of jobs is not guaranteed to match the order of messages. If your program requires more precise ordering and the limitations of a FIFO queue will be acceptable, set this option to `true`. Learn more in ["Using a FIFO queue"](./using-a-fifo-queue.md) | Boolean | No | `false`
 **placementConstraints** | ECS service [placement constraints](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ecs-service-placementconstraint.html). This value is ignored for `capacity` values other than `'EC2'`. | Object[]/Ref | No | false
 **placementStrategies** | ECS service [placement strategies](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ecs-service-placementstrategy.html). This value is ignored for `capacity` values other than `'EC2'`. | Object[]/Ref | No | false
+**structuredLogging** | Whether to emit logs in JSON format or not | Boolean | No | `false`
 
 ### writableFilesystem mode explained
 

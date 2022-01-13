@@ -24,6 +24,7 @@ test('[bin.watchbot] success', async (assert) => {
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
   process.env.maxJobDuration = 180;
+  process.env.structuredLogging = 'true';
 
   try {
     await watchbot();
@@ -35,6 +36,7 @@ test('[bin.watchbot] success', async (assert) => {
     Watcher.create.calledWith({
       queueUrl: 'https://faker',
       writableFilesystem: false,
+      structuredLogging: true,
       workerOptions: {
         command: 'echo hello world',
         volumes: ['/tmp', '/mnt'],
@@ -48,6 +50,7 @@ test('[bin.watchbot] success', async (assert) => {
 
   delete process.env.QueueUrl;
   delete process.env.Volumes;
+  delete process.env.structuredLogging;
   mockArgs.restore();
   watcher.teardown();
   assert.end();
