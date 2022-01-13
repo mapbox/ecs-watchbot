@@ -270,3 +270,44 @@ test('[logger] stream', async (assert) => {
     })
     .end();
 });
+
+test('[logger] stream with JSON output', async (assert) => {
+  sinon
+    .stub(Date.prototype, 'toISOString')
+    .returns('2021-11-09T06:43:12.123Z');
+  sinon
+    .stub(os, 'hostname')
+    .returns('my-hostname');
+  sinon.spy(process.stdout, 'write');
+
+  const logger = new Logger({ type: 'worker', structuredLogging: true }, message);
+  const writable = logger.stream();
+
+  writable.write('{"id":123, "content": "asdf"}\nhow are you');
+  writable
+    .on('finish', () => {
+      const first = JSON.parse(process.stdout.write.args[0][0]);
+      const second = JSON.parse(process.stdout.write.args[1][0]);
+      delete first.pid;
+      delete second.pid;
+      process.stdout.write.restore();
+      assert.same(
+        first,
+        { v: 0, level: 30, name: 'worker', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
+          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', id: 123, content: 'asdf' },
+        'prefixed first line with timestamp, type, and message id, JSON output merged'
+      );
+
+      assert.same(
+        second,
+        { v: 0, level: 30, name: 'worker', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
+          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', msg: 'how are you' },
+        'splits on newline, prefixed second line with timestamp, type, and message id, msg property'
+      );
+
+      Date.prototype.toISOString.restore();
+      os.hostname.restore();
+      assert.end();
+    })
+    .end();
+});
