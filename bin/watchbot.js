@@ -9,7 +9,6 @@ const main = async () => {
   if (process.argv[2] !== 'listen')
     throw new Error(`Invalid arguments: ${process.argv.slice(2).join(' ')}`);
 
-  const logger = Logger.create('watcher');
   const command = process.argv.slice(3).join(' ');
   const volumes = process.env.Volumes.split(',');
   const maxJobDuration = parseInt(process.env.maxJobDuration);
@@ -19,15 +18,22 @@ const main = async () => {
   const options = {
     queueUrl: process.env.QueueUrl,
     writableFilesystem: process.env.writableFilesystem === 'true' ? true : false,
-    workerOptions: { command, volumes , maxJobDuration }
+    workerOptions: { command, volumes , maxJobDuration },
+    structuredLogging: process.env.structuredLogging === 'true'
   };
+
+  const logger = Logger.create({ type: 'watcher', structuredLogging: options.structuredLogging });
 
   const watcher = Watcher.create(options);
 
   try {
     await watcher.listen();
   } catch (err) {
-    logger.log(`[error] ${err.stack}`);
+    if (options.structuredLogging) {
+      logger.log({ level: Logger.levels.ERROR, err });
+    } else {
+      logger.log(`[error] ${err.stack}`);
+    }
   }
 };
 
