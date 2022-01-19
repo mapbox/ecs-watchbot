@@ -12,7 +12,7 @@ const main = async () => {
   const command = process.argv.slice(3).join(' ');
   const volumes = process.env.Volumes.split(',');
   const maxJobDuration = parseInt(process.env.maxJobDuration);
-  const structuredLogging = process.env.structuredLogging === 'true'
+  const structuredLogging = process.env.structuredLogging === 'true';
 
   if (isNaN(maxJobDuration)) throw new Error('maxJobDuration: not a number');
 
