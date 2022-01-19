@@ -12,17 +12,18 @@ const main = async () => {
   const command = process.argv.slice(3).join(' ');
   const volumes = process.env.Volumes.split(',');
   const maxJobDuration = parseInt(process.env.maxJobDuration);
+  const structuredLogging = process.env.structuredLogging === 'true'
 
   if (isNaN(maxJobDuration)) throw new Error('maxJobDuration: not a number');
 
   const options = {
     queueUrl: process.env.QueueUrl,
     writableFilesystem: process.env.writableFilesystem === 'true' ? true : false,
-    workerOptions: { command, volumes , maxJobDuration },
-    structuredLogging: process.env.structuredLogging === 'true'
+    workerOptions: { command, volumes , maxJobDuration, structuredLogging },
+    structuredLogging
   };
 
-  const logger = Logger.create({ type: 'watcher', structuredLogging: options.structuredLogging });
+  const logger = Logger.create({ type: 'watcher', structuredLogging });
 
   const watcher = Watcher.create(options);
 
