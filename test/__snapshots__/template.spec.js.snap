@@ -92,7 +92,7 @@ Object {
     "EcsWatchbotVersion": "8.0.0",
   },
   "Outputs": Object {
-    "ClusterArn": Object {
+    "SoupClusterArn": Object {
       "Description": "Service cluster ARN",
       "Value": "processing",
     },
@@ -1613,7 +1613,7 @@ Object {
     "EcsWatchbotVersion": "8.0.0",
   },
   "Outputs": Object {
-    "ClusterArn": Object {
+    "SoupClusterArn": Object {
       "Description": "Service cluster ARN",
       "Value": "processing",
     },
@@ -3130,7 +3130,7 @@ Object {
     "EcsWatchbotVersion": "8.0.0",
   },
   "Outputs": Object {
-    "ClusterArn": Object {
+    "SoupClusterArn": Object {
       "Description": "Service cluster ARN",
       "Value": "processing",
     },
@@ -4659,7 +4659,7 @@ Object {
     "EcsWatchbotVersion": "8.0.0",
   },
   "Outputs": Object {
-    "ClusterArn": Object {
+    "SoupClusterArn": Object {
       "Description": "Service cluster ARN",
       "Value": "processing",
     },
@@ -6188,7 +6188,7 @@ Object {
     "EcsWatchbotVersion": "8.0.0",
   },
   "Outputs": Object {
-    "ClusterArn": Object {
+    "WatchbotClusterArn": Object {
       "Description": "Service cluster ARN",
       "Value": "processing",
     },
@@ -7723,7 +7723,7 @@ Object {
     "EcsWatchbotVersion": "8.0.0",
   },
   "Outputs": Object {
-    "ClusterArn": Object {
+    "WatchbotClusterArn": Object {
       "Description": "Service cluster ARN",
       "Value": "processing",
     },
@@ -9076,7 +9076,7 @@ Object {
     "EcsWatchbotVersion": "8.0.0",
   },
   "Outputs": Object {
-    "ClusterArn": Object {
+    "WatchbotClusterArn": Object {
       "Description": "Service cluster ARN",
       "Value": "processing",
     },
