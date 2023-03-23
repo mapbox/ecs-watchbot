@@ -1,7 +1,8 @@
-### Unreleased
+### 8.0.1
 
 - Fix tests that were broken in the 8.0.0 release for some reason
 - Force artifacts to use Node 14 now that it defaults to 16
+- Update @mapbox/watchbot-progress to address vulnerabilities
 
 ### 8.0.0
 
