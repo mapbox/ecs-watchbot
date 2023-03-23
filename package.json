@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@mapbox/cloudfriend": "^4.0.0",
-    "@mapbox/watchbot-progress": "^1.1.6",
+    "@mapbox/watchbot-progress": "^1.1.7",
     "aws-sdk": "^2.587.0",
     "binary-split": "^1.0.5",
     "fs-extra": "^8.1.0",
