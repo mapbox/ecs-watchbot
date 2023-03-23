@@ -1,3 +1,8 @@
 version: v1
-defaults:
-  - bundle
+
+bundle:
+  builds:
+    - filter: on-every-commit
+      config:
+        platform: nodejs
+        platform_version: '14'

@@ -1,3 +1,8 @@
+### Unreleased
+
+- Fix tests that were broken in the 8.0.0 release for some reason
+- Force artifacts to use Node 14 now that it defaults to 16
+
 ### 8.0.0
 
 - Add support for JSON structured logging via the 'structuredLogging' boolean option (defaults to off)

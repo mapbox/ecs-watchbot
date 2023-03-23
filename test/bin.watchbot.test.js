@@ -40,7 +40,8 @@ test('[bin.watchbot] success', async (assert) => {
       workerOptions: {
         command: 'echo hello world',
         volumes: ['/tmp', '/mnt'],
-        maxJobDuration: 180
+        maxJobDuration: 180,
+        structuredLogging: true
       }
     }),
     'watcher created with expected arguments'
