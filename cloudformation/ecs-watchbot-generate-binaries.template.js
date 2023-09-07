@@ -96,7 +96,7 @@ const Resources = {
           phases:
             install:
               runtime-versions:
-                nodejs: 14
+                nodejs: 18
               commands:
                 - npm ci --production
             build:
@@ -117,7 +117,7 @@ const Resources = {
       Environment: {
         Type: 'LINUX_CONTAINER',
         ComputeType: 'BUILD_GENERAL1_SMALL',
-        Image: 'public.ecr.aws/docker/library/node:14-alpine',
+        Image: 'public.ecr.aws/docker/library/node:18-alpine',
         ImagePullCredentialsType: 'CODEBUILD'
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
@@ -128,7 +128,7 @@ const Resources = {
           phases:
             install:
               runtime-versions:
-                nodejs: 14
+                nodejs: 18
               commands:
                 - apk add git
                 - npm ci --production
