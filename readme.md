@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/mapbox/ecs-watchbot.svg?branch=master)](https://travis-ci.org/mapbox/ecs-watchbot)
-
 # watchbot
 
 A library to help run a highly-scalable AWS service that performs data processing tasks in response to external events. You provide the messages and the logic to process them, while Watchbot handles making sure that your processing task is run at least once for each message. Watchbot is similar in many regards to AWS Lambda, but is more configurable, more focused on data processing, and not subject to several of Lambda's limitations.

@@ -1,3 +1,7 @@
+### 9.0.0
+
+-  Breaking change: use Node 18 for lambdas and binaries going forward
+
 ### 8.0.1
 
 - Fix tests that were broken in the 8.0.0 release for some reason
