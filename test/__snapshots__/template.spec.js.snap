@@ -1518,6 +1518,8 @@ exports[`[template]: all-properties 1`] = `
       "Type": "AWS::Logs::MetricFilter",
     },
   },
+  "Rules": {},
+  "Transform": undefined,
 }
 `;
 
@@ -3035,6 +3037,8 @@ exports[`[template]: all-properties-CPU 1`] = `
       "Type": "AWS::Logs::MetricFilter",
     },
   },
+  "Rules": {},
+  "Transform": undefined,
 }
 `;
 
@@ -4564,6 +4568,8 @@ exports[`[template]: all-properties-low-CPU 1`] = `
       "Type": "AWS::Logs::MetricFilter",
     },
   },
+  "Rules": {},
+  "Transform": undefined,
 }
 `;
 
@@ -6093,6 +6099,8 @@ exports[`[template]: all-properties-no-CPU 1`] = `
       "Type": "AWS::Logs::MetricFilter",
     },
   },
+  "Rules": {},
+  "Transform": undefined,
 }
 `;
 
@@ -7504,6 +7512,8 @@ exports[`[template]: defaults 1`] = `
       "Type": "AWS::Logs::MetricFilter",
     },
   },
+  "Rules": {},
+  "Transform": undefined,
 }
 `;
 
@@ -8981,6 +8991,8 @@ exports[`[template]: fifo 1`] = `
       "Type": "AWS::Logs::MetricFilter",
     },
   },
+  "Rules": {},
+  "Transform": undefined,
 }
 `;
 
@@ -10334,5 +10346,7 @@ exports[`[template]: fifoMaxSize 1`] = `
       "Type": "AWS::Logs::MetricFilter",
     },
   },
+  "Rules": {},
+  "Transform": undefined,
 }
 `;
