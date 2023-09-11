@@ -5,4 +5,4 @@ bundle:
     - filter: on-every-commit
       config:
         platform: nodejs
-        platform_version: '14'
+        platform_version: '18'
