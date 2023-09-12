@@ -2,3 +2,6 @@
 coverage/
 vendor/
 node_modules
+
+# vim!
+*.swp

@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/mapbox/ecs-watchbot.svg?branch=master)](https://travis-ci.org/mapbox/ecs-watchbot)
-
 # watchbot
 
 A library to help run a highly-scalable AWS service that performs data processing tasks in response to external events. You provide the messages and the logic to process them, while Watchbot handles making sure that your processing task is run at least once for each message. Watchbot is similar in many regards to AWS Lambda, but is more configurable, more focused on data processing, and not subject to several of Lambda's limitations.
@@ -9,11 +7,11 @@ A library to help run a highly-scalable AWS service that performs data processin
 Add these lines to your Dockerfile, to use the latest watchbot for the linux operating system.
 
 ```
-RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v8.0.0/watchbot -O /usr/local/bin/watchbot
+RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v9.0.0/watchbot -O /usr/local/bin/watchbot
 RUN chmod +x /usr/local/bin/watchbot
 ```
 * **os**: You can replace `linux` with other operating systems like `alpine`, `macosx` or, `windows`
-* **tag**: You can replace `v8.0.0`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent than v4.0.0
+* **tag**: You can replace `v9.0.0`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent than v4.0.0
 
 * If you are an existing user of watchbot, take a look at ["Upgrading to Watchbot 4"](https://github.com/mapbox/ecs-watchbot/blob/master/docs/upgrading-to-watchbot4.md), for a complete set of instructions to upgrade your stacks to Watchbot 4.
 
