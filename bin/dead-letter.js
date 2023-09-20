@@ -275,9 +275,6 @@ async function receive(sqs, count, queueUrl) {
     MaxNumberOfMessages: count,
     VisibilityTimeout: 10 * 60
   });
-  console.log('HERE');
-  console.log(JSON.stringify(data));
-  console.log(data.Messages);
 
   return (data.Messages || []).map((message) => ({
     id: message.MessageId,

@@ -65,9 +65,9 @@ test('[dead-letter] individual message triage', async (assert) => {
       Messages: [{ MessageId: 'id-4', Body: JSON.stringify({ DifferentFormat: 'no-subject-or-message' }), ReceiptHandle: 'handle-4' }]
     });
 
-  // sqsMock.on(SendMessageCommand).resolves({});
-  // sqsMock.on(DeleteMessageCommand).resolves({});
-  // sqsMock.on(ChangeMessageVisibilityCommand).resolves({});
+  sqsMock.on(SendMessageCommand).resolves();
+  sqsMock.on(DeleteMessageCommand).resolves();
+  sqsMock.on(ChangeMessageVisibilityCommand).resolves();
 
   const fetch = sinon.stub(cwlogs, 'readable');
   let count = 0;
@@ -86,47 +86,42 @@ test('[dead-letter] individual message triage', async (assert) => {
 
   try {
     await watchbotDeadletter();
-    // console.log(sqsMock.send)
-    // console.log(sqsMock.send.callCount)
-    // console.log(sqsMock.SendMessageCommand.send.callCount)
-    // console.log(JSON.stringify(sqsMock.send))
-    // assert.equal(sqsMock.toHaveReceivedCommandTimes(SendMessageCommand, 1));
-    // assert.equal(sqsMock.toHaveReceivedCommandTimes(SendMessageCommand, 1));
-    // assert.equal(send.callCount, 1, 'one sendMessage request');
-    // assert.ok(send.calledWith({
-    //   QueueUrl: 'oneWork',
-    //   MessageBody: JSON.stringify({ Subject: 'subject-1', Message: 'message-1' })
-    // }), 'returns the first message to work queue');
+    assert.equal(sqsMock.commandCalls(SendMessageCommand).length, 1, 'one sendMessage request');
+    assert.equal(sqsMock.commandCalls(SendMessageCommand, {
+      QueueUrl: 'oneWork',
+      MessageBody: JSON.stringify({ Subject: 'subject-1', Message: 'message-1' })
+    }, true).length, 1, 'returns the first message to work queue');
 
+    console.log(logSpy);
     assert.ok(logSpy.calledWith('Message: {"Subject":"subject-1","Message":"message-1"}'));
     assert.ok(logSpy.calledWith('Message: {"Subject":"subject-2","Message":"message-2"}'));
     assert.ok(logSpy.calledWith('Message: {"Subject":"subject-3","Message":"message-3"}'));
     assert.ok(logSpy.calledWith('Message: {"DifferentFormat":"no-subject-or-message"}'), 'logs message without Subject and Message');
 
-    // assert.equal(del.callCount, 2, 'two deleteMessage requests');
-    // assert.ok(del.calledWith({
-    //   QueueUrl: 'oneDead',
-    //   ReceiptHandle: 'handle-1'
-    // }), 'deletes the first message from the dead letter queue');
-    // assert.ok(del.calledWith({
-    //   QueueUrl: 'oneDead',
-    //   ReceiptHandle: 'handle-3'
-    // }), 'deletes the third message from the dead letter queue');
+    assert.equal(sqsMock.commandCalls(DeleteMessageCommand).length, 2)
+    assert.equal(sqsMock.commandCalls(DeleteMessageCommand, {
+      QueueUrl: 'oneDead',
+      ReceiptHandle: 'handle-1'
+    }, true).length, 1, 'deletes the first message from the dead letter queue');
+    assert.equal(sqsMock.commandCalls(DeleteMessageCommand, {
+      QueueUrl: 'oneDead',
+      ReceiptHandle: 'handle-1'
+    }, true).length, 1, 'deletes the third message from the dead letter queue');
 
-    // assert.equal(vis.callCount, 2, 'two changeMessageVisibility requests');
-    // assert.ok(vis.calledWith({
-    //   QueueUrl: 'oneDead',
-    //   ReceiptHandle: 'handle-2',
-    //   VisibilityTimeout: 0
-    // }), 'returns the second message to the dead letter queue');
-    // assert.ok(vis.calledWith({
-    //   QueueUrl: 'oneDead',
-    //   ReceiptHandle: 'handle-4',
-    //   VisibilityTimeout: 0
-    // }), 'returns the fourth message to the dead letter queue');
+    assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand).length, 2, 'two changeMessageVisibility requests');
+    assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
+      QueueUrl: 'oneDead',
+      ReceiptHandle: 'handle-2',
+      VisibilityTimeout: 0
+    }, true).length, 1, 'returns the second message to the dead letter queue');
+    assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
+      QueueUrl: 'oneDead',
+      ReceiptHandle: 'handle-4',
+      VisibilityTimeout: 0
+    }, true).length, 1, 'returns the fourth message to the dead letter queue');
 
-    // assert.equal(fetch.callCount, 1, 'one calls to fetch recent logs');
-    // assert.equals(fetch.args[0][0].pattern, 'id-4', 'one fetch call based on message id');
+    assert.equal(fetch.callCount, 1, 'one calls to fetch recent logs');
+    assert.equals(fetch.args[0][0].pattern, 'id-4', 'one fetch call based on message id');
 
   } catch (err) {
     assert.ifError(err);
