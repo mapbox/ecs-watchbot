@@ -5,7 +5,9 @@
 const fs = require('fs');
 const cp = require('child_process');
 const util = require('util');
-const AWS = require('aws-sdk');
+const {
+  S3
+} = require("@aws-sdk/client-s3");
 const exec = util.promisify(cp.exec);
 const wbg = { exec };
 
@@ -37,7 +39,7 @@ wbg.getTagForSha = getTagForSha;
  * uploadBundle - uploads watchbot binaries to S3
  */
 const uploadBundle = async (buildTarget) => {
-  const s3 = new AWS.S3();
+  const s3 = new S3();
   const Bucket = 'watchbot-binaries';
 
   let targets = [
@@ -66,7 +68,7 @@ const uploadBundle = async (buildTarget) => {
         Key: `${target.prefix}/${tag}/watchbot`,
         Body: fs.createReadStream(target.pkg),
         ACL: 'public-read'
-      }).promise();
+      });
     });
 
     await Promise.all(uploads);

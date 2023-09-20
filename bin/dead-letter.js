@@ -3,7 +3,12 @@
 
 /* eslint-disable no-console */
 
-const AWS = require('aws-sdk');
+const {
+        CloudFormation
+      } = require("@aws-sdk/client-cloudformation"),
+      {
+        SQS
+      } = require("@aws-sdk/client-sqs");
 const inquirer = require('inquirer');
 const stream = require('stream');
 const { default: Queue } = require('p-queue');
@@ -33,8 +38,8 @@ const main = async () => {
 
   if (!cli.flags.stackName) cli.showHelp();
 
-  const sqs = new AWS.SQS({ region: cli.flags.region });
-  const cfn = new AWS.CloudFormation({ region: cli.flags.region });
+  const sqs = new SQS({ region: cli.flags.region });
+  const cfn = new CloudFormation({ region: cli.flags.region });
 
   const actions = { purge, writeOut, replay, triage };
 
@@ -46,7 +51,7 @@ const main = async () => {
 };
 
 async function findQueues(cfn, options) {
-  const res = await cfn.describeStacks({ StackName: options.stackName }).promise();
+  const res = await cfn.describeStacks({ StackName: options.stackName });
   if (!res.Stacks[0]) {
     throw new Error(`Could not find ${options.stackName} in ${options.region}`);
   }
@@ -121,7 +126,7 @@ async function purge(sqs, queue) {
   });
 
   if (answers.purge)
-    return await sqs.purgeQueue({ QueueUrl: queue.deadLetter }).promise();
+    return await sqs.purgeQueue({ QueueUrl: queue.deadLetter });
 
   return Promise.resolve();
 }
@@ -269,7 +274,10 @@ async function receive(sqs, count, queueUrl) {
     WaitTimeSeconds: 1,
     MaxNumberOfMessages: count,
     VisibilityTimeout: 10 * 60
-  }).promise();
+  });
+  console.log('HERE');
+  console.log(JSON.stringify(data));
+  console.log(data.Messages);
 
   return (data.Messages || []).map((message) => ({
     id: message.MessageId,
@@ -285,7 +293,7 @@ async function returnOne(sqs, queueUrl, message) {
     QueueUrl: queueUrl,
     ReceiptHandle: handle,
     VisibilityTimeout: 0
-  }).promise();
+  });
 }
 
 async function returnMany(sqs, queueUrl, handles) {
@@ -304,14 +312,14 @@ async function replayOne(sqs, queueUrl, message) {
   return await sqs.sendMessage({
     QueueUrl: queueUrl,
     MessageBody: message.body
-  }).promise();
+  });
 }
 
 async function deleteOne(sqs, queueUrl, message) {
   return await sqs.deleteMessage({
     QueueUrl: queueUrl,
     ReceiptHandle: message.handle
-  }).promise();
+  });
 }
 
 function receiveAll(sqs, queueUrl) {
