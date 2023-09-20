@@ -86,7 +86,7 @@ const Resources = {
       Environment: {
         Type: 'LINUX_CONTAINER',
         ComputeType: 'BUILD_GENERAL1_SMALL',
-        Image: 'aws/codebuild/standard:5.0'
+        Image: 'aws/codebuild/standard:7.0'
       },
       ServiceRole: cf.getAtt('BundlerRole', 'Arn'),
       Source: {
