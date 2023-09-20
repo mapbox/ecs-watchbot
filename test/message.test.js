@@ -128,6 +128,7 @@ test('[message] no SNS subject', (assert) => {
   assert.notOk(message.env.Subject);
   assert.ok(message.env.Message);
 
+  sqsMock.reset();
   assert.end();
 });
 

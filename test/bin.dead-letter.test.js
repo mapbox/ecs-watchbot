@@ -22,6 +22,7 @@ test('[bin.watchbot-dead-letter] stack not found', async (assert) => {
   } catch (err) {
     assert.equal(err.message, 'Could not find stackName in regionName', 'expected error message');
     cfMock.reset();
+    sqsMock.reset();
     assert.end();
   }
 });
@@ -92,7 +93,6 @@ test('[dead-letter] individual message triage', async (assert) => {
       MessageBody: JSON.stringify({ Subject: 'subject-1', Message: 'message-1' })
     }, true).length, 1, 'returns the first message to work queue');
 
-    console.log(logSpy);
     assert.ok(logSpy.calledWith('Message: {"Subject":"subject-1","Message":"message-1"}'));
     assert.ok(logSpy.calledWith('Message: {"Subject":"subject-2","Message":"message-2"}'));
     assert.ok(logSpy.calledWith('Message: {"Subject":"subject-3","Message":"message-3"}'));

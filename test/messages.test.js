@@ -30,10 +30,12 @@ test('[messages] constructor', (assert) => {
 });
 
 test('[messages] factory', (assert) => {
+  sqsMock.on(ReceiveMessageCommand).resolves();
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
   });
   assert.ok(messages instanceof Messages, 'returns Messages object');
+  sqsMock.reset();
   assert.end();
 });
 
