@@ -189,7 +189,7 @@ const Resources = {
     Type: 'AWS::CodePipeline::Webhook',
     Properties: {
       AuthenticationConfiguration: {
-        SecretToken: '{{resolve:secretsmanager:code-pipeline-helper/webhook-secret}}'
+        SecretToken: '{{resolve:secretsmanager:general/temp/gh-token/ecs-watchbot}}'
       },
       Name: cf.sub('${AWS::StackName}-webhook'),
       Authentication: 'GITHUB_HMAC',
