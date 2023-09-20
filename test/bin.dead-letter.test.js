@@ -2,10 +2,10 @@
 
 const test = require('tape');
 const sinon = require('sinon');
-const {mockClient} = require('aws-sdk-client-mock');
-const { CloudFormationClient, DescribeStacksCommand } = require("@aws-sdk/client-cloudformation");
+const { mockClient } = require('aws-sdk-client-mock');
+const { CloudFormationClient, DescribeStacksCommand } = require('@aws-sdk/client-cloudformation');
 const cfMock = mockClient(CloudFormationClient);
-const { SQSClient, PurgeQueueCommand, SendMessageCommand, ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } = require("@aws-sdk/client-sqs");
+const { SQSClient, PurgeQueueCommand, SendMessageCommand, ReceiveMessageCommand, DeleteMessageCommand, ChangeMessageVisibilityCommand } = require('@aws-sdk/client-sqs');
 const sqsMock = mockClient(SQSClient);
 const watchbotDeadletter = require('../bin/dead-letter');
 const inquirer = require('inquirer');
@@ -40,16 +40,16 @@ test('[dead-letter] individual message triage', async (assert) => {
   prompt.onCall(4).returns(Promise.resolve({ action: 'logs' }));
   prompt.onCall(5).returns(Promise.resolve({ action: 'stop' }));
   cfMock.on(DescribeStacksCommand).resolves({
-      Stacks: [
-        {
-          Outputs: [
-            { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
-            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
-          ]
-        }
-      ]
-    });
+    Stacks: [
+      {
+        Outputs: [
+          { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
+          { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+          { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
+        ]
+      }
+    ]
+  });
   sqsMock
     .on(ReceiveMessageCommand)
     .resolvesOnce({
@@ -98,7 +98,7 @@ test('[dead-letter] individual message triage', async (assert) => {
     assert.ok(logSpy.calledWith('Message: {"Subject":"subject-3","Message":"message-3"}'));
     assert.ok(logSpy.calledWith('Message: {"DifferentFormat":"no-subject-or-message"}'), 'logs message without Subject and Message');
 
-    assert.equal(sqsMock.commandCalls(DeleteMessageCommand).length, 2)
+    assert.equal(sqsMock.commandCalls(DeleteMessageCommand).length, 2);
     assert.equal(sqsMock.commandCalls(DeleteMessageCommand, {
       QueueUrl: 'oneDead',
       ReceiptHandle: 'handle-1'
@@ -129,8 +129,8 @@ test('[dead-letter] individual message triage', async (assert) => {
     prompt.restore();
     logSpy.restore();
     fetch.restore();
-    cfMock.reset()
-    sqsMock.reset()
+    cfMock.reset();
+    sqsMock.reset();
     assert.end();
   }
 });
@@ -141,15 +141,15 @@ test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async
   prompt.onCall(1).returns(Promise.resolve({ purge: true }));
 
   cfMock.on(DescribeStacksCommand).resolves({
-      Stacks: [
-        {
-          Outputs: [
-            { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
-            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
-          ]
-        }
-      ]
+    Stacks: [
+      {
+        Outputs: [
+          { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
+          { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+          { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
+        ]
+      }
+    ]
   });
 
   sqsMock.on(PurgeQueueCommand).resolves();
@@ -172,12 +172,12 @@ test('[bin.watchbot-dead-letter] check initial prompts (single watchbot)', async
 
     assert.equal(sqsMock.commandCalls(PurgeQueueCommand).length, 1, 'calls purgeQueue');
     assert.equal(sqsMock.commandCalls(PurgeQueueCommand, {
-      QueueUrl: 'oneDead',
+      QueueUrl: 'oneDead'
     }, true).length, 1, 'purges the dead letter queue');
 
     prompt.restore();
-    cfMock.reset()
-    sqsMock.reset()
+    cfMock.reset();
+    sqsMock.reset();
   } catch (err) {
     assert.ifError(err, 'success');
   }
@@ -190,15 +190,15 @@ test('[dead-letter] reject purge confirmation', async (assert) => {
   prompt.onCall(1).returns(Promise.resolve({ purge: false }));
 
   cfMock.on(DescribeStacksCommand).resolves({
-      Stacks: [
-        {
-          Outputs: [
-            { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
-            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
-          ]
-        }
-      ]
+    Stacks: [
+      {
+        Outputs: [
+          { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
+          { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+          { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
+        ]
+      }
+    ]
   });
 
   sqsMock.on(PurgeQueueCommand).resolves();
@@ -208,8 +208,8 @@ test('[dead-letter] reject purge confirmation', async (assert) => {
     assert.equal(sqsMock.commandCalls(PurgeQueueCommand).length, 0, 'does not call purgeQueue');
 
     prompt.restore();
-    cfMock.reset()
-    sqsMock.reset()
+    cfMock.reset();
+    sqsMock.reset();
     assert.end();
   } catch (err) {
     assert.ifError(err, 'success');
@@ -222,15 +222,15 @@ test('[dead-letter] return messages to work queue', async (assert) => {
   prompt.onCall(1).returns(Promise.resolve({ replayAll: true }));
 
   cfMock.on(DescribeStacksCommand).resolves({
-      Stacks: [
-        {
-          Outputs: [
-            { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
-            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
-          ]
-        }
-      ]
+    Stacks: [
+      {
+        Outputs: [
+          { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
+          { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+          { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
+        ]
+      }
+    ]
   });
 
   sqsMock
@@ -251,7 +251,7 @@ test('[dead-letter] return messages to work queue', async (assert) => {
     })
     .resolves({
       Messages: []
-    })
+    });
 
   sqsMock.on(SendMessageCommand).resolves();
   sqsMock.on(DeleteMessageCommand).resolves();
@@ -278,16 +278,15 @@ test('[dead-letter] return messages to work queue', async (assert) => {
     assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 2, 'calls receiveMessage twice');
 
     // unpack args from ReceiveMessageCommand
-    const args = [...sqsMock.commandCalls(ReceiveMessageCommand).map(call => call.args[0].input)]
+    const args = [...sqsMock.commandCalls(ReceiveMessageCommand).map((call) => call.args[0].input)];
 
     for (const arg of args){
-      // TODO: understand why we need to call stringify to get equality
-      assert.equal(JSON.stringify(arg), JSON.stringify({
+      assert.deepEqual(arg, {
         QueueUrl: 'oneDead',
         WaitTimeSeconds: 1,
         MaxNumberOfMessages: 10,
         VisibilityTimeout: 600
-      }), 'reads correct queue, uses long-polling, receives up to 10, 10min timeout')
+      }, 'reads correct queue, uses long-polling, receives up to 10, 10min timeout');
     }
 
     assert.equal(sqsMock.commandCalls(SendMessageCommand).length, 2, 'calls sendMessage twice');
@@ -314,8 +313,8 @@ test('[dead-letter] return messages to work queue', async (assert) => {
     assert.ifError(err, 'success');
   } finally {
     prompt.restore();
-    cfMock.reset()
-    sqsMock.reset()
+    cfMock.reset();
+    sqsMock.reset();
     assert.end();
   }
 });
@@ -326,15 +325,15 @@ test('[dead-letter] reject return messages confirmation', async (assert) => {
   prompt.onCall(1).returns(Promise.resolve({ replayAll: false }));
 
   cfMock.on(DescribeStacksCommand).resolves({
-      Stacks: [
-        {
-          Outputs: [
-            { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
-            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
-          ]
-        }
-      ]
+    Stacks: [
+      {
+        Outputs: [
+          { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
+          { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+          { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
+        ]
+      }
+    ]
   });
 
   sqsMock.on(ReceiveMessageCommand).resolves();
@@ -351,8 +350,8 @@ test('[dead-letter] reject return messages confirmation', async (assert) => {
     assert.ifError(err, 'success');
   } finally {
     prompt.restore();
-    cfMock.reset()
-    sqsMock.reset()
+    cfMock.reset();
+    sqsMock.reset();
     assert.end();
   }
 });
@@ -362,15 +361,15 @@ test('[dead-letter] write out messages', async (assert) => {
   prompt.onCall(0).returns(Promise.resolve({ action: 'writeOut' }));
 
   cfMock.on(DescribeStacksCommand).resolves({
-      Stacks: [
-        {
-          Outputs: [
-            { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
-            { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
-            { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
-          ]
-        }
-      ]
+    Stacks: [
+      {
+        Outputs: [
+          { OutputKey: 'oneDeadLetterQueueUrl', OutputValue: 'oneDead' },
+          { OutputKey: 'oneQueueUrl', OutputValue: 'oneWork' },
+          { OutputKey: 'oneLogGroup', OutputValue: 'oneLogs' }
+        ]
+      }
+    ]
   });
   sqsMock
     .on(ReceiveMessageCommand)
@@ -383,7 +382,7 @@ test('[dead-letter] write out messages', async (assert) => {
     })
     .resolves({
       Messages: []
-    })
+    });
 
   sqsMock.on(ChangeMessageVisibilityCommand).resolves();
 
@@ -418,8 +417,8 @@ test('[dead-letter] write out messages', async (assert) => {
   } finally {
     prompt.restore();
     writeSpy.restore();
-    cfMock.reset()
-    sqsMock.reset()
+    cfMock.reset();
+    sqsMock.reset();
     assert.end();
   }
 });

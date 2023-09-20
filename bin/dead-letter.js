@@ -4,11 +4,11 @@
 /* eslint-disable no-console */
 
 const {
-        CloudFormation
-      } = require("@aws-sdk/client-cloudformation"),
-      {
-        SQS
-      } = require("@aws-sdk/client-sqs");
+    CloudFormation
+  } = require('@aws-sdk/client-cloudformation'),
+  {
+    SQS
+  } = require('@aws-sdk/client-sqs');
 const inquirer = require('inquirer');
 const stream = require('stream');
 const { default: Queue } = require('p-queue');

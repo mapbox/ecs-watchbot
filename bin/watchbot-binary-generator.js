@@ -5,9 +5,7 @@
 const fs = require('fs');
 const cp = require('child_process');
 const util = require('util');
-const {
-  S3
-} = require("@aws-sdk/client-s3");
+const { S3 } = require('@aws-sdk/client-s3');
 const exec = util.promisify(cp.exec);
 const wbg = { exec };
 

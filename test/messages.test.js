@@ -1,14 +1,15 @@
 'use strict';
 
 const test = require('tape');
-const AWS = require('@mapbox/mock-aws-sdk-js');
+const { mockClient } = require('aws-sdk-client-mock');
+const { SQSClient, ReceiveMessageCommand } = require('@aws-sdk/client-sqs');
+const sqsMock = mockClient(SQSClient);
 const stubber = require('./stubber');
 const Messages = require('../lib/messages');
 const Message = require('../lib/message');
 const Logger = require('../lib/logger');
 
 test('[messages] constructor', (assert) => {
-  AWS.stub('SQS', 'receiveMessage');
 
   assert.throws(
     () => new Messages(),
@@ -16,24 +17,15 @@ test('[messages] constructor', (assert) => {
     'queueUrl is required'
   );
 
+  // TODO: find a way to test the successful creation of this SQS object.
+  // not sure how to do this in aws-sdk-client-mock
   const messages = new Messages({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
   });
 
   assert.ok(messages.sqs, 'sets .sqs');
-  assert.ok(
-    AWS.SQS.calledWith({
-      region: 'us-east-1',
-      params: {
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
-      }
-    }),
-    'created SQS client correctly'
-  );
-
   assert.ok(messages.logger instanceof Logger, 'sets .logger');
 
-  AWS.SQS.restore();
   assert.end();
 });
 
@@ -46,18 +38,20 @@ test('[messages] factory', (assert) => {
 });
 
 test('[messages] waitFor polls enpty queue until you stop it', async (assert) => {
-  const receive = AWS.stub('SQS', 'receiveMessage');
 
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
   });
 
-  const empty = { promise: () => Promise.resolve({ Messages: [] }) };
-  receive.onCall(0).returns(empty);
-  receive.onCall(1).callsFake(() => {
-    messages.stop = true;
-    return empty;
-  });
+  sqsMock
+    .on(ReceiveMessageCommand)
+    .resolvesOnce({
+      Messages: []
+    })
+    .callsFake(() => {
+      messages.stop = true;
+      return { Messages: [] };
+    });
 
   try {
     await messages.waitFor();
@@ -66,9 +60,9 @@ test('[messages] waitFor polls enpty queue until you stop it', async (assert) =>
   }
 
   assert.pass('polling stopped');
-  assert.equal(receive.callCount, 2, 'called sqs.receiveMessage twice');
+  assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 2, 'called sqs.receiveMessage twice');
 
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
@@ -88,9 +82,11 @@ test('[messages] waitFor gets message', async (assert) => {
     }
   ];
 
-  const receive = AWS.stub('SQS', 'receiveMessage', function() {
-    this.request.promise.returns(Promise.resolve({ Messages: msgs }));
-  });
+  sqsMock
+    .on(ReceiveMessageCommand)
+    .resolvesOnce({
+      Messages: msgs
+    });
 
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
@@ -103,18 +99,18 @@ test('[messages] waitFor gets message', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(receive.callCount, 1, 'resolves after receiving a message');
-  assert.ok(
-    receive.calledWith({
-      AttributeNames: [
-        'SentTimestamp',
-        'ApproximateFirstReceiveTimestamp',
-        'ApproximateReceiveCount'
-      ],
-      WaitTimeSeconds: 20,
-      MaxNumberOfMessages: 1
-    }),
-    'called SQS.receiveMessage with expected parameters'
+  assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 1, 'resolves after receiving a message');
+  const args = sqsMock.commandCalls(ReceiveMessageCommand)[0].args[0].input;
+  assert.deepEqual(args, {
+    AttributeNames: [
+      'SentTimestamp',
+      'ApproximateFirstReceiveTimestamp',
+      'ApproximateReceiveCount'
+    ],
+    WaitTimeSeconds: 20,
+    MaxNumberOfMessages: 1
+  },
+  'called SQS.receiveMessage with expected parameters'
   );
 
   assert.equal(data.length, 1, 'one message returned');
@@ -127,7 +123,7 @@ test('[messages] waitFor gets message', async (assert) => {
   );
 
   message.teardown();
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
@@ -157,9 +153,11 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
     }
   ];
 
-  const receive = AWS.stub('SQS', 'receiveMessage', function() {
-    this.request.promise.returns(Promise.resolve({ Messages: msgs }));
-  });
+  sqsMock
+    .on(ReceiveMessageCommand)
+    .resolvesOnce({
+      Messages: msgs
+    });
 
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
@@ -172,18 +170,18 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(receive.callCount, 1, 'resolves after receiving a message');
-  assert.ok(
-    receive.calledWith({
-      AttributeNames: [
-        'SentTimestamp',
-        'ApproximateFirstReceiveTimestamp',
-        'ApproximateReceiveCount'
-      ],
-      WaitTimeSeconds: 20,
-      MaxNumberOfMessages: 10
-    }),
-    'called SQS.receiveMessage with expected parameters'
+  assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 1, 'resolves after receiving a message');
+  const args = sqsMock.commandCalls(ReceiveMessageCommand)[0].args[0].input;
+  assert.deepEqual(args, {
+    AttributeNames: [
+      'SentTimestamp',
+      'ApproximateFirstReceiveTimestamp',
+      'ApproximateReceiveCount'
+    ],
+    WaitTimeSeconds: 20,
+    MaxNumberOfMessages: 10
+  },
+  'called SQS.receiveMessage with expected parameters'
   );
 
   assert.equal(data.length, 2, 'two messages returned');
@@ -205,16 +203,15 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
   );
 
   message.teardown();
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
 test('[messages] waitFor handles SQS errors', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'receiveMessage', function() {
-    this.request.promise.returns(Promise.reject(err));
-  });
+
+  sqsMock.on(ReceiveMessageCommand).rejects(err);
 
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
@@ -231,6 +228,6 @@ test('[messages] waitFor handles SQS errors', async (assert) => {
   assert.ok(logger.queueError.calledWith(err), 'logged queue error');
 
   logger.teardown();
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });

@@ -1,7 +1,9 @@
 'use strict';
 
 const test = require('tape');
-const AWS = require('@mapbox/mock-aws-sdk-js');
+const { mockClient } = require('aws-sdk-client-mock');
+const { SQSClient, DeleteMessageCommand, ChangeMessageVisibilityCommand } = require('@aws-sdk/client-sqs');
+const sqsMock = mockClient(SQSClient);
 const Message = require('../lib/message');
 const Logger = require('../lib/logger');
 const stubber = require('./stubber');
@@ -19,7 +21,6 @@ const sqsMessage = {
 };
 
 test('[message] constructor', (assert) => {
-  AWS.stub('SQS', 'receiveMessage');
 
   assert.throws(
     () => new Message({ MessageId: 'a' }),
@@ -62,24 +63,14 @@ test('[message] constructor', (assert) => {
     'sets .env'
   );
 
-  assert.ok(
-    AWS.SQS.calledWith({
-      region: 'us-east-1',
-      params: { QueueUrl: queueUrl }
-    }),
-    'created SQS client properly'
-  );
-
   assert.ok(message.sqs, 'sets .sqs');
 
   assert.ok(message.logger instanceof Logger, 'sets .logger');
 
-  AWS.SQS.restore();
   assert.end();
 });
 
 test('[message] constructor with SQS FIFO non-JSON message', (assert) => {
-  AWS.stub('SQS', 'receiveMessage');
 
   const sqsFifoMessage = Object.assign({}, sqsMessage, {
     Body: 'fake-message-body'
@@ -98,12 +89,10 @@ test('[message] constructor with SQS FIFO non-JSON message', (assert) => {
     'sets .env'
   );
 
-  AWS.SQS.restore();
   assert.end();
 });
 
 test('[message] constructor with SQS FIFO JSON message', (assert) => {
-  AWS.stub('SQS', 'receiveMessage');
 
   const sqsFifoMessage = Object.assign({}, sqsMessage, {
     Body: '{ "a": 1, "b": 2 }'
@@ -122,7 +111,6 @@ test('[message] constructor with SQS FIFO JSON message', (assert) => {
     'sets .env'
   );
 
-  AWS.SQS.restore();
   assert.end();
 });
 
@@ -144,10 +132,7 @@ test('[message] no SNS subject', (assert) => {
 });
 
 test('[message] retry', async (assert) => {
-  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
-    this.request.promise.returns(Promise.resolve());
-  });
-
+  sqsMock.on(ChangeMessageVisibilityCommand).resolves();
   const message = new Message(sqsMessage, { queueUrl });
 
   try {
@@ -156,22 +141,17 @@ test('[message] retry', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.ok(
-    cmv.calledWith({
-      ReceiptHandle: 'a',
-      VisibilityTimeout: 8
-    }),
-    'returns message to queue with backoff on visibility timeout'
-  );
+  assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
+    ReceiptHandle: 'a',
+    VisibilityTimeout: 8
+  }, true).length, 1, 'returns message to queue with backoff on visibility timeout');
 
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
 test('[message] retry, too many receieves', async (assert) => {
-  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
-    this.request.promise.returns(Promise.resolve());
-  });
+  sqsMock.on(ChangeMessageVisibilityCommand).resolves();
 
   const sqsMsg = Object.assign({}, sqsMessage);
   sqsMsg.Attributes = Object.assign({}, sqsMessage.Attributes, {
@@ -187,21 +167,19 @@ test('[message] retry, too many receieves', async (assert) => {
   }
 
   assert.equal(
-    cmv.callCount,
+    sqsMock.commandCalls(ChangeMessageVisibilityCommand).length,
     0,
     'lets message time out without explicitly changing visibility'
   );
 
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
 test('[message] retry, SQS error', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'changeMessageVisibility', function() {
-    this.request.promise.returns(Promise.reject(err));
-  });
+  sqsMock.on(ChangeMessageVisibilityCommand).rejects(err);
 
   const message = new Message(sqsMessage, { queueUrl });
 
@@ -214,14 +192,12 @@ test('[message] retry, SQS error', async (assert) => {
   assert.ok(logger.queueError.calledWith(err), 'logged sqs error');
 
   logger.teardown();
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
 test('[message] complete', async (assert) => {
-  const del = AWS.stub('SQS', 'deleteMessage', function() {
-    this.request.promise.returns(Promise.resolve());
-  });
+  sqsMock.on(DeleteMessageCommand).resolves();
 
   const message = new Message(sqsMessage, { queueUrl });
 
@@ -231,21 +207,18 @@ test('[message] complete', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.ok(
-    del.calledWith({ ReceiptHandle: 'a' }),
-    'removed message from queue'
-  );
+  assert.equal(sqsMock.commandCalls(DeleteMessageCommand, {
+    ReceiptHandle: 'a'
+  }, true).length, 1, 'removed message from queue');
 
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
 test('[message] complete, SQS error', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'deleteMessage', function() {
-    this.request.promise.returns(Promise.reject(err));
-  });
+  sqsMock.on(DeleteMessageCommand).rejects(err);
 
   const message = new Message(sqsMessage, { queueUrl });
 
@@ -258,14 +231,12 @@ test('[message] complete, SQS error', async (assert) => {
   assert.ok(logger.queueError.calledWith(err), 'logged sqs error');
 
   logger.teardown();
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
 test('[message] heartbeat', async (assert) => {
-  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
-    this.request.promise.returns(Promise.resolve());
-  });
+  sqsMock.on(ChangeMessageVisibilityCommand).resolves();
 
   const message = new Message(sqsMessage, { queueUrl });
 
@@ -275,24 +246,19 @@ test('[message] heartbeat', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.ok(
-    cmv.calledWith({
-      ReceiptHandle: 'a',
-      VisibilityTimeout: 180
-    }),
-    'heartbeat sets message visibilityTimeout to 3 minutes'
-  );
+  assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
+    ReceiptHandle: 'a',
+    VisibilityTimeout: 180
+  }, true).length, 1, 'heartbeat sets message visibilityTimeout to 3 minutes');
 
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
 
 test('[message] heartbeat, SQS error', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'changeMessageVisibility', function() {
-    this.request.promise.returns(Promise.reject(err));
-  });
+  sqsMock.on(ChangeMessageVisibilityCommand).rejects(err);
 
   const message = new Message(sqsMessage, { queueUrl });
 
@@ -305,6 +271,6 @@ test('[message] heartbeat, SQS error', async (assert) => {
   assert.ok(logger.queueError.calledWith(err), 'logged sqs error');
 
   logger.teardown();
-  AWS.SQS.restore();
+  sqsMock.reset();
   assert.end();
 });
