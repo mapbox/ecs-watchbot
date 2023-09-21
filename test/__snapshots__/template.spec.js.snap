@@ -89,7 +89,7 @@ exports[`[template]: all-properties 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1-dev1",
+    "EcsWatchbotVersion": "9.0.1",
   },
   "Outputs": {
     "ClusterArn": {
@@ -127,7 +127,7 @@ exports[`[template]: all-properties 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -625,7 +625,7 @@ exports[`[template]: all-properties 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -1457,7 +1457,7 @@ exports[`[template]: all-properties 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -1613,7 +1613,7 @@ exports[`[template]: all-properties-CPU 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1-dev1",
+    "EcsWatchbotVersion": "9.0.1",
   },
   "Outputs": {
     "ClusterArn": {
@@ -1651,7 +1651,7 @@ exports[`[template]: all-properties-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -2149,7 +2149,7 @@ exports[`[template]: all-properties-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -2977,7 +2977,7 @@ exports[`[template]: all-properties-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -3133,7 +3133,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1-dev1",
+    "EcsWatchbotVersion": "9.0.1",
   },
   "Outputs": {
     "ClusterArn": {
@@ -3171,7 +3171,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -3669,7 +3669,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -4509,7 +4509,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -4665,7 +4665,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1-dev1",
+    "EcsWatchbotVersion": "9.0.1",
   },
   "Outputs": {
     "ClusterArn": {
@@ -4703,7 +4703,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -5201,7 +5201,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -6041,7 +6041,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -6197,7 +6197,7 @@ exports[`[template]: defaults 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1-dev1",
+    "EcsWatchbotVersion": "9.0.1",
   },
   "Outputs": {
     "ClusterArn": {
@@ -6235,7 +6235,7 @@ exports[`[template]: defaults 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -6659,7 +6659,7 @@ exports[`[template]: defaults 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -7455,7 +7455,7 @@ exports[`[template]: defaults 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -7735,7 +7735,7 @@ exports[`[template]: fifo 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1-dev1",
+    "EcsWatchbotVersion": "9.0.1",
   },
   "Outputs": {
     "ClusterArn": {
@@ -7773,7 +7773,7 @@ exports[`[template]: fifo 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -8164,7 +8164,7 @@ exports[`[template]: fifo 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -8935,7 +8935,7 @@ exports[`[template]: fifo 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -9091,7 +9091,7 @@ exports[`[template]: fifoMaxSize 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1-dev1",
+    "EcsWatchbotVersion": "9.0.1",
   },
   "Outputs": {
     "ClusterArn": {
@@ -9129,7 +9129,7 @@ exports[`[template]: fifoMaxSize 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -9520,7 +9520,7 @@ exports[`[template]: fifoMaxSize 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -10291,7 +10291,7 @@ exports[`[template]: fifoMaxSize 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1-dev1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
