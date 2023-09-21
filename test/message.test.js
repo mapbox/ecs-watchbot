@@ -143,6 +143,7 @@ test('[message] retry', async (assert) => {
   }
 
   assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
+    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
     ReceiptHandle: 'a',
     VisibilityTimeout: 8
   }, true).length, 1, 'returns message to queue with backoff on visibility timeout');
@@ -209,6 +210,7 @@ test('[message] complete', async (assert) => {
   }
 
   assert.equal(sqsMock.commandCalls(DeleteMessageCommand, {
+    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
     ReceiptHandle: 'a'
   }, true).length, 1, 'removed message from queue');
 
@@ -248,6 +250,7 @@ test('[message] heartbeat', async (assert) => {
   }
 
   assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
+    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
     ReceiptHandle: 'a',
     VisibilityTimeout: 180
   }, true).length, 1, 'heartbeat sets message visibilityTimeout to 3 minutes');

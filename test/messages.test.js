@@ -104,6 +104,7 @@ test('[messages] waitFor gets message', async (assert) => {
   assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 1, 'resolves after receiving a message');
   const args = sqsMock.commandCalls(ReceiveMessageCommand)[0].args[0].input;
   assert.deepEqual(args, {
+    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
     AttributeNames: [
       'SentTimestamp',
       'ApproximateFirstReceiveTimestamp',
@@ -175,6 +176,7 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
   assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 1, 'resolves after receiving a message');
   const args = sqsMock.commandCalls(ReceiveMessageCommand)[0].args[0].input;
   assert.deepEqual(args, {
+    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
     AttributeNames: [
       'SentTimestamp',
       'ApproximateFirstReceiveTimestamp',
