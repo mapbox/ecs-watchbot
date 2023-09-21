@@ -189,7 +189,7 @@ const Resources = {
     Type: 'AWS::CodePipeline::Webhook',
     Properties: {
       AuthenticationConfiguration: {
-        SecretToken: '{{resolve:secretsmanager:general/temp/gh-token/ecs-watchbot}}'
+        SecretToken: '{{resolve:secretsmanager:code-pipeline-helper/webhook-secret}}'
       },
       Name: cf.sub('${AWS::StackName}-webhook'),
       Authentication: 'GITHUB_HMAC',
@@ -233,7 +233,7 @@ const Resources = {
                 Owner: 'mapbox',
                 Repo: 'ecs-watchbot',
                 PollForSourceChanges: 'false',
-                Branch: 'aws-sdk-3',
+                Branch: 'master',
                 OAuthToken: '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
               }
             }
