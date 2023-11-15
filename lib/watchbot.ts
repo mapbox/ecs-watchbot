@@ -1,11 +1,11 @@
 import { Arn, Duration, RemovalPolicy, Resource } from 'aws-cdk-lib';
 import { ISecurityGroup, SubnetSelection } from 'aws-cdk-lib/aws-ec2';
 import {
+  BaseService,
   Cluster, ContainerImage,
-  FargateService,
   FargateTaskDefinition, ICluster,
   LogDrivers, MountPoint,
-  PropagatedTagSource, UlimitName, Volume,
+  PropagatedTagSource, TaskDefinition, UlimitName, Volume,
 } from 'aws-cdk-lib/aws-ecs';
 import {
   QueueProcessingFargateService,
@@ -155,10 +155,10 @@ export interface WatchbotProps extends Omit<QueueProcessingFargateServiceProps, 
   // dashboard: true,
 }
 
-export class FargateWatchbot extends Resource {
+export abstract class Watchbot extends Resource {
   protected readonly props: WatchbotProps;
-  public readonly service: FargateService;
-  public readonly taskDefinition: FargateTaskDefinition;
+  public readonly service: BaseService;
+  public readonly taskDefinition: TaskDefinition;
 
   public readonly cluster: ICluster;
   public readonly logGroup: LogGroup;
@@ -177,14 +177,6 @@ export class FargateWatchbot extends Resource {
       removalPolicy: RemovalPolicy.DESTROY,
     });
     (this.logGroup.node.defaultChild as CfnLogGroup).overrideLogicalId(this.prefixed('LogGroup'));
-
-    this.taskDefinition = new FargateTaskDefinition(this, 'QueueProcessingTaskDef', {
-      memoryLimitMiB: this.props.memoryLimitMiB,
-      cpu: this.props.cpu,
-      family: this.props.family,
-      runtimePlatform: this.props.runtimePlatform,
-      volumes: this.props.volumes,
-    });
 
     const { queue, deadLetterQueue, topic } = this.createQueues();
     this.queue = queue;
@@ -227,26 +219,6 @@ export class FargateWatchbot extends Resource {
     });
     container.addMountPoints(...this.props.mountPoints);
 
-    const queueProcessingFargateServiceProps = {
-      ...this.props,
-
-      queue: this.queue,
-      taskDefinition: this.taskDefinition,
-      cluster: this.cluster,
-      propagateTags: PropagatedTagSource.TASK_DEFINITION,
-
-      // scaling props
-      scalingSteps: this.props.scalingSteps,
-      maxScalingCapacity: this.props.maxScalingCapacity,
-      minScalingCapacity: this.props.minScalingCapacity,
-
-      // network config props
-      taskSubnets: this.props.subnets,
-      assignPublicIp: this.props.publicIP,
-      securityGroups: this.props.securityGroups,
-    }
-    const queueProcessingFargateService = new QueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
-    this.service = queueProcessingFargateService.service;
   }
 
   private createQueues = () => {
@@ -322,5 +294,39 @@ export class FargateWatchbot extends Resource {
       ...DEFAULT_PROPS,
       ...props,
     }
+  }
+}
+
+export class FargateWatchbot extends Watchbot {
+  constructor(scope: Construct, id: string, props: WatchbotProps) {
+    super(scope, id, props);
+
+    this.taskDefinition = new FargateTaskDefinition(this, 'QueueProcessingTaskDef', {
+      memoryLimitMiB: this.props.memoryLimitMiB,
+      cpu: this.props.cpu,
+      family: this.props.family,
+      runtimePlatform: this.props.runtimePlatform,
+      volumes: this.props.volumes,
+    });
+
+    const queueProcessingFargateServiceProps = {
+      ...this.props,
+      queue: this.queue,
+      taskDefinition: this.taskDefinition,
+      cluster: this.cluster,
+      propagateTags: PropagatedTagSource.TASK_DEFINITION,
+
+      // scaling props
+      scalingSteps: this.props.scalingSteps,
+      maxScalingCapacity: this.props.maxScalingCapacity,
+      minScalingCapacity: this.props.minScalingCapacity,
+
+      // network config props
+      taskSubnets: this.props.subnets,
+      assignPublicIp: this.props.publicIP,
+      securityGroups: this.props.securityGroups,
+    }
+    const queueProcessingFargateService = new QueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
+    this.service = queueProcessingFargateService.service;
   }
 }
