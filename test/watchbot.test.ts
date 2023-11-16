@@ -65,7 +65,7 @@ describe('FargateWatchbot', () => {
         it('creates a LogGroup', () => {
             template.hasResourceProperties('AWS::Logs::LogGroup', {
                 LogGroupName: defaultProps.logGroupName,
-                retention: defaultProps.logGroupRetentionDays,
+                RetentionInDays: defaultProps.logGroupRetentionDays,
             });
         });
 
@@ -122,12 +122,41 @@ describe('FargateWatchbot', () => {
 
         it('creates a Fargate service', () => {
             template.hasResourceProperties('AWS::ECS::Service', {
+                PropagateTags: "TASK_DEFINITION",
+                ServiceName: "test-service",
+                Cluster: 'fargate-processing-staging',
+                LaunchType: 'FARGATE',
+                NetworkConfiguration: {
+                    AwsvpcConfiguration: {
+                        AssignPublicIp: 'DISABLED'
+                    }
+                }
 
             });
         });
 
         it('creates a 2 SQS queue', () => {
             template.resourceCountIs('AWS::SQS::Queue', 2);
+
+            // Queue
+            template.hasResourceProperties('AWS::SQS::Queue', {
+                "ContentBasedDeduplication": defaultProps.fifo, // this is only true if fifo is true
+                "FifoQueue": defaultProps.fifo,
+                "MessageRetentionPeriod": defaultProps.retentionPeriod.toSeconds(),
+                "QueueName": "test-stack-WatchbotQueue",
+                "RedrivePolicy": {
+                    "maxReceiveCount": 10,
+                },
+                "VisibilityTimeout": 180,
+            });
+
+            // DLQ
+            template.hasResourceProperties('AWS::SQS::Queue', {
+                "ContentBasedDeduplication": defaultProps.fifo, // this is only true if fifo is true
+                "FifoQueue": defaultProps.fifo,
+                "MessageRetentionPeriod": defaultProps.retentionPeriod.toSeconds(),
+                "QueueName": "test-stack-WatchbotDeadLetterQueue",
+            });
         });
 
         it('creates an SNS topic if fifo is false', () => {
