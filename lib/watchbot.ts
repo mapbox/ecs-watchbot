@@ -1,24 +1,65 @@
-import { Arn, Duration, RemovalPolicy, Resource } from 'aws-cdk-lib';
-import { ISecurityGroup, SubnetSelection } from 'aws-cdk-lib/aws-ec2';
+import { Duration, RemovalPolicy, Resource } from 'aws-cdk-lib';
+import {ISecurityGroup, SecurityGroup, SubnetSelection, Vpc} from 'aws-cdk-lib/aws-ec2';
 import {
   BaseService,
-  Cluster, ContainerImage,
-  FargateTaskDefinition, ICluster,
+  Cluster, ContainerDefinition, ContainerImage, CpuArchitecture, HealthCheck, ICluster,
   LogDrivers, MountPoint,
-  PropagatedTagSource, TaskDefinition, UlimitName, Volume,
+  PropagatedTagSource, RuntimePlatform, Secret, TaskDefinition, UlimitName, Volume,
 } from 'aws-cdk-lib/aws-ecs';
-import {
-  QueueProcessingFargateService,
-  QueueProcessingFargateServiceProps,
-} from 'aws-cdk-lib/aws-ecs-patterns';
 import { AnyPrincipal, PrincipalWithConditions } from 'aws-cdk-lib/aws-iam';
 import { CfnLogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { IQueue, Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
+import {ScalingInterval} from "aws-cdk-lib/aws-applicationautoscaling";
+import {
+  MapboxQueueProcessingFargateService,
+  MapboxQueueProcessingFargateServiceProps
+} from "./QueueProcessingFargateService";
 
-export interface WatchbotProps extends Omit<QueueProcessingFargateServiceProps, 'cluster' | 'command' | 'serviceName'> {
+export interface WatchbotProps {
+  /**
+   * @default {prefix}-${stackName}
+   */
+  readonly containerName?: string;
+
+  /**
+   * The intervals for scaling based on the SQS queue's ApproximateNumberOfMessagesVisible metric.
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#scalingsteps
+   */
+  readonly scalingSteps?: ScalingInterval[];
+
+  /**
+   * The runtime platform of the task definition.
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#runtimeplatform
+   */
+  readonly runtimePlatform?: RuntimePlatform;
+
+  /**
+   * The secret to expose to the container as an environment variable.
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#secrets
+   */
+  readonly secrets?: {[key: string]: Secret}
+
+  /**
+   * The health check command and associated configuration parameters for the container.
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#healthcheck
+   */
+  readonly healthCheck?: HealthCheck;
+
+  /**
+   * Previously reservation.memory
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#memorylimitmib
+   */
+  readonly memoryLimitMiB?: number;
+
+  /**
+   * Previously reservation.cpu
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#cpu
+   */
+  readonly cpu?: number;
+
   readonly subnets?: SubnetSelection;
   /**
    * Whether the tasks' elastic network interface receives a public IP address. Should be `true` if `subnets` are public.
@@ -29,8 +70,16 @@ export interface WatchbotProps extends Omit<QueueProcessingFargateServiceProps, 
   readonly securityGroups?: ISecurityGroup[];
 
   readonly image: ContainerImage;
-  readonly cluster: ICluster;
+  readonly cluster?: ICluster;
+
+  /**
+   * The name of the service.
+   */
   readonly serviceName: string;
+
+  /**
+   * The command that is passed to the container. This will be appended to 'watchbot listen' command.
+   */
   readonly command: string[];
 
   // TODO this is used to figure out cluster name. Do we actually need this to be required?
@@ -99,10 +148,10 @@ export interface WatchbotProps extends Omit<QueueProcessingFargateServiceProps, 
 
   /**
    * Give the container read-write access to the root file system.
-   * @default false
+   * @default true
    * @see
    */
-  readonly writableFileSystem?: boolean;
+  readonly readonlyRootFilesystem?: boolean;
 
   /**
    * The maximum duration that a job is allowed to run. After this time period, the worker will be stopped and the job will be returned to the queue.
@@ -155,18 +204,19 @@ export interface WatchbotProps extends Omit<QueueProcessingFargateServiceProps, 
   // dashboard: true,
 }
 
-export abstract class Watchbot extends Resource {
+export class FargateWatchbot extends Resource {
   protected readonly props: WatchbotProps;
-  public readonly service: BaseService;
-  public readonly taskDefinition: TaskDefinition;
+  public service: BaseService;
+  public taskDefinition: TaskDefinition;
 
-  public readonly cluster: ICluster;
+  public readonly cluster?: ICluster;
   public readonly logGroup: LogGroup;
   public readonly queue: IQueue;
   public readonly deadLetterQueue: IQueue;
-  public readonly topic: Topic | undefined;
+  public topic: Topic | undefined;
+  public container: ContainerDefinition | undefined;
 
-  protected constructor(scope: Construct, id: string, props: WatchbotProps) {
+  constructor(scope: Construct, id: string, props: WatchbotProps) {
     super(scope, id);
 
     this.props = this.mergePropsWithDefaults(props);
@@ -178,58 +228,15 @@ export abstract class Watchbot extends Resource {
     });
     (this.logGroup.node.defaultChild as CfnLogGroup).overrideLogicalId(this.prefixed('LogGroup'));
 
-    const { queue, deadLetterQueue, topic } = this.createQueues();
-    this.queue = queue;
-    this.deadLetterQueue = deadLetterQueue;
-    this.topic = topic;
 
-    this.cluster = this.props.cluster;
-
-    const container = this.taskDefinition.addContainer(this.props.containerName || '', {
-      image: props.image,
-      command: ['watchbot', 'listen', ...this.props.command],
-      environment: {
-        QueueUrl: this.queue.queueUrl,
-        LogGroup: this.logGroup.logGroupArn,
-        writableFilesystem: this.props.writableFileSystem.toString(),
-        maxJobDuration: `${(this.props.maxJobDuration || Duration.seconds(0)).toSeconds()}`,
-        Volumes: this.props.mountPoints?.map((m) => m.containerPath).join(','),
-        Fifo: this.props.fifo.toString(),
-        WorkTopic: this.topic?.topicArn || '',
-        structuredLogging: this.props.structuredLogging.toString(),
-        ...this.props.environment,
-      },
-      secrets: this.props.secrets,
-
-      // logging props
-      logging: LogDrivers.awsLogs({
-        streamPrefix: this.props.serviceVersion,
-        logGroup: this.logGroup,
-      }),
-
-      ulimits: [{
-        name: UlimitName.NOFILE,
-        softLimit: 10240,
-        hardLimit: 10240,
-      }],
-      memoryReservationMiB: this.props.memoryReservationMiB,
-      healthCheck: props.healthCheck,
-      privileged: this.props.privileged,
-      readonlyRootFilesystem: !this.props.writableFileSystem,
-    });
-    container.addMountPoints(...this.props.mountPoints);
-
-  }
-
-  private createQueues = () => {
-    const deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
+    this.deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
       fifo: this.props.fifo,
       queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}${this.props.fifo ? '.fifo' : ''}`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       contentBasedDeduplication: this.props.fifo,
     });
 
-    const queue = new Queue(this, 'Queue', {
+    this.queue = new Queue(this, 'Queue', {
       queueName: `${this.stack.stackName}-${this.prefixed('Queue')}${this.props.fifo ? '.fifo' : ''}`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       fifo: this.props.fifo,
@@ -240,22 +247,90 @@ export abstract class Watchbot extends Resource {
         maxReceiveCount: this.props.deadLetterThreshold || 10,
       },
     });
-    let topic = undefined;
-    if (!this.props.fifo) {
-      topic = new Topic(this, 'Topic', {
-        topicName: `${this.stack.stackName}-${this.props.prefix}Topic`,
+
+    this.cluster = this.props.cluster;
+
+    const queueProcessingFargateServiceProps: MapboxQueueProcessingFargateServiceProps = {
+      // Service props
+      serviceName: this.props.serviceName,
+
+      // Task Definition props
+      cpu: this.props.cpu,
+      memoryLimitMiB: this.props.memoryLimitMiB,
+      family: this.props.family,
+      runtimePlatform: this.props.runtimePlatform,
+      volumes: this.props.volumes,
+      privileged: this.props.privileged,
+      readonlyRootFilesystem: this.props.readonlyRootFilesystem,
+      memoryReservationMiB: this.props.memoryReservationMiB,
+
+      // Container props
+      image: this.props.image,
+      containerName: this.props.containerName,
+      environment: {
+        QueueUrl: this.queue.queueUrl,
+        LogGroup: this.logGroup.logGroupArn,
+        writableFilesystem: (!this.props.readonlyRootFilesystem)?.toString() || '',
+        maxJobDuration: `${this.props.maxJobDuration?.toSeconds() || 0}`,
+        Volumes: (this.props.mountPoints || []).map((m) => m.containerPath).join(','),
+        Fifo: (this.props.fifo || false).toString(),
+        structuredLogging: (this.props.structuredLogging || false).toString(),
+        ...this.props.environment,
+      },
+      secrets: this.props.secrets,
+      command: ['watchbot', 'listen', ...this.props.command],
+      enableLogging: true,
+      logDriver: LogDrivers.awsLogs({
+        streamPrefix: this.props.serviceVersion,
+        logGroup: this.logGroup,
+      }),
+      healthCheck: this.props.healthCheck,
+
+      queue: this.queue,
+
+      cluster: this.cluster,
+      propagateTags: PropagatedTagSource.TASK_DEFINITION,
+
+      // scaling props
+      scalingSteps: this.props.scalingSteps,
+      maxScalingCapacity: this.props.maxScalingCapacity,
+      minScalingCapacity: this.props.minScalingCapacity,
+
+      // network config props
+      taskSubnets: this.props.subnets,
+      assignPublicIp: this.props.publicIP,
+      securityGroups: this.props.securityGroups,
+    }
+    const queueProcessingFargateService = new MapboxQueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
+    this.service = queueProcessingFargateService.service;
+    this.taskDefinition = queueProcessingFargateService.taskDefinition;
+
+    this.container = this.taskDefinition.findContainer(this.props.containerName || '');
+    if (this.container) {
+      this.container.addMountPoints(...(this.props.mountPoints || []));
+      this.container.addUlimits({
+        name: UlimitName.NOFILE,
+        softLimit: 10240,
+        hardLimit: 10240,
       });
-      topic.addSubscription(new SqsSubscription(queue));
-      queue.grantSendMessages(new PrincipalWithConditions(new AnyPrincipal(), {
-        ArnEquals: {
-          'aws:SourceArn': topic.topicArn,
-        },
-      }));
-      topic.grantPublish(this.taskDefinition.taskRole);
+    } else {
+      throw new Error(`Could not find container with containerName=${this.props.containerName}`);
     }
 
-    return { queue, deadLetterQueue, topic };
-  };
+    if (!this.props.fifo) {
+      this.topic = new Topic(this, 'Topic', {
+        topicName: `${this.stack.stackName}-${this.props.prefix}Topic`,
+      });
+      this.topic.addSubscription(new SqsSubscription(this.queue));
+      this.queue.grantSendMessages(new PrincipalWithConditions(new AnyPrincipal(), {
+        ArnEquals: {
+          'aws:SourceArn': this.topic.topicArn,
+        },
+      }));
+      this.topic.grantPublish(this.taskDefinition.taskRole);
+      this.container.addEnvironment('WorkTopic', this.topic.topicArn)
+    }
+  }
 
   private prefixed = (name: string) => `${this.props.prefix}${name}`;
 
@@ -265,14 +340,16 @@ export abstract class Watchbot extends Resource {
       prefix,
       containerName: `${prefix}-${this.stack.stackName}`,
       structuredLogging: false,
-      writableFileSystem: false,
+      readonlyRootFilesystem: true,
       maxJobDuration: Duration.seconds(0),
       family: props.serviceName,
-      cluster: Cluster.fromClusterArn(this, 'Cluster', Arn.format({
-        service: 'ecs',
-        resource: 'service',
-        resourceName: `fargate-processing-${props.deploymentEnvironment}`,
-      })),
+      cluster: Cluster.fromClusterAttributes(this, 'Cluster', {
+        clusterName: `fargate-processing-${props.deploymentEnvironment}`,
+        vpc: Vpc.fromLookup(this, 'VPC', {
+          vpcId: 'vpc-id'
+        })
+      }),
+
       publicIP: false,
       privileged: false,
       logGroupName: `${this.stack.stackName}-${this.stack.region}-${prefix.toLowerCase()}`,
@@ -294,39 +371,5 @@ export abstract class Watchbot extends Resource {
       ...DEFAULT_PROPS,
       ...props,
     }
-  }
-}
-
-export class FargateWatchbot extends Watchbot {
-  constructor(scope: Construct, id: string, props: WatchbotProps) {
-    super(scope, id, props);
-
-    this.taskDefinition = new FargateTaskDefinition(this, 'QueueProcessingTaskDef', {
-      memoryLimitMiB: this.props.memoryLimitMiB,
-      cpu: this.props.cpu,
-      family: this.props.family,
-      runtimePlatform: this.props.runtimePlatform,
-      volumes: this.props.volumes,
-    });
-
-    const queueProcessingFargateServiceProps = {
-      ...this.props,
-      queue: this.queue,
-      taskDefinition: this.taskDefinition,
-      cluster: this.cluster,
-      propagateTags: PropagatedTagSource.TASK_DEFINITION,
-
-      // scaling props
-      scalingSteps: this.props.scalingSteps,
-      maxScalingCapacity: this.props.maxScalingCapacity,
-      minScalingCapacity: this.props.minScalingCapacity,
-
-      // network config props
-      taskSubnets: this.props.subnets,
-      assignPublicIp: this.props.publicIP,
-      securityGroups: this.props.securityGroups,
-    }
-    const queueProcessingFargateService = new QueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
-    this.service = queueProcessingFargateService.service;
   }
 }
