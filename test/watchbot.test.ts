@@ -131,9 +131,89 @@ describe('FargateWatchbot', () => {
                         AssignPublicIp: 'DISABLED'
                     }
                 }
-
             });
         });
+
+        it('creates scaling resources', () => {
+            template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalingPolicy', {
+                PolicyType: "TargetTrackingScaling",
+                TargetTrackingScalingPolicyConfiguration: {
+                    "PredefinedMetricSpecification": {
+                        "PredefinedMetricType": "ECSServiceAverageCPUUtilization",
+                    },
+                    "TargetValue": 50,
+                },
+            });
+            template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalingPolicy', {
+                "PolicyType": "StepScaling",
+                "StepScalingPolicyConfiguration": {
+                    "AdjustmentType": "ChangeInCapacity",
+                    "MetricAggregationType": "Maximum",
+                    "StepAdjustments": [
+                        {
+                            "MetricIntervalLowerBound": 0,
+                            "MetricIntervalUpperBound": 400,
+                            "ScalingAdjustment": 1,
+                        },
+                        {
+                            "MetricIntervalLowerBound": 400,
+                            "ScalingAdjustment": 5,
+                        },
+                    ],
+                },
+            });
+
+            // Scale up
+            template.hasResourceProperties('AWS::CloudWatch::Alarm', {
+                "AlarmActions": [
+                    {}
+                ],
+                "AlarmDescription": "Upper threshold scaling alarm",
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "QueueName",
+                        "Value": {
+                            "Fn::GetAtt": [
+                                "MyFargateWatchbotQueueF9A1A651",
+                                "QueueName",
+                            ],
+                        },
+                    },
+                ],
+                "EvaluationPeriods": 1,
+                "MetricName": "ApproximateNumberOfMessagesVisible",
+                "Namespace": "AWS/SQS",
+                "Period": 300,
+                "Statistic": "Maximum",
+                "Threshold": 100,
+            });
+
+            template.hasResourceProperties('AWS::CloudWatch::Alarm', {
+                "AlarmActions": [
+                    {}
+                ],
+                "AlarmDescription": "Lower threshold scaling alarm",
+                "ComparisonOperator": "LessThanOrEqualToThreshold",
+                "Dimensions": [
+                    {
+                        "Name": "QueueName",
+                        "Value": {
+                            "Fn::GetAtt": [
+                                "MyFargateWatchbotQueueF9A1A651",
+                                "QueueName",
+                            ],
+                        },
+                    },
+                ],
+                "EvaluationPeriods": 1,
+                "MetricName": "ApproximateNumberOfMessagesVisible",
+                "Namespace": "AWS/SQS",
+                "Period": 300,
+                "Statistic": "Maximum",
+                "Threshold": 0,
+            })
+        })
 
         it('creates a 2 SQS queue', () => {
             template.resourceCountIs('AWS::SQS::Queue', 2);
@@ -159,10 +239,12 @@ describe('FargateWatchbot', () => {
             });
         });
 
-        it('creates an SNS topic if fifo is false', () => {
-            if (!defaultProps.fifo) {
-                template.resourceCountIs('AWS::SNS::Topic', 1);
-            }
+        it('creates an SNS topic', () => {
+            template.hasResourceProperties('AWS::SNS::Topic', {
+                TopicName: 'test-stack-WatchbotTopic'
+            });
+
+            template.resourceCountIs('AWS::SNS::Subscription', 1);
         });
     });
 
