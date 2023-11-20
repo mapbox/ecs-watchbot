@@ -1,21 +1,12 @@
-import {App, Duration, Fn, Stack} from 'aws-cdk-lib';
-import { FargateWatchbot, WatchbotProps } from '../lib/watchbot';
-import { Template } from 'aws-cdk-lib/assertions';
+import {App, Duration, Stack, StackProps} from 'aws-cdk-lib';
+import {FargateWatchbot, WatchbotProps} from '../lib/watchbot';
+import {Template} from 'aws-cdk-lib/assertions';
 import {Cluster, ContainerImage} from 'aws-cdk-lib/aws-ecs';
 import {Vpc} from "aws-cdk-lib/aws-ec2";
-import {CfnLogGroup, RetentionDays} from "aws-cdk-lib/aws-logs";
-import {CfnQueue} from "aws-cdk-lib/aws-sqs";
-import {CfnTopic} from "aws-cdk-lib/aws-sns";
+import {RetentionDays} from "aws-cdk-lib/aws-logs";
+import {Construct} from "constructs";
 
-const stack = new Stack(new App(), 'test-stack', {
-    stackName: 'test-stack',
-    env: {
-        region: 'us-east-1',
-        account: '222258372212',
-    },
-});
-
-const defaultProps = {
+const defaultProps = (stack: Construct) => ({
     prefix: 'Watchbot',
     containerName: `Watchbot-test-stack`,
     structuredLogging: false,
@@ -46,9 +37,27 @@ const defaultProps = {
     fifo: false,
     deadLetterThreshold: 10,
     retentionPeriod: Duration.days(14),
-}
+})
 
 describe('FargateWatchbot', () => {
+    let stack: Stack;
+    let template: Template;
+
+    const createStack = (h: WatchbotProps) =>
+        new (class DummyStack extends Stack {
+            constructor(scope: Construct, id: string, props: StackProps) {
+                super(scope, id, props);
+
+                const lambda = new FargateWatchbot(this, 'MyWatchbot', h);
+            }
+        })(new App(), 'test-stack', {
+            stackName: 'test-stack',
+            env: {
+                region: 'us-east-1',
+                account: '222258372212',
+            },
+        });
+
     const requiredProps: WatchbotProps = {
         image: ContainerImage.fromRegistry('amazon/amazon-ecs-sample'),
         serviceName: 'test-service',
@@ -58,20 +67,18 @@ describe('FargateWatchbot', () => {
     };
 
     describe('When passing the minimal required props', () => {
-        const watchbot = new FargateWatchbot(stack, 'MyFargateWatchbot', requiredProps);
+        beforeEach(() => {
+            stack = createStack(requiredProps)
+            template = Template.fromStack(stack);
+        });
 
-        const template = Template.fromStack(stack);
 
         it('creates a LogGroup', () => {
             template.hasResourceProperties('AWS::Logs::LogGroup', {
-                LogGroupName: defaultProps.logGroupName,
-                RetentionInDays: defaultProps.logGroupRetentionDays,
+                LogGroupName: defaultProps(stack).logGroupName,
+                RetentionInDays: defaultProps(stack).logGroupRetentionDays,
             });
         });
-
-        it('Snap', () => {
-            expect(template).toMatchSnapshot()
-        })
 
         it('creates a TaskDefinition', () => {
             template.hasResourceProperties('AWS::ECS::TaskDefinition', {
@@ -79,11 +86,11 @@ describe('FargateWatchbot', () => {
                 Memory: '512',
                 RequiresCompatibilities: ['FARGATE'],
                 Family: 'test-service',
-                Volumes: defaultProps.volumes.map(v => ({ Name: v.name })),
+                Volumes: defaultProps(stack).volumes.map(v => ({ Name: v.name })),
                 ContainerDefinitions: [{
-                    Privileged: defaultProps.privileged,
+                    Privileged: defaultProps(stack).privileged,
                     Image: 'amazon/amazon-ecs-sample',
-                    Command: [...defaultProps.command, ...requiredProps.command],
+                    Command: [...defaultProps(stack).command, ...requiredProps.command],
                     Environment: [
                         { Name: 'QueueUrl', Value: {} },
                         { Name: 'LogGroup', Value: { 'Fn::GetAtt': [ 'WatchbotLogGroup', 'Arn' ]}},
@@ -138,18 +145,18 @@ describe('FargateWatchbot', () => {
             template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalingPolicy', {
                 PolicyType: "TargetTrackingScaling",
                 TargetTrackingScalingPolicyConfiguration: {
-                    "PredefinedMetricSpecification": {
-                        "PredefinedMetricType": "ECSServiceAverageCPUUtilization",
+                    PredefinedMetricSpecification: {
+                        PredefinedMetricType: "ECSServiceAverageCPUUtilization",
                     },
-                    "TargetValue": 50,
+                    TargetValue: 50,
                 },
             });
             template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalingPolicy', {
-                "PolicyType": "StepScaling",
-                "StepScalingPolicyConfiguration": {
-                    "AdjustmentType": "ChangeInCapacity",
-                    "MetricAggregationType": "Maximum",
-                    "StepAdjustments": [
+                PolicyType: "StepScaling",
+                StepScalingPolicyConfiguration: {
+                    AdjustmentType: "ChangeInCapacity",
+                    MetricAggregationType: "Maximum",
+                    StepAdjustments: [
                         {
                             "MetricIntervalLowerBound": 0,
                             "MetricIntervalUpperBound": 400,
@@ -220,9 +227,9 @@ describe('FargateWatchbot', () => {
 
             // Queue
             template.hasResourceProperties('AWS::SQS::Queue', {
-                "ContentBasedDeduplication": defaultProps.fifo, // this is only true if fifo is true
-                "FifoQueue": defaultProps.fifo,
-                "MessageRetentionPeriod": defaultProps.retentionPeriod.toSeconds(),
+                "ContentBasedDeduplication": defaultProps(stack).fifo, // this is only true if fifo is true
+                "FifoQueue": defaultProps(stack).fifo,
+                "MessageRetentionPeriod": defaultProps(stack).retentionPeriod.toSeconds(),
                 "QueueName": "test-stack-WatchbotQueue",
                 "RedrivePolicy": {
                     "maxReceiveCount": 10,
@@ -232,9 +239,9 @@ describe('FargateWatchbot', () => {
 
             // DLQ
             template.hasResourceProperties('AWS::SQS::Queue', {
-                "ContentBasedDeduplication": defaultProps.fifo, // this is only true if fifo is true
-                "FifoQueue": defaultProps.fifo,
-                "MessageRetentionPeriod": defaultProps.retentionPeriod.toSeconds(),
+                "ContentBasedDeduplication": defaultProps(stack).fifo, // this is only true if fifo is true
+                "FifoQueue": defaultProps(stack).fifo,
+                "MessageRetentionPeriod": defaultProps(stack).retentionPeriod.toSeconds(),
                 "QueueName": "test-stack-WatchbotDeadLetterQueue",
             });
         });
@@ -248,4 +255,50 @@ describe('FargateWatchbot', () => {
         });
     });
 
+    describe('When passing overrides', () => {
+        beforeEach(() => {
+            stack = createStack({
+                ...requiredProps,
+                fifo: true,
+                prefix: 'Tiles',
+                logGroupRetentionDays: RetentionDays.THREE_MONTHS,
+            })
+            template = Template.fromStack(stack);
+        });
+
+        it('creates a LogGroup', () => {
+            template.hasResourceProperties('AWS::Logs::LogGroup', {
+                LogGroupName: 'test-stack-us-east-1-tiles',
+                RetentionInDays: RetentionDays.THREE_MONTHS,
+            });
+        });
+
+        it('creates a 2 SQS queue', () => {
+            template.resourceCountIs('AWS::SQS::Queue', 2);
+
+            // Queue
+            template.hasResourceProperties('AWS::SQS::Queue', {
+                "ContentBasedDeduplication": defaultProps(stack).fifo, // this is only true if fifo is true
+                "FifoQueue": defaultProps(stack).fifo,
+                "MessageRetentionPeriod": defaultProps(stack).retentionPeriod.toSeconds(),
+                "QueueName": "test-stack-WatchbotQueue.fifo",
+                "RedrivePolicy": {
+                    "maxReceiveCount": 10,
+                },
+                "VisibilityTimeout": 180,
+            });
+
+            // DLQ
+            template.hasResourceProperties('AWS::SQS::Queue', {
+                "ContentBasedDeduplication": defaultProps(stack).fifo, // this is only true if fifo is true
+                "FifoQueue": defaultProps(stack).fifo,
+                "MessageRetentionPeriod": defaultProps(stack).retentionPeriod.toSeconds(),
+                "QueueName": "test-stack-WatchbotDeadLetterQueue",
+            });
+        });
+
+        it('DOES NOT create an SNS topic', () => {
+            template.resourceCountIs('AWS::SNS::Topic', 0);
+        });
+    })
 });

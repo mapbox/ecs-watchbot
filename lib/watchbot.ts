@@ -147,7 +147,7 @@ export interface WatchbotProps {
   readonly structuredLogging?: boolean;
 
   /**
-   * Give the container read-write access to the root file system.
+   * Give the container read-write access to the root file system. Previously writableFilesystem.
    * @default true
    * @see
    */
@@ -160,7 +160,7 @@ export interface WatchbotProps {
   readonly maxJobDuration?: Duration;
 
   /**
-   * Environment variables passed to the container running the task. This will always include QueueUrl, LogGroup (ARN), writableFilesystem, maxJobDuration (in seconds), Volumes (comma separated string), Fifo (ARN), WorkTopic (SNS topic ARN), structuredLogging (true or false string).
+   * Environment variables passed to the container running the task. This will always include QueueUrl, QUEUE_NAME, LogGroup (ARN), writableFilesystem, maxJobDuration (in seconds), Volumes (comma separated string), Fifo (ARN), WorkTopic (SNS topic ARN), structuredLogging (true or false string).
    * You can override or append to these variables.
    */
   readonly environment?: { [key: string]: string };
@@ -335,7 +335,8 @@ export class FargateWatchbot extends Resource {
   private prefixed = (name: string) => `${this.props.prefix}${name}`;
 
   private mergePropsWithDefaults(props: WatchbotProps): WatchbotProps {
-    const prefix = 'Watchbot';
+    console.log(props)
+    const prefix = props.prefix ?? 'Watchbot';
     const DEFAULT_PROPS: Partial<WatchbotProps> = {
       prefix,
       containerName: `${prefix}-${this.stack.stackName}`,
@@ -367,6 +368,11 @@ export class FargateWatchbot extends Resource {
       deadLetterThreshold: 10,
       retentionPeriod: Duration.days(14),
     };
+
+    console.log({
+      ...DEFAULT_PROPS,
+      ...props,
+    })
     return {
       ...DEFAULT_PROPS,
       ...props,
