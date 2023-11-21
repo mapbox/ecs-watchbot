@@ -1,8 +1,8 @@
 import { Duration, RemovalPolicy, Resource } from 'aws-cdk-lib';
-import {ISecurityGroup, SecurityGroup, SubnetSelection, Vpc} from 'aws-cdk-lib/aws-ec2';
+import { ISecurityGroup, SubnetSelection, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
   BaseService,
-  Cluster, ContainerDefinition, ContainerImage, CpuArchitecture, HealthCheck, ICluster,
+  Cluster, ContainerDefinition, ContainerImage, HealthCheck, ICluster,
   LogDrivers, MountPoint,
   PropagatedTagSource, RuntimePlatform, Secret, TaskDefinition, UlimitName, Volume,
 } from 'aws-cdk-lib/aws-ecs';
@@ -12,11 +12,11 @@ import { Topic } from 'aws-cdk-lib/aws-sns';
 import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { IQueue, Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
-import {ScalingInterval} from "aws-cdk-lib/aws-applicationautoscaling";
+import { ScalingInterval } from 'aws-cdk-lib/aws-applicationautoscaling';
 import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
-} from "./QueueProcessingFargateService";
+} from './QueueProcessingFargateService';
 
 export interface WatchbotProps {
   /**
@@ -149,7 +149,7 @@ export interface WatchbotProps {
   /**
    * Give the container read-write access to the root file system. Previously writableFilesystem.
    * @default true
-   * @see
+   * @see https://github.com/mapbox/ecs-watchbot/blob/master/docs/building-a-template.md#writablefilesystem-mode-explained
    */
   readonly readonlyRootFilesystem?: boolean;
 
@@ -219,7 +219,7 @@ export class FargateWatchbot extends Resource {
   constructor(scope: Construct, id: string, props: WatchbotProps) {
     super(scope, id);
 
-    this.props = this.mergePropsWithDefaults(props);
+    this.props = this.mergePropsWithDefaults(id, props);
 
     this.logGroup = new LogGroup(this, 'LogGroup', {
       logGroupName: this.props.logGroupName,
@@ -334,8 +334,7 @@ export class FargateWatchbot extends Resource {
 
   private prefixed = (name: string) => `${this.props.prefix}${name}`;
 
-  private mergePropsWithDefaults(props: WatchbotProps): WatchbotProps {
-    console.log(props)
+  private mergePropsWithDefaults(id: string, props: WatchbotProps): WatchbotProps {
     const prefix = props.prefix ?? 'Watchbot';
     const DEFAULT_PROPS: Partial<WatchbotProps> = {
       prefix,
@@ -344,9 +343,9 @@ export class FargateWatchbot extends Resource {
       readonlyRootFilesystem: true,
       maxJobDuration: Duration.seconds(0),
       family: props.serviceName,
-      cluster: Cluster.fromClusterAttributes(this, 'Cluster', {
+      cluster: Cluster.fromClusterAttributes(this, `${id}Cluster`, {
         clusterName: `fargate-processing-${props.deploymentEnvironment}`,
-        vpc: Vpc.fromLookup(this, 'VPC', {
+        vpc: Vpc.fromLookup(this, `${id}VPC`, {
           vpcId: 'vpc-id'
         })
       }),
@@ -369,10 +368,6 @@ export class FargateWatchbot extends Resource {
       retentionPeriod: Duration.days(14),
     };
 
-    console.log({
-      ...DEFAULT_PROPS,
-      ...props,
-    })
     return {
       ...DEFAULT_PROPS,
       ...props,
