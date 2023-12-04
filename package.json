@@ -37,9 +37,9 @@
     "@mapbox/mock-aws-sdk-js": "^1.0.0",
     "@types/jest": "^29.5.5",
     "@types/node": "20.7.1",
-    "aws-cdk-lib": "2.102.0",
+    "aws-cdk-lib": "2.112.0",
     "cli-spinner": "^0.2.10",
-    "constructs": "^10.0.0",
+    "constructs": "^10.0.5",
     "cwlogs": "^1.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-node": "^10.0.0",
@@ -55,6 +55,7 @@
     "typescript": "~5.2.2"
   },
   "dependencies": {
+    "@aws-cdk/aws-redshift-alpha": "^2.112.0-alpha.0",
     "@mapbox/cloudfriend": "^7.1.0",
     "@mapbox/watchbot-progress": "^1.1.7",
     "aws-sdk": "^2.587.0",
@@ -67,8 +68,8 @@
     "tree-kill": "^1.2.1"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.102.0",
-    "constructs": "^10.0.0"
+    "aws-cdk-lib": "^2.112.0",
+    "constructs": "^10.0.5"
   },
   "eslintConfig": {
     "extends": "@mapbox/eslint-config-mapbox"
