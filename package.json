@@ -67,7 +67,7 @@
     "tree-kill": "^1.2.1"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "2.102.0",
+    "aws-cdk-lib": "^2.102.0",
     "constructs": "^10.0.0"
   },
   "eslintConfig": {
