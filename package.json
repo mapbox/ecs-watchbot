@@ -60,6 +60,7 @@
     "@mapbox/watchbot-progress": "^1.1.7",
     "aws-sdk": "^2.587.0",
     "binary-split": "^1.0.5",
+    "cdk-monitoring-constructs": "^7.1.0",
     "fs-extra": "^8.1.0",
     "inquirer": "^7.0.0",
     "p-queue": "^6.2.1",
