@@ -1,9 +1,10 @@
-import {App, Duration, Stack, StackProps} from 'aws-cdk-lib';
+import {App, Arn, Duration, Stack, StackProps} from 'aws-cdk-lib';
 import {FargateWatchbot, WatchbotProps} from '../lib/watchbot';
 import {Template} from 'aws-cdk-lib/assertions';
 import {ContainerImage} from 'aws-cdk-lib/aws-ecs';
 import {RetentionDays} from "aws-cdk-lib/aws-logs";
 import {Construct} from "constructs";
+import {Topic} from "aws-cdk-lib/aws-sns";
 
 const defaultProps = {
     prefix: 'Watchbot',
@@ -32,16 +33,38 @@ const defaultProps = {
     retentionPeriod: Duration.days(14),
 }
 
+const staticRequiredProps = {
+    command: ['echo', 'hello'],
+    serviceVersion: '1.0.0',
+};
+
 describe('FargateWatchbot', () => {
     let stack: Stack;
     let template: Template;
 
-    const createStack = (h: WatchbotProps) =>
+    const createStack = (h: Partial<WatchbotProps>) =>
         new (class DummyStack extends Stack {
             constructor(scope: Construct, id: string, props: StackProps) {
                 super(scope, id, props);
 
-                new FargateWatchbot(this, 'MyWatchbot', h);
+                const requiredProps: WatchbotProps = {
+                    ...staticRequiredProps,
+                    image: ContainerImage.fromRegistry('amazon/amazon-ecs-sample'),
+                    serviceName: 'test-service',
+                    deploymentEnvironment: 'staging',
+                    alarmAction: Topic.fromTopicArn(this, 'Topic', Arn.format({
+                        account: '222258372212',
+                        region: 'us-east-1',
+                        partition: 'aws',
+                        service: 'sns',
+                        resource: 'on-call-production-us-east-1-data-platform',
+                    })),
+                };
+
+                new FargateWatchbot(this, 'MyWatchbot', {
+                    ...requiredProps,
+                    ...h
+                });
             }
         })(new App(), 'test-stack', {
             stackName: 'test-stack',
@@ -51,17 +74,11 @@ describe('FargateWatchbot', () => {
             },
         });
 
-    const requiredProps: WatchbotProps = {
-        image: ContainerImage.fromRegistry('amazon/amazon-ecs-sample'),
-        serviceName: 'test-service',
-        command: ['echo', 'hello'],
-        deploymentEnvironment: 'staging',
-        serviceVersion: '1.0.0',
-    };
+
 
     describe('When passing the minimal required props', () => {
         beforeEach(() => {
-            stack = createStack(requiredProps)
+            stack = createStack({})
             template = Template.fromStack(stack);
         });
 
@@ -71,6 +88,10 @@ describe('FargateWatchbot', () => {
                 RetentionInDays: defaultProps.logGroupRetentionDays,
             });
         });
+
+        it('snap', () => {
+            expect(template).toMatchSnapshot()
+        })
 
         it('creates a TaskDefinition', () => {
             template.hasResourceProperties('AWS::ECS::TaskDefinition', {
@@ -82,7 +103,7 @@ describe('FargateWatchbot', () => {
                 ContainerDefinitions: [{
                     Privileged: defaultProps.privileged,
                     Image: 'amazon/amazon-ecs-sample',
-                    Command: [...defaultProps.command, ...requiredProps.command],
+                    Command: [...defaultProps.command, ...staticRequiredProps.command],
                     Environment: [
                         { Name: 'QueueUrl', Value: {} },
                         { Name: 'LogGroup', Value: { 'Fn::GetAtt': [ 'WatchbotLogGroup', 'Arn' ]}},
@@ -101,7 +122,7 @@ describe('FargateWatchbot', () => {
                                 "Ref": "WatchbotLogGroup",
                             },
                             "awslogs-region": "us-east-1",
-                            "awslogs-stream-prefix": requiredProps.serviceVersion,
+                            "awslogs-stream-prefix": staticRequiredProps.serviceVersion,
                         }
                     },
                     MountPoints: [{
@@ -236,15 +257,14 @@ describe('FargateWatchbot', () => {
     });
 
     describe('When passing overrides', () => {
-        let props: WatchbotProps;
+        let props: Partial<WatchbotProps>;
         beforeEach(() => {
             props = {
-                ...requiredProps,
                 fifo: true,
                 prefix: 'Tiles',
                 logGroupRetentionDays: RetentionDays.THREE_MONTHS,
                 retentionPeriod: Duration.days(3),
-
+                serviceVersion: '2.3.1',
                 command: ['python', 'main.py'],
                 minScalingCapacity: 0,
                 maxScalingCapacity: 244,
@@ -309,7 +329,7 @@ describe('FargateWatchbot', () => {
                 ContainerDefinitions: [{
                     Privileged: defaultProps.privileged,
                     Image: 'amazon/amazon-ecs-sample',
-                    Command: ['watchbot', 'listen', ...props.command],
+                    Command: ['watchbot', 'listen', ...(props.command || [])],
                     Environment: [
                         { Name: 'QueueUrl', Value: {} },
                         { Name: 'LogGroup', Value: { 'Fn::GetAtt': [ 'TilesLogGroup', 'Arn' ]}},
@@ -327,7 +347,7 @@ describe('FargateWatchbot', () => {
                                 "Ref": "TilesLogGroup",
                             },
                             "awslogs-region": "us-east-1",
-                            "awslogs-stream-prefix": requiredProps.serviceVersion,
+                            "awslogs-stream-prefix": props.serviceVersion,
                         }
                     },
                     MountPoints: [{

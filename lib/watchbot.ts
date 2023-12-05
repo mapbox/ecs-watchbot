@@ -8,7 +8,7 @@ import {
 } from 'aws-cdk-lib/aws-ecs';
 import { AnyPrincipal, PrincipalWithConditions } from 'aws-cdk-lib/aws-iam';
 import { CfnLogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { Topic } from 'aws-cdk-lib/aws-sns';
+import {ITopic, Topic} from 'aws-cdk-lib/aws-sns';
 import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { IQueue, Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
@@ -17,6 +17,7 @@ import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
 } from './QueueProcessingFargateService';
+import {MonitoringFacade, SnsAlarmActionStrategy} from "cdk-monitoring-constructs";
 
 export interface WatchbotProps {
   /**
@@ -194,6 +195,7 @@ export interface WatchbotProps {
   // readCapacityUnits: 30,
   // writeCapacityUnits: 30,
 
+  readonly alarmAction: ITopic;
 
   // watchbotVersion: 'v' + pkg.version,
   // **** related to alarms ****
@@ -330,6 +332,14 @@ export class FargateWatchbot extends Resource {
       this.topic.grantPublish(this.taskDefinition.taskRole);
       this.container.addEnvironment('WorkTopic', this.topic.topicArn)
     }
+
+    const monitoring = new MonitoringFacade(this, 'Monitoring', {
+      alarmFactoryDefaults: {
+        alarmNamePrefix: this.prefixed(''),
+        actionsEnabled: true,
+        action: new SnsAlarmActionStrategy({ onAlarmTopic: this.props.alarmAction })
+      }
+    })
   }
 
   private prefixed = (name: string) => `${this.props.prefix}${name}`;
