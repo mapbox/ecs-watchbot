@@ -252,7 +252,7 @@ describe('FargateWatchbot', () => {
         });
 
         it('doesnt create dynamo table', () => {
-            template.resourceCountIs('WS::DynamoDB::Table', 0);
+            template.resourceCountIs('AWS::DynamoDB::Table', 0);
         });
     });
 
