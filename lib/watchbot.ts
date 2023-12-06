@@ -377,67 +377,69 @@ export class FargateWatchbot extends Resource {
       statistic: Stats.SUM,
     });
 
-    monitoring.monitorQueueProcessingFargateService({
-      fargateService: this.queueProcessingFargateService,
-      addServiceAlarms: {
-        addMemoryUsageAlarm: {
-          memoryUsage: {
-            runbookLink: `${this.RUNBOOK}#memoryutilization`,
-            maxUsagePercent: this.props.alarms.memoryUtilization?.threshold || 100,
-            period: this.props.alarms.memoryUtilization?.period || Duration.minutes(1),
-            evaluationPeriods: this.props.alarms.memoryUtilization?.evaluationPeriods || 10,
+    monitoring
+        .addLargeHeader(this.prefixed(this.stack.stackName))
+        .monitorQueueProcessingFargateService({
+          fargateService: this.queueProcessingFargateService,
+          addServiceAlarms: {
+            addMemoryUsageAlarm: {
+              memoryUsage: {
+                runbookLink: `${this.RUNBOOK}#memoryutilization`,
+                maxUsagePercent: this.props.alarms.memoryUtilization?.threshold || 100,
+                period: this.props.alarms.memoryUtilization?.period || Duration.minutes(1),
+                evaluationPeriods: this.props.alarms.memoryUtilization?.evaluationPeriods || 10,
+              }
+            },
+            addCpuUsageAlarm: {
+              cpu: {
+                runbookLink: `${this.RUNBOOK}#`, // TODO UPDATE
+                maxUsagePercent: this.props.alarms.cpuUtilization?.threshold || 90,
+                period: this.props.alarms.cpuUtilization?.period || Duration.minutes(1),
+                evaluationPeriods: this.props.alarms.cpuUtilization?.evaluationPeriods || 10,
+              }
+            }
           }
-        },
-        addCpuUsageAlarm: {
-          cpu: {
-            runbookLink: `${this.RUNBOOK}#`, // TODO UPDATE
-            maxUsagePercent: this.props.alarms.cpuUtilization?.threshold || 90,
-            period: this.props.alarms.cpuUtilization?.period || Duration.minutes(1),
-            evaluationPeriods: this.props.alarms.cpuUtilization?.evaluationPeriods || 10,
-          }
-        }
-      }
-    }).monitorSqsQueueWithDlq({
-      queue: this.queue,
-      deadLetterQueue: this.deadLetterQueue,
-      addQueueMaxSizeAlarm: {
-        maxSize: {
-          runbookLink: `${this.RUNBOOK}#queuesize`,
-          maxMessageCount: this.props.alarms.queueSize?.threshold || 40,
-          period: this.props.alarms.queueSize?.period || Duration.minutes(5),
-          evaluationPeriods: this.props.alarms.queueSize?.evaluationPeriods || 24,
-        }
-      },
-      addDeadLetterQueueMaxSizeAlarm: {
-        maxSize: {
-          runbookLink: `${this.RUNBOOK}`, // TODO update
-          maxMessageCount: this.props.alarms.dlqSize?.threshold || 10,
-          period: this.props.alarms.dlqSize?.period || Duration.minutes(1),
-          evaluationPeriods: this.props.alarms.dlqSize?.evaluationPeriods || 1,
-          datapointsToAlarm: this.props.alarms.dlqSize?.evaluationPeriods || 1, // match evaluationPeriods
-        }
-      }
-    }).monitorCustom({
-      addToAlarmDashboard: true,
-      alarmFriendlyName: `worker-errors-${this.stack.region}`,
-      metricGroups: [{
-        title: 'Worker Errors',
-        metrics: [{
-          alarmFriendlyName: `worker-errors-${this.stack.region}`,
-          metric: workersErrorsMetric,
-          addAlarm: {
-            error: {
-              threshold: this.props.alarms.workersFailure?.threshold || 10,
-              evaluationPeriods: this.props.alarms.workersFailure?.evaluationPeriods || 1,
-              datapointsToAlarm: this.props.alarms.workersFailure?.evaluationPeriods || 1, // match evaluationPeriods
-              period: this.props.alarms.workersFailure?.period || Duration.minutes(1),
-              comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-              runbookLink: `${this.RUNBOOK}#workererrors`,
+        }).monitorSqsQueueWithDlq({
+          queue: this.queue,
+          deadLetterQueue: this.deadLetterQueue,
+          addQueueMaxSizeAlarm: {
+            maxSize: {
+              runbookLink: `${this.RUNBOOK}#queuesize`,
+              maxMessageCount: this.props.alarms.queueSize?.threshold || 40,
+              period: this.props.alarms.queueSize?.period || Duration.minutes(5),
+              evaluationPeriods: this.props.alarms.queueSize?.evaluationPeriods || 24,
             }
           },
-        }]
-      }]
-    });
+          addDeadLetterQueueMaxSizeAlarm: {
+            maxSize: {
+              runbookLink: `${this.RUNBOOK}`, // TODO update
+              maxMessageCount: this.props.alarms.dlqSize?.threshold || 10,
+              period: this.props.alarms.dlqSize?.period || Duration.minutes(1),
+              evaluationPeriods: this.props.alarms.dlqSize?.evaluationPeriods || 1,
+              datapointsToAlarm: this.props.alarms.dlqSize?.evaluationPeriods || 1, // match evaluationPeriods
+            }
+          }
+        }).monitorCustom({
+          addToAlarmDashboard: true,
+          alarmFriendlyName: `worker-errors-${this.stack.region}`,
+          metricGroups: [{
+            title: 'Worker Errors',
+            metrics: [{
+              alarmFriendlyName: `worker-errors-${this.stack.region}`,
+              metric: workersErrorsMetric,
+              addAlarm: {
+                error: {
+                  threshold: this.props.alarms.workersFailure?.threshold || 10,
+                  evaluationPeriods: this.props.alarms.workersFailure?.evaluationPeriods || 1,
+                  datapointsToAlarm: this.props.alarms.workersFailure?.evaluationPeriods || 1, // match evaluationPeriods
+                  period: this.props.alarms.workersFailure?.period || Duration.minutes(1),
+                  comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+                  runbookLink: `${this.RUNBOOK}#workererrors`,
+                }
+              },
+            }]
+          }]
+        });
     return monitoring;
   }
 
