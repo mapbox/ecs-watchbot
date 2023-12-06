@@ -17,9 +17,9 @@ import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
 } from './QueueProcessingFargateService';
-import {MonitoringFacade, SnsAlarmActionStrategy} from "cdk-monitoring-constructs";
+import { MonitoringFacade, SnsAlarmActionStrategy } from "cdk-monitoring-constructs";
 import * as path from "path";
-import {ComparisonOperator, Stats} from "aws-cdk-lib/aws-cloudwatch";
+import { ComparisonOperator, Stats } from "aws-cdk-lib/aws-cloudwatch";
 const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 export interface WatchbotProps {
@@ -44,7 +44,7 @@ export interface WatchbotProps {
    * The secret to expose to the container as an environment variable.
    * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#secrets
    */
-  readonly secrets?: {[key: string]: Secret}
+  readonly secrets?: Record<string, Secret>
 
   /**
    * The health check command and associated configuration parameters for the container.
@@ -194,26 +194,39 @@ export interface WatchbotProps {
    * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#minscalingcapacity
    */
   readonly minScalingCapacity?: number;
-  // **** related to tables ****
-  // readCapacityUnits: 30,
-  // writeCapacityUnits: 30,
 
   readonly alarms: WatchbotAlarms;
 
-  // **** related to alarms ****
-  // errorThreshold: 10,
-  // alarmThreshold: 40,
-  // alarmPeriods: 24,
-  // deadletterAlarm: true,
-  // dashboard: true,
+  // **** related to tables ****
+  // readCapacityUnits: 30,
+  // writeCapacityUnits: 30,
 }
 
 export type WatchbotAlarms = {
+  /**
+   * SNS topic to send alarm actions to. In most cases, you'll need to get the topic ARN using mapbox-cdk-common ArnUtility.getOncallArn() then import that in CDK using `Topic.fromTopicArn`.
+   */
   action: ITopic;
+
+  /**
+   * @default { threshold: 100, period: Duration.minutes(1), evaluationPeriods: 10 }
+   */
   memoryUtilization?: AlarmProps;
+  /**
+   * @default { threshold: 90, period: Duration.minutes(1), evaluationPeriods: 10 }
+   */
   cpuUtilization?: AlarmProps;
+  /**
+   * @default { threshold: 40, period: Duration.minutes(5), evaluationPeriods: 24 }
+   */
   queueSize?: AlarmProps;
+  /**
+   * @default { threshold: 10, period: Duration.minutes(1), evaluationPeriods: 1 }
+   */
   dlqSize?: AlarmProps;
+  /**
+   * @default { threshold: 10, period: Duration.minutes(1), evaluationPeriods: 1 }
+   */
   workersFailure?: AlarmProps;
 }
 
@@ -234,8 +247,8 @@ export class FargateWatchbot extends Resource {
   public readonly deadLetterQueue: IQueue;
   public readonly monitoring: MonitoringFacade;
   public readonly queueProcessingFargateService: MapboxQueueProcessingFargateService;
-  public topic: Topic | undefined;
-  public container: ContainerDefinition | undefined;
+  public readonly topic: Topic | undefined;
+  public readonly container: ContainerDefinition | undefined;
 
   private readonly RUNBOOK: string;
 
