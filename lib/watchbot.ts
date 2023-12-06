@@ -227,7 +227,7 @@ export type WatchbotAlarms = {
   /**
    * @default { threshold: 10, period: Duration.minutes(1), evaluationPeriods: 1 }
    */
-  workersFailure?: AlarmProps;
+  workersErrors?: AlarmProps;
 }
 
 export type AlarmProps = {
@@ -405,7 +405,7 @@ export class FargateWatchbot extends Resource {
             },
             addCpuUsageAlarm: {
               cpu: {
-                runbookLink: `${this.RUNBOOK}#`, // TODO UPDATE
+                runbookLink: `${this.RUNBOOK}#CpuUtilization`,
                 maxUsagePercent: this.props.alarms.cpuUtilization?.threshold || 90,
                 period: this.props.alarms.cpuUtilization?.period || Duration.minutes(1),
                 evaluationPeriods: this.props.alarms.cpuUtilization?.evaluationPeriods || 10,
@@ -417,7 +417,7 @@ export class FargateWatchbot extends Resource {
           deadLetterQueue: this.deadLetterQueue,
           addQueueMaxSizeAlarm: {
             maxSize: {
-              runbookLink: `${this.RUNBOOK}#queuesize`,
+              runbookLink: `${this.RUNBOOK}#QueueSize`,
               maxMessageCount: this.props.alarms.queueSize?.threshold || 40,
               period: this.props.alarms.queueSize?.period || Duration.minutes(5),
               evaluationPeriods: this.props.alarms.queueSize?.evaluationPeriods || 24,
@@ -425,7 +425,7 @@ export class FargateWatchbot extends Resource {
           },
           addDeadLetterQueueMaxSizeAlarm: {
             maxSize: {
-              runbookLink: `${this.RUNBOOK}`, // TODO update
+              runbookLink: `${this.RUNBOOK}#DeadLetterQueueSize`,
               maxMessageCount: this.props.alarms.dlqSize?.threshold || 10,
               period: this.props.alarms.dlqSize?.period || Duration.minutes(1),
               evaluationPeriods: this.props.alarms.dlqSize?.evaluationPeriods || 1,
@@ -442,10 +442,10 @@ export class FargateWatchbot extends Resource {
               metric: workersErrorsMetric,
               addAlarm: {
                 error: {
-                  threshold: this.props.alarms.workersFailure?.threshold || 10,
-                  evaluationPeriods: this.props.alarms.workersFailure?.evaluationPeriods || 1,
-                  datapointsToAlarm: this.props.alarms.workersFailure?.evaluationPeriods || 1, // match evaluationPeriods
-                  period: this.props.alarms.workersFailure?.period || Duration.minutes(1),
+                  threshold: this.props.alarms.workersErrors?.threshold || 10,
+                  evaluationPeriods: this.props.alarms.workersErrors?.evaluationPeriods || 1,
+                  datapointsToAlarm: this.props.alarms.workersErrors?.evaluationPeriods || 1, // match evaluationPeriods
+                  period: this.props.alarms.workersErrors?.period || Duration.minutes(1),
                   comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
                   runbookLink: `${this.RUNBOOK}#workererrors`,
                 }
@@ -470,7 +470,7 @@ export class FargateWatchbot extends Resource {
       cluster: Cluster.fromClusterAttributes(this, `${id}Cluster`, {
         clusterName: `fargate-processing-${props.deploymentEnvironment}`,
         vpc: Vpc.fromLookup(this, `${id}VPC`, {
-          vpcId: 'vpc-id'
+          vpcId: 'vpc-id' // TODO update
         })
       }),
 

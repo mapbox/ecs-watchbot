@@ -23,9 +23,9 @@ mined via filters on CloudWatch logs, and can help you learn about the state of
 your Watchbot stack. Each custom metric is suffixed with your stack's name,
 e.g. `-MyWatchbotStack`.
 
-Metric | Description | Statistics
---- | --- | ---
-**WorkerErrors** | The total number of failed workers per minute. High levels of this error trigger the `WorkerErrors` alarm | Sum
-**MessageReceives** | A metric collected for every received message that indicates how many times the message has been pulled from the queue | Maximum
-**WorkerDuration** | The amount of time (msec) taken by a worker to run a task | `Average`, `Minimum` and `Maximum`
-**ResponseDuration** | The approximate time (msec) taken to service a message: sum of queue waiting time and worker duration | `Average`, `Minimum` and `Maximum`
+| Metric               | Description                                                                                                            | Statistics                         | 
+|----------------------|------------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| **WorkerErrors**     | The total number of failed workers per minute. High levels of this error trigger the `WorkerErrors` alarm              | Sum                                | 
+| **MessageReceives**  | A metric collected for every received message that indicates how many times the message has been pulled from the queue | Maximum                            |
+| **WorkerDuration**   | The amount of time (msec) taken by a worker to run a task                                                              | `Average`, `Minimum` and `Maximum` |
+| **ResponseDuration** | The approximate time (msec) taken to service a message: sum of queue waiting time and worker duration                  | `Average`, `Minimum` and `Maximum` |
