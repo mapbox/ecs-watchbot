@@ -250,6 +250,10 @@ describe('FargateWatchbot', () => {
 
             template.resourceCountIs('AWS::SNS::Subscription', 1);
         });
+
+        it('doesnt create dynamo table', () => {
+            template.resourceCountIs('WS::DynamoDB::Table', 0);
+        });
     });
 
     describe('When passing overrides', () => {
@@ -270,6 +274,9 @@ describe('FargateWatchbot', () => {
                 maxJobDuration: Duration.seconds(60),
                 readonlyRootFilesystem: false,
                 structuredLogging: true,
+                reduceModeConfiguration: {
+                    enabled: true
+                }
             }
             stack = createStack(props)
             template = Template.fromStack(stack);
@@ -335,6 +342,7 @@ describe('FargateWatchbot', () => {
                         { Name: 'Fifo', Value: props.fifo?.toString() },
                         { Name: 'structuredLogging', Value: props.structuredLogging?.toString() },
                         { Name: 'QUEUE_NAME', Value: {} },
+                        { Name: 'ProgressTable', Value: { 'Fn::GetAtt': [ 'ProgressTable', 'Arn' ]}},
                     ],
                     LogConfiguration: {
                         LogDriver: 'awslogs',
@@ -363,6 +371,18 @@ describe('FargateWatchbot', () => {
 
         it('DOES NOT create an SNS topic', () => {
             template.resourceCountIs('AWS::SNS::Topic', 0);
+        });
+
+        it('creates dynamo table', () => {
+            template.hasResourceProperties('AWS::DynamoDB::Table', {
+                TableName: 'test-stack-tiles-progress',
+                AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
+                KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
+                ProvisionedThroughput: {
+                    ReadCapacityUnits: 30,
+                    WriteCapacityUnits: 30
+                }
+            });
         });
     })
 });
