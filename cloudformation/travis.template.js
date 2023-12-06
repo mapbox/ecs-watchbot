@@ -35,4 +35,3 @@ module.exports = {
     SecretAccessKey: { Value: cf.getAtt('AccessKey', 'SecretAccessKey') }
   }
 };
-

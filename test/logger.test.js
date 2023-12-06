@@ -98,7 +98,12 @@ test('[logger] workerFailure', (assert) => {
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher', message);
-  logger.workerFailure({ code: 124, signal: 'SIGTERM', duration: 12345, response_duration: 12345 });
+  logger.workerFailure({
+    code: 124,
+    signal: 'SIGTERM',
+    duration: 12345,
+    response_duration: 12345
+  });
 
   const data = process.stdout.write.args[0][0];
   assert.equal(

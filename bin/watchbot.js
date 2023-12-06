@@ -18,8 +18,9 @@ const main = async () => {
 
   const options = {
     queueUrl: process.env.QueueUrl,
-    writableFilesystem: process.env.writableFilesystem === 'true' ? true : false,
-    workerOptions: { command, volumes , maxJobDuration, structuredLogging },
+    writableFilesystem:
+      process.env.writableFilesystem === 'true' ? true : false,
+    workerOptions: { command, volumes, maxJobDuration, structuredLogging },
     structuredLogging
   };
 

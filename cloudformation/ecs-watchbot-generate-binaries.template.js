@@ -62,11 +62,12 @@ const Resources = {
               },
               {
                 Effect: 'Allow',
-                Action: [
-                  'secretsmanager:GetSecretValue'
-                ],
+                Action: ['secretsmanager:GetSecretValue'],
                 Resource: [
-                  cf.arn('secretsmanager', 'secret:general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/*')
+                  cf.arn(
+                    'secretsmanager',
+                    'secret:general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/*'
+                  )
                 ]
               }
             ]
@@ -189,7 +190,8 @@ const Resources = {
     Type: 'AWS::CodePipeline::Webhook',
     Properties: {
       AuthenticationConfiguration: {
-        SecretToken: '{{resolve:secretsmanager:code-pipeline-helper/webhook-secret}}'
+        SecretToken:
+          '{{resolve:secretsmanager:code-pipeline-helper/webhook-secret}}'
       },
       Name: cf.sub('${AWS::StackName}-webhook'),
       Authentication: 'GITHUB_HMAC',
@@ -226,15 +228,14 @@ const Resources = {
                 Version: '1',
                 Provider: 'GitHub'
               },
-              OutputArtifacts: [
-                { Name: 'Source' }
-              ],
+              OutputArtifacts: [{ Name: 'Source' }],
               Configuration: {
                 Owner: 'mapbox',
                 Repo: 'ecs-watchbot',
                 PollForSourceChanges: 'false',
                 Branch: 'master',
-                OAuthToken: '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
+                OAuthToken:
+                  '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
               }
             }
           ]
@@ -250,9 +251,7 @@ const Resources = {
                 Version: '1',
                 Provider: 'CodeBuild'
               },
-              InputArtifacts: [
-                { Name: 'Source' }
-              ],
+              InputArtifacts: [{ Name: 'Source' }],
               Configuration: {
                 ProjectName: cf.ref('Bundler')
               }
@@ -265,9 +264,7 @@ const Resources = {
                 Version: '1',
                 Provider: 'CodeBuild'
               },
-              InputArtifacts: [
-                { Name: 'Source' }
-              ],
+              InputArtifacts: [{ Name: 'Source' }],
               Configuration: {
                 ProjectName: cf.ref('AlpineBundler')
               }

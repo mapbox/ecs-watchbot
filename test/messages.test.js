@@ -88,7 +88,7 @@ test('[messages] waitFor gets message', async (assert) => {
     }
   ];
 
-  const receive = AWS.stub('SQS', 'receiveMessage', function() {
+  const receive = AWS.stub('SQS', 'receiveMessage', function () {
     this.request.promise.returns(Promise.resolve({ Messages: msgs }));
   });
 
@@ -157,7 +157,7 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
     }
   ];
 
-  const receive = AWS.stub('SQS', 'receiveMessage', function() {
+  const receive = AWS.stub('SQS', 'receiveMessage', function () {
     this.request.promise.returns(Promise.resolve({ Messages: msgs }));
   });
 
@@ -212,7 +212,7 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
 test('[messages] waitFor handles SQS errors', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'receiveMessage', function() {
+  AWS.stub('SQS', 'receiveMessage', function () {
     this.request.promise.returns(Promise.reject(err));
   });
 

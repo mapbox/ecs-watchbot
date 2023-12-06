@@ -7,7 +7,7 @@ const Watcher = require('../lib/watcher');
 const Logger = require('../lib/logger');
 
 class MockArgs {
-  constructor (args) {
+  constructor(args) {
     this._original = process.argv;
     process.argv = ['', ''].concat(args);
   }
@@ -107,13 +107,11 @@ test('[bin.watchbot] bad arguments', async (assert) => {
   assert.end();
 });
 
-
 test('[bin.watchbot] invalid maxJobDuration', async (assert) => {
   const mockArgs = new MockArgs(['listen', 'echo', 'hello', 'world']);
   process.env.QueueUrl = 'https://faker';
   process.env.Volumes = '/tmp,/mnt';
   process.env.maxJobDuration = 'not a number here';
-
 
   try {
     await watchbot();
@@ -131,4 +129,3 @@ test('[bin.watchbot] invalid maxJobDuration', async (assert) => {
   mockArgs.restore();
   assert.end();
 });
-

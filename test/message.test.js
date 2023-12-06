@@ -144,7 +144,7 @@ test('[message] no SNS subject', (assert) => {
 });
 
 test('[message] retry', async (assert) => {
-  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
+  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function () {
     this.request.promise.returns(Promise.resolve());
   });
 
@@ -169,7 +169,7 @@ test('[message] retry', async (assert) => {
 });
 
 test('[message] retry, too many receieves', async (assert) => {
-  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
+  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function () {
     this.request.promise.returns(Promise.resolve());
   });
 
@@ -199,7 +199,7 @@ test('[message] retry, too many receieves', async (assert) => {
 test('[message] retry, SQS error', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'changeMessageVisibility', function() {
+  AWS.stub('SQS', 'changeMessageVisibility', function () {
     this.request.promise.returns(Promise.reject(err));
   });
 
@@ -219,7 +219,7 @@ test('[message] retry, SQS error', async (assert) => {
 });
 
 test('[message] complete', async (assert) => {
-  const del = AWS.stub('SQS', 'deleteMessage', function() {
+  const del = AWS.stub('SQS', 'deleteMessage', function () {
     this.request.promise.returns(Promise.resolve());
   });
 
@@ -243,7 +243,7 @@ test('[message] complete', async (assert) => {
 test('[message] complete, SQS error', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'deleteMessage', function() {
+  AWS.stub('SQS', 'deleteMessage', function () {
     this.request.promise.returns(Promise.reject(err));
   });
 
@@ -263,7 +263,7 @@ test('[message] complete, SQS error', async (assert) => {
 });
 
 test('[message] heartbeat', async (assert) => {
-  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function() {
+  const cmv = AWS.stub('SQS', 'changeMessageVisibility', function () {
     this.request.promise.returns(Promise.resolve());
   });
 
@@ -290,7 +290,7 @@ test('[message] heartbeat', async (assert) => {
 test('[message] heartbeat, SQS error', async (assert) => {
   const logger = stubber(Logger).setup();
   const err = new Error('foo');
-  AWS.stub('SQS', 'changeMessageVisibility', function() {
+  AWS.stub('SQS', 'changeMessageVisibility', function () {
     this.request.promise.returns(Promise.reject(err));
   });
 

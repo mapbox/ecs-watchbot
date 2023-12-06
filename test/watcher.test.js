@@ -1,4 +1,3 @@
-
 'use strict';
 
 const test = require('tape');
@@ -68,7 +67,8 @@ test('[watcher] listens exactly once', async (assert) => {
   await watcher.listen();
 
   assert.equals(
-    messages.waitFor.callCount, 1,
+    messages.waitFor.callCount,
+    1,
     'messages.waitFor is called once.'
   );
   messages.teardown();
@@ -76,12 +76,11 @@ test('[watcher] listens exactly once', async (assert) => {
 });
 
 test('[watcher] listen', async (assert) => {
-
   const messages = stubber(Messages).setup();
   const worker = stubber(Worker).setup();
   const workerOptions = {
     command: 'echo hello world',
-    volumes: ['/tmp','/mnt']
+    volumes: ['/tmp', '/mnt']
   };
 
   const watcher = new Watcher({
@@ -125,7 +124,6 @@ test('[watcher] listen', async (assert) => {
   messages.teardown();
   worker.teardown();
   assert.end();
-
 });
 
 test('[watcher] factory', (assert) => {
