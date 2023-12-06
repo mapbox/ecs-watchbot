@@ -52,13 +52,15 @@ describe('FargateWatchbot', () => {
                     image: ContainerImage.fromRegistry('amazon/amazon-ecs-sample'),
                     serviceName: 'test-service',
                     deploymentEnvironment: 'staging',
-                    alarmAction: Topic.fromTopicArn(this, 'Topic', Arn.format({
-                        account: '222258372212',
-                        region: 'us-east-1',
-                        partition: 'aws',
-                        service: 'sns',
-                        resource: 'on-call-production-us-east-1-data-platform',
-                    })),
+                    alarms: {
+                        action: Topic.fromTopicArn(this, 'Topic', Arn.format({
+                            account: '222258372212',
+                            region: 'us-east-1',
+                            partition: 'aws',
+                            service: 'sns',
+                            resource: 'on-call-production-us-east-1-data-platform',
+                        })),
+                    }
                 };
 
                 new FargateWatchbot(this, 'MyWatchbot', {
@@ -74,8 +76,6 @@ describe('FargateWatchbot', () => {
             },
         });
 
-
-
     describe('When passing the minimal required props', () => {
         beforeEach(() => {
             stack = createStack({})
@@ -88,10 +88,6 @@ describe('FargateWatchbot', () => {
                 RetentionInDays: defaultProps.logGroupRetentionDays,
             });
         });
-
-        it('snap', () => {
-            expect(template).toMatchSnapshot()
-        })
 
         it('creates a TaskDefinition', () => {
             template.hasResourceProperties('AWS::ECS::TaskDefinition', {

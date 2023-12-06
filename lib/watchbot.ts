@@ -7,8 +7,8 @@ import {
   PropagatedTagSource, RuntimePlatform, Secret, TaskDefinition, UlimitName, Volume,
 } from 'aws-cdk-lib/aws-ecs';
 import { AnyPrincipal, PrincipalWithConditions } from 'aws-cdk-lib/aws-iam';
-import { CfnLogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import {ITopic, Topic} from 'aws-cdk-lib/aws-sns';
+import { CfnLogGroup, FilterPattern, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { ITopic, Topic } from 'aws-cdk-lib/aws-sns';
 import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { IQueue, Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
@@ -18,6 +18,9 @@ import {
   MapboxQueueProcessingFargateServiceProps
 } from './QueueProcessingFargateService';
 import {MonitoringFacade, SnsAlarmActionStrategy} from "cdk-monitoring-constructs";
+import * as path from "path";
+import {ComparisonOperator, Stats} from "aws-cdk-lib/aws-cloudwatch";
+const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 export interface WatchbotProps {
   /**
@@ -195,15 +198,29 @@ export interface WatchbotProps {
   // readCapacityUnits: 30,
   // writeCapacityUnits: 30,
 
-  readonly alarmAction: ITopic;
+  readonly alarms: WatchbotAlarms;
 
-  // watchbotVersion: 'v' + pkg.version,
   // **** related to alarms ****
   // errorThreshold: 10,
   // alarmThreshold: 40,
   // alarmPeriods: 24,
   // deadletterAlarm: true,
   // dashboard: true,
+}
+
+export type WatchbotAlarms = {
+  action: ITopic;
+  memoryUtilization?: AlarmProps;
+  cpuUtilization?: AlarmProps;
+  queueSize?: AlarmProps;
+  dlqSize?: AlarmProps;
+  workersFailure?: AlarmProps;
+}
+
+export type AlarmProps = {
+  threshold?: number;
+  evaluationPeriods?: number;
+  period?: Duration;
 }
 
 export class FargateWatchbot extends Resource {
@@ -215,11 +232,17 @@ export class FargateWatchbot extends Resource {
   public readonly logGroup: LogGroup;
   public readonly queue: IQueue;
   public readonly deadLetterQueue: IQueue;
+  public readonly monitoring: MonitoringFacade;
+  public readonly queueProcessingFargateService: MapboxQueueProcessingFargateService;
   public topic: Topic | undefined;
   public container: ContainerDefinition | undefined;
 
+  private readonly RUNBOOK: string;
+
   constructor(scope: Construct, id: string, props: WatchbotProps) {
     super(scope, id);
+
+    this.RUNBOOK = `https://github.com/mapbox/ecs-watchbot/blob/${pkg.version}/docs/alarms.md`;
 
     this.props = this.mergePropsWithDefaults(id, props);
 
@@ -303,9 +326,9 @@ export class FargateWatchbot extends Resource {
       assignPublicIp: this.props.publicIP,
       securityGroups: this.props.securityGroups,
     }
-    const queueProcessingFargateService = new MapboxQueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
-    this.service = queueProcessingFargateService.service;
-    this.taskDefinition = queueProcessingFargateService.taskDefinition;
+    this.queueProcessingFargateService = new MapboxQueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
+    this.service = this.queueProcessingFargateService.service;
+    this.taskDefinition = this.queueProcessingFargateService.taskDefinition;
 
     this.container = this.taskDefinition.findContainer(this.props.containerName || '');
     if (this.container) {
@@ -333,13 +356,89 @@ export class FargateWatchbot extends Resource {
       this.container.addEnvironment('WorkTopic', this.topic.topicArn)
     }
 
+    this.monitoring = this.createAlarms();
+  }
+
+  private createAlarms() {
     const monitoring = new MonitoringFacade(this, 'Monitoring', {
       alarmFactoryDefaults: {
         alarmNamePrefix: this.prefixed(''),
         actionsEnabled: true,
-        action: new SnsAlarmActionStrategy({ onAlarmTopic: this.props.alarmAction })
+        action: new SnsAlarmActionStrategy({ onAlarmTopic: this.props.alarms.action })
       }
-    })
+    });
+
+    const workersErrorsMetric = this.logGroup.addMetricFilter(this.prefixed('WorkerErrorsMetric'), {
+      metricName: `${this.prefixed('WorkerErrors')}-${this.stack.stackName}`,
+      metricNamespace: 'Mapbox/ecs-watchbot',
+      metricValue: '1',
+      filterPattern: FilterPattern.anyTerm('"[failure]"')
+    }).metric({
+      statistic: Stats.SUM,
+    });
+
+    monitoring.monitorQueueProcessingFargateService({
+      fargateService: this.queueProcessingFargateService,
+      addServiceAlarms: {
+        addMemoryUsageAlarm: {
+          memoryUsage: {
+            runbookLink: `${this.RUNBOOK}#memoryutilization`,
+            maxUsagePercent: this.props.alarms.memoryUtilization?.threshold || 100,
+            period: this.props.alarms.memoryUtilization?.period || Duration.minutes(1),
+            evaluationPeriods: this.props.alarms.memoryUtilization?.evaluationPeriods || 10,
+          }
+        },
+        addCpuUsageAlarm: {
+          cpu: {
+            runbookLink: `${this.RUNBOOK}#`, // TODO UPDATE
+            maxUsagePercent: this.props.alarms.cpuUtilization?.threshold || 90,
+            period: this.props.alarms.cpuUtilization?.period || Duration.minutes(1),
+            evaluationPeriods: this.props.alarms.cpuUtilization?.evaluationPeriods || 10,
+          }
+        }
+      }
+    }).monitorSqsQueueWithDlq({
+      queue: this.queue,
+      deadLetterQueue: this.deadLetterQueue,
+      addQueueMaxSizeAlarm: {
+        maxSize: {
+          runbookLink: `${this.RUNBOOK}#queuesize`,
+          maxMessageCount: this.props.alarms.queueSize?.threshold || 40,
+          period: this.props.alarms.queueSize?.period || Duration.minutes(5),
+          evaluationPeriods: this.props.alarms.queueSize?.evaluationPeriods || 24,
+        }
+      },
+      addDeadLetterQueueMaxSizeAlarm: {
+        maxSize: {
+          runbookLink: `${this.RUNBOOK}`, // TODO update
+          maxMessageCount: this.props.alarms.dlqSize?.threshold || 10,
+          period: this.props.alarms.dlqSize?.period || Duration.minutes(1),
+          evaluationPeriods: this.props.alarms.dlqSize?.evaluationPeriods || 1,
+          datapointsToAlarm: this.props.alarms.dlqSize?.evaluationPeriods || 1, // match evaluationPeriods
+        }
+      }
+    }).monitorCustom({
+      addToAlarmDashboard: true,
+      alarmFriendlyName: `worker-errors-${this.stack.region}`,
+      metricGroups: [{
+        title: 'Worker Errors',
+        metrics: [{
+          alarmFriendlyName: `worker-errors-${this.stack.region}`,
+          metric: workersErrorsMetric,
+          addAlarm: {
+            error: {
+              threshold: this.props.alarms.workersFailure?.threshold || 10,
+              evaluationPeriods: this.props.alarms.workersFailure?.evaluationPeriods || 1,
+              datapointsToAlarm: this.props.alarms.workersFailure?.evaluationPeriods || 1, // match evaluationPeriods
+              period: this.props.alarms.workersFailure?.period || Duration.minutes(1),
+              comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+              runbookLink: `${this.RUNBOOK}#workererrors`,
+            }
+          },
+        }]
+      }]
+    });
+    return monitoring;
   }
 
   private prefixed = (name: string) => `${this.props.prefix}${name}`;
