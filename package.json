@@ -34,6 +34,7 @@
   "homepage": "https://github.com/mapbox/ecs-watchbot#readme",
   "devDependencies": {
     "@mapbox/eslint-config-mapbox": "^2.0.1",
+    "@mapbox/mapbox-cdk-common": "^4.2.0",
     "@mapbox/mock-aws-sdk-js": "^1.0.0",
     "@types/jest": "^29.5.5",
     "@types/node": "20.7.1",
