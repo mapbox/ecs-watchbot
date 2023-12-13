@@ -5,7 +5,9 @@ import {
     App,
     aws_codebuild,
     aws_codepipeline,
-    BootstraplessSynthesizer, Duration,
+    BootstraplessSynthesizer,
+    Duration,
+    RemovalPolicy,
     SecretValue,
     Stack,
     StackProps
@@ -15,6 +17,7 @@ import {Bucket, BucketEncryption} from "aws-cdk-lib/aws-s3";
 import {CodeBuildAction, GitHubSourceAction} from "aws-cdk-lib/aws-codepipeline-actions";
 import {Artifact} from "aws-cdk-lib/aws-codepipeline";
 import {BuildSpec} from "aws-cdk-lib/aws-codebuild";
+import {LogGroup, RetentionDays} from "aws-cdk-lib/aws-logs";
 
 const app = new App();
 
@@ -31,8 +34,14 @@ class PipelineStack extends Stack {
     constructor(scope: Construct, id: string, props: Props) {
         super(scope, id, props);
 
+        const codebuildLogGroup = new LogGroup(this, 'CodebuildLogs', {
+            logGroupName: `${this.stackName}-logs`,
+            retention: RetentionDays.TWO_WEEKS,
+            removalPolicy: RemovalPolicy.DESTROY,
+        });
+
         const artifact = new Artifact('Source');
-        new aws_codepipeline.Pipeline(this, 'Pipeline', {
+        const p = new aws_codepipeline.Pipeline(this, 'Pipeline', {
             pipelineName: this.stackName,
             artifactBucket: Bucket.fromBucketName(this, 'Bucket', props.bucketName),
             stages: [{
@@ -44,20 +53,26 @@ class PipelineStack extends Stack {
                         owner: 'mapbox',
                         repo: 'ecs-watchbot',
                         output: artifact,
-                        oauthToken: SecretValue.secretsManager('code-pipeline-helper/access-token')
+                        oauthToken: SecretValue.secretsManager('ecs-watchbot/code-pipeline-github-token')
                     }),
                 ]
             }, {
               stageName: 'Bundle',
               actions: [
                   new CodeBuildAction({
-                      actionName: 'BundleGeneral',
+                      actionName: 'LinuxBundle',
                       input: artifact,
-                      project: new aws_codebuild.PipelineProject(this, 'BundleGeneral', {
+                      project: new aws_codebuild.PipelineProject(this, 'LinuxBundle', {
                           environment: {
                               buildImage: aws_codebuild.LinuxBuildImage.STANDARD_7_0
                           },
-                          projectName: `${this.stackName}-bundle`,
+                          logging: {
+                            cloudWatch: {
+                                enabled: true,
+                                logGroup: codebuildLogGroup,
+                            }
+                          },
+                          projectName: `${this.stackName}-linux-bundle`,
                           buildSpec: BuildSpec.fromObject({
                               version: '0.2',
                               phases: {
@@ -82,6 +97,12 @@ class PipelineStack extends Stack {
                           environment: {
                               buildImage: aws_codebuild.LinuxBuildImage.fromCodeBuildImageId('public.ecr.aws/docker/library/node:18-alpine')
                           },
+                          logging: {
+                              cloudWatch: {
+                                  enabled: true,
+                                  logGroup: codebuildLogGroup,
+                              }
+                          },
                           projectName: `${this.stackName}-alpine-bundler`,
                           description: 'Builds watchbot binaries for alpine OS',
                           buildSpec: BuildSpec.fromObject({
@@ -105,8 +126,6 @@ class PipelineStack extends Stack {
               ]
             }]
         })
-
-
     }
 }
 
