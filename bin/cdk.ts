@@ -4,17 +4,19 @@ import {Construct} from "constructs";
 import {
     App,
     aws_codebuild,
-    aws_codepipeline, aws_codestar, aws_codestarconnections,
-    BootstraplessSynthesizer, CliCredentialsStackSynthesizer,
+    aws_codepipeline,
+    aws_codestarconnections,
+    BootstraplessSynthesizer,
+    CliCredentialsStackSynthesizer,
     Duration,
     RemovalPolicy,
     Stack,
     StackProps,
 } from "aws-cdk-lib";
 import {Bucket, BucketEncryption} from "aws-cdk-lib/aws-s3";
-import {BuildSpec, BuildEnvironmentVariableType} from "aws-cdk-lib/aws-codebuild";
+import {BuildEnvironmentVariableType, BuildSpec} from "aws-cdk-lib/aws-codebuild";
 import {LogGroup, RetentionDays} from "aws-cdk-lib/aws-logs";
-import {Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam";
+import {Effect, Policy, PolicyDocument, PolicyStatement, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam";
 
 const app = new App();
 
@@ -105,6 +107,24 @@ class PipelineStack extends Stack {
                 },
             })
         })
+
+        const s3Permissions = new Policy(this, 'S3Policy', {
+            statements: [new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:GetObjectVersion"
+                ],
+                resources: [
+                    `arn:aws:s3:::${props.bucketName}`,
+                    `arn:aws:s3:::${props.bucketName}/*`,
+                ]
+            })]
+        })
+        linuxCodebuild.role?.attachInlinePolicy(s3Permissions);
+        alpineCodebuild.role?.attachInlinePolicy(s3Permissions);
+
         const role = new Role(this, 'PipelineRole', {
             assumedBy: new ServicePrincipal('codepipeline.amazonaws.com'),
             inlinePolicies: {
@@ -113,11 +133,7 @@ class PipelineStack extends Stack {
                         sid: 'S3permissions',
                         effect: Effect.ALLOW,
                         actions: [
-                            's3:ListBucket',
-                            's3:GetBucketVersioning',
-                            's3:GetObject',
-                            's3:GetObjectVersion',
-                            's3:PutObject*'
+                            's3:*'
                         ],
                         resources: [
                             `arn:aws:s3:::${props.bucketName}`,
