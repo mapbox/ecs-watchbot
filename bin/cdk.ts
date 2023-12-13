@@ -1,13 +1,20 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import {Construct} from "constructs";
-import {App, aws_codebuild, aws_codepipeline, aws_s3, SecretValue, Stack, StackProps} from "aws-cdk-lib";
+import {
+    App,
+    aws_codebuild,
+    aws_codepipeline,
+    BootstraplessSynthesizer, Duration,
+    SecretValue,
+    Stack,
+    StackProps
+} from "aws-cdk-lib";
 import {CodePipelineSource} from "aws-cdk-lib/pipelines";
-import {Bucket} from "aws-cdk-lib/aws-s3";
-import {CodeBuildAction, GitHubSourceAction, GitHubTrigger} from "aws-cdk-lib/aws-codepipeline-actions";
+import {Bucket, BucketEncryption} from "aws-cdk-lib/aws-s3";
+import {CodeBuildAction, GitHubSourceAction} from "aws-cdk-lib/aws-codepipeline-actions";
 import {Artifact} from "aws-cdk-lib/aws-codepipeline";
 import {BuildSpec} from "aws-cdk-lib/aws-codebuild";
-import {MapboxDefaultSynthesizer, MapboxS3} from "@mapbox/mapbox-cdk-common";
 
 const app = new App();
 
@@ -107,7 +114,7 @@ class BucketStack extends Stack {
     constructor(scope: Construct, id: string, props: Props) {
         super(scope, id, props);
 
-        new MapboxS3(this, 'Bucket', {
+        new Bucket(this, 'Bucket', {
             bucketName: props.bucketName,
             blockPublicAccess: {
                 blockPublicAcls: true,
@@ -115,7 +122,12 @@ class BucketStack extends Stack {
                 blockPublicPolicy: false,
                 restrictPublicBuckets: false,
             },
-            accessLoggingBucketName: 'mapbox-logs' // TODO need to resolve this
+            versioned: true,
+            encryption: BucketEncryption.S3_MANAGED,
+            lifecycleRules: [{
+                enabled: true,
+                abortIncompleteMultipartUploadAfter: Duration.days(1),
+            }]
         });
 
     }
@@ -130,35 +142,40 @@ const tags = {
     Public: 'false',
 }
 const region: string = process.env.AWS_DEFAULT_REGION || 'us-east-1';
-const deploymentEnvironment = app.node.tryGetContext('deploymentEnvironment') || 'staging';
-const account = isProduction(deploymentEnvironment) ? '721885411435'  : '353802256504';  // 353802256504=artifacts-stg 721885411435=artifacts-prod
+const deploymentEnvironment = app.node.tryGetContext('deploymentEnvironment');
+const account = app.node.tryGetContext('account');
 const bucketName = isProduction(deploymentEnvironment) ? 'ecs-watchbot-binaries' : 'ecs-watchbot-binaries-stg';
-(async () => {
-    const pipelineStackName = 'watchbot-pipeline';
-    new PipelineStack(app, 'Pipeline', {
-        stackName: pipelineStackName,
-        synthesizer: await new MapboxDefaultSynthesizer(account, region, pipelineStackName).synthesize(),
-        env: { account, region },
-        tags: {
-            ...tags,
-            CloudFormationStackName: pipelineStackName,
-            Production: isProduction(deploymentEnvironment).toString(),
-        },
-        deploymentEnvironment: deploymentEnvironment,
-        bucketName,
-    });
 
-    const bucketStackName = 'watchbot-bucket';
-    new BucketStack(app, 'Bucket', {
-        stackName: bucketStackName,
-        synthesizer: await new MapboxDefaultSynthesizer(account, region, bucketStackName).synthesize(),
-        env: { account, region },
-        tags: {
-            ...tags,
-            CloudFormationStackName: bucketStackName,
-            Production: isProduction(deploymentEnvironment).toString(),
-        },
-        deploymentEnvironment: deploymentEnvironment,
-        bucketName,
-    })
-})()
+const pipelineStackName = 'watchbot-pipeline';
+new PipelineStack(app, 'Pipeline', {
+    stackName: pipelineStackName,
+    synthesizer: new BootstraplessSynthesizer({
+        cloudFormationExecutionRoleArn: process.env.AWS_CDK_EXEC_ROLE,
+        deployRoleArn: process.env.AWS_CDK_DEPLOY_ROLE,
+    }),
+    env: { account, region },
+    tags: {
+        ...tags,
+        CloudFormationStackName: pipelineStackName,
+        Production: isProduction(deploymentEnvironment).toString(),
+    },
+    deploymentEnvironment: deploymentEnvironment,
+    bucketName,
+});
+
+const bucketStackName = 'watchbot-bucket';
+new BucketStack(app, 'Bucket', {
+    stackName: bucketStackName,
+    synthesizer: new BootstraplessSynthesizer({
+        cloudFormationExecutionRoleArn: process.env.AWS_CDK_EXEC_ROLE,
+        deployRoleArn: process.env.AWS_CDK_DEPLOY_ROLE,
+    }),
+    env: { account, region },
+    tags: {
+        ...tags,
+        CloudFormationStackName: bucketStackName,
+        Production: isProduction(deploymentEnvironment).toString(),
+    },
+    deploymentEnvironment: deploymentEnvironment,
+    bucketName,
+})
