@@ -38,7 +38,11 @@ wbg.getTagForSha = getTagForSha;
  */
 const uploadBundle = async (buildTarget) => {
   const s3 = new AWS.S3();
-  const Bucket = 'watchbot-binaries';
+  const Bucket = process.env.BUCKET_NAME;
+  if (!Bucket) {
+    throw new Error('BUCKET_NAME environment variable missing');
+  }
+  console.log(`Publishing artifacts to bucket=${Bucket}`);
 
   let targets = [
     { prefix: 'linux', target: 'node18-linux', pkg: 'watchbot-linux' },

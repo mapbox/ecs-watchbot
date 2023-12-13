@@ -128,6 +128,7 @@ class PipelineStack extends Stack {
                         actions: [
                             'codebuild:StartBuild',
                             'codebuild:BatchGetBuilds',
+                            'codestar-connections:*'
                         ],
                         resources: ['*']
                     }), new PolicyStatement({
@@ -197,7 +198,7 @@ class PipelineStack extends Stack {
                     actionTypeId: {
                         category: 'Build',
                         owner: 'AWS',
-                        provider: 'Codebuild',
+                        provider: 'CodeBuild',
                         version: '1',
                     },
                     inputArtifacts: [{
