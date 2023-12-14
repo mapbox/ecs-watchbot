@@ -28,7 +28,8 @@ const main = async () => {
   const branch = await wbg.exec('git rev-parse --abbrev-ref HEAD');
   const branchNameOverride = branch.stdout;
 
-  const sourceAction = existingConfig.pipeline.stages.find((s) => s.Name === 'Source').actions[0];
+  // find the Source stage and get the actions
+  const sourceAction = existingConfig.pipeline.stages[0].actions[0];
   await cp.updatePipeline({
     pipeline: {
       ...existingConfig.pipeline,
