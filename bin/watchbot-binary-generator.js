@@ -68,8 +68,7 @@ const uploadBundle = async (buildTarget) => {
       return s3.putObject({
         Bucket,
         Key: `${target.prefix}/${tag}/watchbot`,
-        Body: fs.createReadStream(target.pkg),
-        ACL: 'public-read'
+        Body: fs.createReadStream(target.pkg)
       }).promise();
     });
 
