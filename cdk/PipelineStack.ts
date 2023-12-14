@@ -115,7 +115,7 @@ export class PipelineStack extends Stack {
                     },
                     build: {
                         commands:[
-                            'BUCKET_NAME=watchbot-binaries docker run -t ecs-watchbot npm run test-container',
+                            'docker run -t ecs-watchbot npm run test-container',
                         ],
                     },
                 },
@@ -137,7 +137,7 @@ export class PipelineStack extends Stack {
         })
         linuxCodebuild.role?.attachInlinePolicy(s3Permissions);
         alpineCodebuild.role?.attachInlinePolicy(s3Permissions);
-        alpineCodebuild.role?.attachInlinePolicy(s3Permissions);
+        testCodebuild.role?.attachInlinePolicy(s3Permissions);
 
         const role = new Role(this, 'PipelineRole', {
             assumedBy: new ServicePrincipal('codepipeline.amazonaws.com'),
@@ -200,7 +200,7 @@ export class PipelineStack extends Stack {
                     configuration: {
                         ConnectionArn: connection.attrConnectionArn,
                         FullRepositoryId: 'mapbox/ecs-watchbot',
-                        BranchName: 'master',
+                        BranchName: 'build-binary', // TODO update before merge
                     },
                     outputArtifacts: [{
                         name: 'Source',

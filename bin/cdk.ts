@@ -2,7 +2,6 @@
 import 'source-map-support/register';
 import {
     App,
-    BootstraplessSynthesizer,
     CliCredentialsStackSynthesizer,
 } from "aws-cdk-lib";
 import {BucketStack} from "../cdk/BucketStack";
@@ -25,15 +24,11 @@ const bucketName = isProduction(deploymentEnvironment) ? 'ecs-watchbot-binaries'
 const pipelineStackName = 'watchbot-pipeline';
 new PipelineStack(app, 'Pipeline', {
     stackName: pipelineStackName,
-    synthesizer: new CliCredentialsStackSynthesizer({ // TODO give cdk roles codestar-connections:* actions
+    synthesizer: new CliCredentialsStackSynthesizer({
        fileAssetsBucketName: `cdk-assets-${account}-${region}`,
         bucketPrefix: `ecs-watchbot/${pipelineStackName}`,
        qualifier: 'operator'
     }),
-    // synthesizer: new BootstraplessSynthesizer({
-    //     cloudFormationExecutionRoleArn: process.env.AWS_CDK_EXEC_ROLE,
-    //     deployRoleArn: process.env.AWS_CDK_DEPLOY_ROLE,
-    // }),
     env: { account, region },
     tags: {
         ...tags,
@@ -47,9 +42,10 @@ new PipelineStack(app, 'Pipeline', {
 const bucketStackName = 'watchbot-bucket';
 new BucketStack(app, 'Bucket', {
     stackName: bucketStackName,
-    synthesizer: new BootstraplessSynthesizer({
-        cloudFormationExecutionRoleArn: process.env.AWS_CDK_EXEC_ROLE,
-        deployRoleArn: process.env.AWS_CDK_DEPLOY_ROLE,
+    synthesizer: new CliCredentialsStackSynthesizer({
+        fileAssetsBucketName: `cdk-assets-${account}-${region}`,
+        bucketPrefix: `ecs-watchbot/${bucketStackName}`,
+        qualifier: 'operator'
     }),
     env: { account, region },
     tags: {
