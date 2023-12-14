@@ -10,13 +10,15 @@ const wbg = { exec };
 
 const main = async () => {
   console.log('Creating prerelease');
-  await wbg.exec('npm version prerelease'); // create pre-release
+  const tag = await wbg.exec('npm version prerelease'); // create pre-release
+  console.log(tag.stdout);
 
   console.log('Pushing tag to Github');
-  await wbg.exec('git push && git push --tags');
+  const push = await wbg.exec('git push && git push --tags');
+  console.log(push.stdout);
 
   const gitsha = await wbg.exec('git rev-parse HEAD');
-  console.log(`Starting pipeline execution with gitsha=${gitsha}`);
+  console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
 
   const cp = new AWS.CodePipeline({});
   // await cp.startPipelineExecution({
