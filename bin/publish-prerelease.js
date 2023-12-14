@@ -20,7 +20,7 @@ const main = async () => {
   console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
 
   const pipelineName = 'watchbot-pipeline';
-  const cp = new AWS.CodePipeline({});
+  const cp = new AWS.CodePipeline({ region: 'us-east-1' });
   const existingConfig = await cp.getPipeline({
     name: pipelineName
   }).promise();
