@@ -1,6 +1,6 @@
 import {Duration, Stack, StackProps} from "aws-cdk-lib";
 import {Construct} from "constructs";
-import {Bucket, BucketEncryption} from "aws-cdk-lib/aws-s3";
+import {BlockPublicAccess, Bucket, BucketEncryption} from "aws-cdk-lib/aws-s3";
 import {isProduction} from "./util";
 
 interface Props extends StackProps {
@@ -14,12 +14,8 @@ export class BucketStack extends Stack {
 
         const bucket = new Bucket(this, 'Bucket', {
             bucketName: props.bucketName,
-            blockPublicAccess: {
-                blockPublicAcls: true,
-                ignorePublicAcls: true,
-                blockPublicPolicy: false,
-                restrictPublicBuckets: false,
-            },
+            publicReadAccess: true,
+            blockPublicAccess: BlockPublicAccess.BLOCK_ACLS,
             versioned: true,
             encryption: BucketEncryption.S3_MANAGED,
             lifecycleRules: [{

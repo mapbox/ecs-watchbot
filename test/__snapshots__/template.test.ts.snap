@@ -47,9 +47,7 @@ exports[`Template When creating the bucket stack Creates Bucket to match snapsho
         },
         "PublicAccessBlockConfiguration": {
           "BlockPublicAcls": true,
-          "BlockPublicPolicy": false,
           "IgnorePublicAcls": true,
-          "RestrictPublicBuckets": false,
         },
         "VersioningConfiguration": {
           "Status": "Enabled",
@@ -57,6 +55,40 @@ exports[`Template When creating the bucket stack Creates Bucket to match snapsho
       },
       "Type": "AWS::S3::Bucket",
       "UpdateReplacePolicy": "Retain",
+    },
+    "BucketPolicyE9A3008A": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "Bucket83908E77",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::GetAtt": [
+                        "Bucket83908E77",
+                        "Arn",
+                      ],
+                    },
+                    "/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
     },
   },
   "Rules": {
@@ -486,7 +518,7 @@ exports[`Template When creating the pipeline stack Creates Pipeline to match sna
                   "Version": "1",
                 },
                 "Configuration": {
-                  "BranchName": "build-binary",
+                  "BranchName": "master",
                   "ConnectionArn": {
                     "Fn::GetAtt": [
                       "Connection",
