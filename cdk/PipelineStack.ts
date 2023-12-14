@@ -200,7 +200,7 @@ export class PipelineStack extends Stack {
                     configuration: {
                         ConnectionArn: connection.attrConnectionArn,
                         FullRepositoryId: 'mapbox/ecs-watchbot',
-                        BranchName: 'build-binary', // TODO update before merge
+                        BranchName: 'master',
                     },
                     outputArtifacts: [{
                         name: 'Source',
