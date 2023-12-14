@@ -229,19 +229,19 @@ class PipelineStack extends Stack {
             },
         });
         p.addPropertyOverride('PipelineType', 'V2');
-        p.addPropertyOverride('Triggers', [
-            {
-                ProviderType: 'CodeStarSourceConnection',
-                GitConfiguration: {
-                    SourceActionName: 'Github',
-                    Push: [{
-                        Tags: {
-                            Includes: ['*.*.*-*']
-                        }
-                    }]
-                }
-            }
-        ]);
+        // p.addPropertyOverride('Triggers', [
+        //     {
+        //         ProviderType: 'CodeStarSourceConnection',
+        //         GitConfiguration: {
+        //             SourceActionName: 'Github',
+        //             Push: [{
+        //                 Tags: {
+        //                     Includes: ['*.*.*-*']
+        //                 }
+        //             }]
+        //         }
+        //     }
+        // ]);
     }
 }
 
