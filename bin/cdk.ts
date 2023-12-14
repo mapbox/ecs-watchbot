@@ -169,10 +169,9 @@ class PipelineStack extends Stack {
             connectionName: 'ecs-watchbot',
             providerType: 'GitHub'
         });
-        new aws_codepipeline.CfnPipeline(this, 'Pipeline', {
+        const p = new aws_codepipeline.CfnPipeline(this, 'Pipeline', {
             roleArn: role.roleArn,
             name: this.stackName,
-
             stages: [{
                 name: 'Source',
                 actions: [{
@@ -184,10 +183,9 @@ class PipelineStack extends Stack {
                         version: '1',
                     },
                     configuration: {
-                        ConnectionArn: connection.attrConnectionArn, // 'arn:aws:codestar-connections:us-east-1:353802256504:connection/da887df2-781b-4a00-8dce-24dced5cc129',
+                        ConnectionArn: connection.attrConnectionArn,
                         FullRepositoryId: 'mapbox/ecs-watchbot',
                         BranchName: 'master',
-                        // oAuthToken: '{{resolve:secretsmanager:ecs-watchbot/code-pipeline-github-token:SecretString:::}}'
                     },
                     outputArtifacts: [{
                         name: 'Source',
@@ -230,6 +228,20 @@ class PipelineStack extends Stack {
                 type: 'S3',
             },
         });
+        p.addPropertyOverride('PipelineType', 'V2');
+        p.addPropertyOverride('Triggers', [
+            {
+                ProviderType: 'CodeStarSourceConnection',
+                GitConfiguration: {
+                    SourceActionName: 'Github',
+                    Push: [{
+                        Tags: {
+                            Includes: ['*.*.*-*']
+                        }
+                    }]
+                }
+            }
+        ]);
     }
 }
 

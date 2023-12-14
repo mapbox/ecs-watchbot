@@ -59,7 +59,7 @@
     "@aws-cdk/aws-redshift-alpha": "^2.112.0-alpha.0",
     "@mapbox/cloudfriend": "^7.1.0",
     "@mapbox/watchbot-progress": "^1.1.7",
-    "aws-sdk": "^2.587.0",
+    "aws-sdk": "^2.1518.0",
     "binary-split": "^1.0.5",
     "cdk-monitoring-constructs": "^7.1.0",
     "fs-extra": "^8.1.0",

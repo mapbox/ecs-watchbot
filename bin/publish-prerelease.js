@@ -9,12 +9,12 @@ const exec = util.promisify(cp.exec);
 const wbg = { exec };
 
 const main = async () => {
-  console.log('Creating prerelease');
-  const tag = await wbg.exec('npm version prerelease'); // create pre-release
-  console.log(tag.stdout);
-
-  console.log('Pushing tag to Github');
-  await wbg.exec('git push && git push --tags');
+  // console.log('Creating prerelease');
+  // const tag = await wbg.exec('npm version prerelease'); // create pre-release
+  // console.log(tag.stdout);
+  //
+  // console.log('Pushing tag to Github');
+  // await wbg.exec('git push && git push --tags');
 
   const gitsha = await wbg.exec('git rev-parse HEAD');
   console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
@@ -35,7 +35,6 @@ const main = async () => {
       ...existingConfig.pipeline,
       name: pipelineName,
       stages: [
-        ...existingConfig.pipeline.stages,
         {
           name: 'Source',
           actions: [{
@@ -45,10 +44,11 @@ const main = async () => {
               BranchName: branchNameOverride
             }
           }]
-        }
+        },
+        ...existingConfig.pipeline.stages.filter((s) => s.name !== 'Source')
       ]
     }
-  });
+  }).promise();
 
   await cp.startPipelineExecution({
     name: pipelineName,
@@ -56,10 +56,10 @@ const main = async () => {
       {
         actionName: 'Github',
         revisionType: 'COMMIT_ID',
-        revisionValue: gitsha.stdout
+        revisionValue: 'ec13f9fa34a952ac5d84a808cb438889a0f3a0cc'
       }
     ]
-  });
+  }).promise();
 };
 
 main();
