@@ -1,12 +1,22 @@
 # Contributing
 
 Have a feature request or found a bug in Watchbot processing? Please open an Issue. You're also welcome to propose a fix by submitting a pull request.
-A member of the [**@mapbox/platform**](https://github.com/orgs/mapbox/teams/platform) team will review your PR.
+A member of the [**@mapbox/data-platform**](https://github.com/orgs/mapbox/teams/data-platform) team will review your PR.
 
 ## Publishing a test version
-The following steps outlines steps a member from Platform 
+The following steps outlines steps a member from Platform team can execute to publish a new test version 
 
-* 
+* Commit your changes to your test branch
+* Run `npm run create:prerelease`
+  * **If this step fails**, follow the manual steps outlined below:
+  * Create prerelease tag using `npm version prerelease`
+  * Push changes and tags to GitHub by running `git push && git push --tags`
+  * Find the gitsha you just pushed by running `git rev-parse HEAD`. You'll need this later.
+  * Go to the [staging CodePipeline](https://us-east-1.console.aws.amazon.com/codesuite/codepipeline/pipelines/watchbot-pipeline/view?region=us-east-1) (requires AWS login to `artifacts-stg`)
+  * Update the codepipeline GitHub `Source` with your test branch name
+  * Click `Release Change` and update the `Source revision override` with your gitsha. You should find it in the dropdown list if you updated the branch name correctly.
+* Verify [staging CodePipeline](https://us-east-1.console.aws.amazon.com/codesuite/codepipeline/pipelines/watchbot-pipeline/view?region=us-east-1) ran successfully
+* Publish the new version to npm using `mbx npm publish --tag YOUR_NEW_TEST_TAG`
 
 ## Publishing a new version
 

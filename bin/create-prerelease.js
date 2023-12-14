@@ -6,18 +6,17 @@ const cp = require('child_process');
 const util = require('util');
 const AWS = require('aws-sdk');
 const exec = util.promisify(cp.exec);
-const wbg = { exec };
 
 const main = async () => {
   console.log('Creating prerelease');
-  const tag = await wbg.exec('npm version prerelease'); // create pre-release
+  const tag = await exec('npm version prerelease'); // create pre-release
   console.log(tag.stdout);
 
   console.log('Pushing tag to Github');
-  await wbg.exec('git push && git push --tags');
+  await exec('git push && git push --tags');
 
   console.log('Get gitsha');
-  const gitsha = await wbg.exec('git rev-parse HEAD');
+  const gitsha = await exec('git rev-parse HEAD');
   console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
 
   const pipelineName = 'watchbot-pipeline';
@@ -27,7 +26,7 @@ const main = async () => {
   }).promise();
 
   // get branch name
-  const branch = await wbg.exec('git rev-parse --abbrev-ref HEAD');
+  const branch = await exec('git rev-parse --abbrev-ref HEAD');
   const branchNameOverride = branch.stdout;
 
   // find the Source stage and get the actions
