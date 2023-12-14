@@ -3,6 +3,11 @@
 Have a feature request or found a bug in Watchbot processing? Please open an Issue. You're also welcome to propose a fix by submitting a pull request.
 A member of the [**@mapbox/platform**](https://github.com/orgs/mapbox/teams/platform) team will review your PR.
 
+## Publishing a test version
+The following steps outlines steps a member from Platform 
+
+* 
+
 ## Publishing a new version
 
 The following outlines instructions Mapbox team members should follow to publish a new version of watchbot

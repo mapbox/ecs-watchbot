@@ -20,7 +20,8 @@
     "test-container": "tape test/*.test.js && jest test/*.spec.js",
     "validate-templates": "tape test/template.validation.js",
     "update-jest-snapshots": "jest -u test/*.spec.js",
-    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html"
+    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
+    "publish:prerelease": "node bin/publish-prerelease.js"
   },
   "repository": {
     "type": "git",
