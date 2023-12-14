@@ -19,14 +19,43 @@ const main = async () => {
   const gitsha = await wbg.exec('git rev-parse HEAD');
   console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
 
+  const pipelineName = 'watchbot-pipeline';
   const cp = new AWS.CodePipeline({});
+  const existingConfig = await cp.getPipeline({
+    name: pipelineName
+  }).promise();
+
+  const branch = await wbg.exec('git rev-parse --abbrev-ref HEAD');
+  const branchNameOverride = branch.stdout;
+
+  const sourceAction = existingConfig.pipeline.stages.find((s) => s.Name === 'Source').actions[0];
+  await cp.updatePipeline({
+    pipeline: {
+      ...existingConfig.pipeline,
+      name: pipelineName,
+      stages: [
+        ...existingConfig.pipeline.stages,
+        {
+          name: 'Source',
+          actions: [{
+            ...sourceAction,
+            configuration: {
+              ...sourceAction.configuration,
+              BranchName: branchNameOverride
+            }
+          }]
+        }
+      ]
+    }
+  });
+
   await cp.startPipelineExecution({
-    name: 'watchbot-pipeline',
+    name: pipelineName,
     sourceRevisions: [
       {
-        actionName: 'Github', /* required */
-        revisionType: 'COMMIT_ID', /* required */
-        revisionValue: gitsha /* required */
+        actionName: 'Github',
+        revisionType: 'COMMIT_ID',
+        revisionValue: gitsha.stdout
       }
     ]
   });
