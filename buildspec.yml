@@ -9,4 +9,4 @@ phases:
       - docker build -q -t ecs-watchbot -f test/Dockerfile ./
   build:
     commands:
-      - docker run -t ecs-watchbot npm run test-container
+      - BUCKET_NAME=watchbot-binaries docker run -t ecs-watchbot npm run test-container

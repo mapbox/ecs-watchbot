@@ -16,6 +16,7 @@ const main = async () => {
   console.log('Pushing tag to Github');
   await wbg.exec('git push && git push --tags');
 
+  console.log('Get gitsha');
   const gitsha = await wbg.exec('git rev-parse HEAD');
   console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
 
@@ -25,11 +26,13 @@ const main = async () => {
     name: pipelineName
   }).promise();
 
+  // get branch name
   const branch = await wbg.exec('git rev-parse --abbrev-ref HEAD');
   const branchNameOverride = branch.stdout;
 
   // find the Source stage and get the actions
   const sourceAction = existingConfig.pipeline.stages[0].actions[0];
+  // Override pipeline with current branch name in order to be used for testing
   await cp.updatePipeline({
     pipeline: {
       ...existingConfig.pipeline,
