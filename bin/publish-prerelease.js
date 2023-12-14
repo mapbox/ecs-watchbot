@@ -56,7 +56,7 @@ const main = async () => {
       {
         actionName: 'Github',
         revisionType: 'COMMIT_ID',
-        revisionValue: gitsha.stdout
+        revisionValue: gitsha.stdout.split('\n')[0]
       }
     ]
   }).promise();
