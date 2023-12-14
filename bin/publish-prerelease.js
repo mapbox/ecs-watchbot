@@ -14,23 +14,22 @@ const main = async () => {
   console.log(tag.stdout);
 
   console.log('Pushing tag to Github');
-  const push = await wbg.exec('git push && git push --tags');
-  console.log(push.stdout);
+  await wbg.exec('git push && git push --tags');
 
   const gitsha = await wbg.exec('git rev-parse HEAD');
   console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
 
   const cp = new AWS.CodePipeline({});
-  // await cp.startPipelineExecution({
-  //   name: 'watchbot-pipeline',
-  //   sourceRevisions: [
-  //     {
-  //       actionName: 'Source', /* required */
-  //       revisionType: 'COMMIT_ID', /* required */
-  //       revisionValue: gitsha /* required */
-  //     }
-  //   ]
-  // });
+  await cp.startPipelineExecution({
+    name: 'watchbot-pipeline',
+    sourceRevisions: [
+      {
+        actionName: 'Github', /* required */
+        revisionType: 'COMMIT_ID', /* required */
+        revisionValue: gitsha /* required */
+      }
+    ]
+  });
 };
 
 main();
