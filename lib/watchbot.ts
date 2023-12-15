@@ -1,25 +1,37 @@
-import { Duration, RemovalPolicy, Resource } from 'aws-cdk-lib';
-import { ISecurityGroup, SubnetSelection, Vpc } from 'aws-cdk-lib/aws-ec2';
+import {aws_dynamodb, Duration, RemovalPolicy, Resource} from 'aws-cdk-lib';
+import {ISecurityGroup, SubnetSelection, Vpc} from 'aws-cdk-lib/aws-ec2';
 import {
   BaseService,
-  Cluster, ContainerDefinition, ContainerImage, HealthCheck, ICluster,
-  LogDrivers, MountPoint,
-  PropagatedTagSource, RuntimePlatform, Secret, TaskDefinition, UlimitName, Volume,
+  Cluster,
+  ContainerDefinition,
+  ContainerImage,
+  HealthCheck,
+  ICluster,
+  LogDrivers,
+  MountPoint,
+  PropagatedTagSource,
+  RuntimePlatform,
+  Secret,
+  TaskDefinition,
+  UlimitName,
+  Volume,
 } from 'aws-cdk-lib/aws-ecs';
-import { AnyPrincipal, PrincipalWithConditions } from 'aws-cdk-lib/aws-iam';
-import { CfnLogGroup, FilterPattern, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { ITopic, Topic } from 'aws-cdk-lib/aws-sns';
-import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
-import { IQueue, Queue } from 'aws-cdk-lib/aws-sqs';
-import { Construct } from 'constructs';
-import { ScalingInterval } from 'aws-cdk-lib/aws-applicationautoscaling';
+import {AnyPrincipal, PrincipalWithConditions} from 'aws-cdk-lib/aws-iam';
+import {CfnLogGroup, FilterPattern, LogGroup, RetentionDays} from 'aws-cdk-lib/aws-logs';
+import {ITopic, Topic} from 'aws-cdk-lib/aws-sns';
+import {SqsSubscription} from 'aws-cdk-lib/aws-sns-subscriptions';
+import {IQueue, Queue} from 'aws-cdk-lib/aws-sqs';
+import {Construct} from 'constructs';
+import {ScalingInterval} from 'aws-cdk-lib/aws-applicationautoscaling';
 import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
 } from './QueueProcessingFargateService';
-import { MonitoringFacade, SnsAlarmActionStrategy } from "cdk-monitoring-constructs";
+import {MonitoringFacade, SnsAlarmActionStrategy} from "cdk-monitoring-constructs";
 import * as path from "path";
-import { ComparisonOperator, Stats } from "aws-cdk-lib/aws-cloudwatch";
+import {ComparisonOperator, Stats} from "aws-cdk-lib/aws-cloudwatch";
+import {AttributeType, CfnTable} from "aws-cdk-lib/aws-dynamodb";
+
 const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 export interface WatchbotProps {
@@ -197,9 +209,26 @@ export interface WatchbotProps {
 
   readonly alarms: WatchbotAlarms;
 
-  // **** related to tables ****
-  // readCapacityUnits: 30,
-  // writeCapacityUnits: 30,
+  /**
+   * If this property is present, watchbot will run in reduce mode. Watchbot will be capable of helping track the progress of distributed map-reduce operations.
+   * @default Does not run in reduce mode
+   * @see https://github.com/mapbox/ecs-watchbot/blob/master/docs/reduce-mode.md
+   */
+  readonly reduceModeConfiguration?: {
+    /**
+     * Whether to run Watchbot in reduce mode
+     */
+    enabled: boolean;
+
+    /**
+     * @default 30
+     */
+    readCapacityUnits?: number;
+    /**
+     * @default 30
+     */
+    writeCapacityUnits?: number;
+  };
 }
 
 export type WatchbotAlarms = {
@@ -249,6 +278,7 @@ export class FargateWatchbot extends Resource {
   public readonly queueProcessingFargateService: MapboxQueueProcessingFargateService;
   public readonly topic: Topic | undefined;
   public readonly container: ContainerDefinition | undefined;
+  public readonly table: aws_dynamodb.Table;
 
   private readonly RUNBOOK: string;
 
@@ -370,6 +400,21 @@ export class FargateWatchbot extends Resource {
     }
 
     this.monitoring = this.createAlarms();
+
+    if (this.props.reduceModeConfiguration?.enabled) {
+      const table = new aws_dynamodb.Table(this, 'ProgressTable', {
+        tableName: `${this.stack.stackName}-${this.prefixed('-progress')}`.toLowerCase(),
+        readCapacity: this.props.reduceModeConfiguration.readCapacityUnits || 30,
+        writeCapacity: this.props.reduceModeConfiguration.writeCapacityUnits || 30,
+        partitionKey: {
+          name: 'id',
+          type: AttributeType.STRING
+        },
+      });
+      (table.node.defaultChild as CfnTable).overrideLogicalId('ProgressTable')
+      this.table = table;
+      this.container.addEnvironment('ProgressTable', this.table.tableArn);
+    }
   }
 
   private createAlarms() {
@@ -490,6 +535,11 @@ export class FargateWatchbot extends Resource {
       fifo: false,
       deadLetterThreshold: 10,
       retentionPeriod: Duration.days(14),
+      reduceModeConfiguration: {
+        enabled: false,
+        writeCapacityUnits: 30,
+        readCapacityUnits: 30,
+      },
     };
 
     return {

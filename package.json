@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "9.0.0",
+  "version": "10.0.0-14",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
@@ -17,10 +17,11 @@
     "pretest": "npm run lint && npm run validate-templates",
     "lint": "eslint bin lib test index.js",
     "test": "docker build -q -t ecs-watchbot -f test/Dockerfile ./ && docker run -t ecs-watchbot npm run test-container",
-    "test-container": "tape test/*.test.js && jest test/*.spec.js",
+    "test-container": "BUCKET_NAME=watchbot-binaries tape test/*.test.js && jest test/*.test.ts",
     "validate-templates": "tape test/template.validation.js",
     "update-jest-snapshots": "jest -u test/*.spec.js",
-    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html"
+    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
+    "create:prerelease": "node bin/create-prerelease.js"
   },
   "repository": {
     "type": "git",
@@ -58,7 +59,7 @@
     "@aws-cdk/aws-redshift-alpha": "^2.112.0-alpha.0",
     "@mapbox/cloudfriend": "^7.1.0",
     "@mapbox/watchbot-progress": "^1.1.7",
-    "aws-sdk": "^2.587.0",
+    "aws-sdk": "^2.1518.0",
     "binary-split": "^1.0.5",
     "cdk-monitoring-constructs": "^7.1.0",
     "fs-extra": "^8.1.0",

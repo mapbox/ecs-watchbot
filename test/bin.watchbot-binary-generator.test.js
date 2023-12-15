@@ -57,20 +57,17 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'linux/v4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-linux'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot-linux')
   }), 'uploaded linux binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'macosx/v4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-macos'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot-macos')
   }), 'uploaded macos binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'windows/v4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-win.exe'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot-win.exe')
   }), 'uploaded windows binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/v4.1.1/watchbot'), 'logged upload of linux binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/v4.1.1/watchbot'), 'logged upload of macos binary');
@@ -106,8 +103,7 @@ test('uploadBundle: tag found (Tag created using `npm version <patch|minor|major
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'alpine/v4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot')
   }), 'uploaded alpine binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/alpine/v4.1.1/watchbot'), 'logged upload of alpine binary');
 
@@ -141,20 +137,17 @@ test('uploadBundle: tag found (Tag created manually) for all except alpine', asy
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'linux/4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-linux'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot-linux')
   }), 'uploaded linux binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'macosx/4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-macos'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot-macos')
   }), 'uploaded macos binary');
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'windows/4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot-win.exe'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot-win.exe')
   }), 'uploaded windows binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/linux/4.1.1/watchbot'), 'logged upload of linux binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/macosx/4.1.1/watchbot'), 'logged upload of macos binary');
@@ -189,8 +182,7 @@ test('uploadBundle: tag found (Tag created manually) for alpine', async (assert)
   assert.ok(s3Stub.calledWith({
     Bucket: 'watchbot-binaries',
     Key: 'alpine/4.1.1/watchbot',
-    Body: fs.createReadStream('watchbot'),
-    ACL: 'public-read'
+    Body: fs.createReadStream('watchbot')
   }), 'uploaded alpine binary');
   assert.ok(log.calledWith('Uploading the package to s3://watchbot-binaries/alpine/4.1.1/watchbot'), 'logged upload of alpine binary');
   fsCreateReadStreamStub.restore();
