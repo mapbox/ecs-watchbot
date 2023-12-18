@@ -1,22 +1,38 @@
-import { Duration, RemovalPolicy, Resource } from 'aws-cdk-lib';
-import { ISecurityGroup, SubnetSelection, Vpc } from 'aws-cdk-lib/aws-ec2';
+import {aws_dynamodb, Duration, RemovalPolicy, Resource} from 'aws-cdk-lib';
+import {ISecurityGroup, SubnetSelection, Vpc} from 'aws-cdk-lib/aws-ec2';
 import {
   BaseService,
-  Cluster, ContainerDefinition, ContainerImage, HealthCheck, ICluster,
-  LogDrivers, MountPoint,
-  PropagatedTagSource, RuntimePlatform, Secret, TaskDefinition, UlimitName, Volume,
+  Cluster,
+  ContainerDefinition,
+  ContainerImage,
+  HealthCheck,
+  ICluster,
+  LogDrivers,
+  MountPoint,
+  PropagatedTagSource,
+  RuntimePlatform,
+  Secret,
+  TaskDefinition,
+  UlimitName,
+  Volume,
 } from 'aws-cdk-lib/aws-ecs';
-import { AnyPrincipal, PrincipalWithConditions } from 'aws-cdk-lib/aws-iam';
-import { CfnLogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { Topic } from 'aws-cdk-lib/aws-sns';
-import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
-import { IQueue, Queue } from 'aws-cdk-lib/aws-sqs';
-import { Construct } from 'constructs';
-import { ScalingInterval } from 'aws-cdk-lib/aws-applicationautoscaling';
+import {AnyPrincipal, PrincipalWithConditions} from 'aws-cdk-lib/aws-iam';
+import {CfnLogGroup, FilterPattern, LogGroup, RetentionDays} from 'aws-cdk-lib/aws-logs';
+import {ITopic, Topic} from 'aws-cdk-lib/aws-sns';
+import {SqsSubscription} from 'aws-cdk-lib/aws-sns-subscriptions';
+import {IQueue, Queue} from 'aws-cdk-lib/aws-sqs';
+import {Construct} from 'constructs';
+import {ScalingInterval} from 'aws-cdk-lib/aws-applicationautoscaling';
 import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
 } from './QueueProcessingFargateService';
+import {MonitoringFacade, SnsAlarmActionStrategy} from "cdk-monitoring-constructs";
+import * as path from "path";
+import {ComparisonOperator, Stats} from "aws-cdk-lib/aws-cloudwatch";
+import {AttributeType, CfnTable} from "aws-cdk-lib/aws-dynamodb";
+
+const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 export interface WatchbotProps {
   /**
@@ -40,7 +56,7 @@ export interface WatchbotProps {
    * The secret to expose to the container as an environment variable.
    * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#secrets
    */
-  readonly secrets?: {[key: string]: Secret}
+  readonly secrets?: Record<string, Secret>
 
   /**
    * The health check command and associated configuration parameters for the container.
@@ -190,18 +206,63 @@ export interface WatchbotProps {
    * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#minscalingcapacity
    */
   readonly minScalingCapacity?: number;
-  // **** related to tables ****
-  // readCapacityUnits: 30,
-  // writeCapacityUnits: 30,
 
+  readonly alarms: WatchbotAlarms;
 
-  // watchbotVersion: 'v' + pkg.version,
-  // **** related to alarms ****
-  // errorThreshold: 10,
-  // alarmThreshold: 40,
-  // alarmPeriods: 24,
-  // deadletterAlarm: true,
-  // dashboard: true,
+  /**
+   * If this property is present, watchbot will run in reduce mode. Watchbot will be capable of helping track the progress of distributed map-reduce operations.
+   * @default Does not run in reduce mode
+   * @see https://github.com/mapbox/ecs-watchbot/blob/master/docs/reduce-mode.md
+   */
+  readonly reduceModeConfiguration?: {
+    /**
+     * Whether to run Watchbot in reduce mode
+     */
+    enabled: boolean;
+
+    /**
+     * @default 30
+     */
+    readCapacityUnits?: number;
+    /**
+     * @default 30
+     */
+    writeCapacityUnits?: number;
+  };
+}
+
+export type WatchbotAlarms = {
+  /**
+   * SNS topic to send alarm actions to. In most cases, you'll need to get the topic ARN using mapbox-cdk-common ArnUtility.getOncallArn() then import that in CDK using `Topic.fromTopicArn`.
+   */
+  action: ITopic;
+
+  /**
+   * @default { threshold: 100, period: Duration.minutes(1), evaluationPeriods: 10 }
+   */
+  memoryUtilization?: AlarmProps;
+  /**
+   * @default { threshold: 90, period: Duration.minutes(1), evaluationPeriods: 10 }
+   */
+  cpuUtilization?: AlarmProps;
+  /**
+   * @default { threshold: 40, period: Duration.minutes(5), evaluationPeriods: 24 }
+   */
+  queueSize?: AlarmProps;
+  /**
+   * @default { threshold: 10, period: Duration.minutes(1), evaluationPeriods: 1 }
+   */
+  dlqSize?: AlarmProps;
+  /**
+   * @default { threshold: 10, period: Duration.minutes(1), evaluationPeriods: 1 }
+   */
+  workersErrors?: AlarmProps;
+}
+
+export type AlarmProps = {
+  threshold?: number;
+  evaluationPeriods?: number;
+  period?: Duration;
 }
 
 export class FargateWatchbot extends Resource {
@@ -213,11 +274,18 @@ export class FargateWatchbot extends Resource {
   public readonly logGroup: LogGroup;
   public readonly queue: IQueue;
   public readonly deadLetterQueue: IQueue;
-  public topic: Topic | undefined;
-  public container: ContainerDefinition | undefined;
+  public readonly monitoring: MonitoringFacade;
+  public readonly queueProcessingFargateService: MapboxQueueProcessingFargateService;
+  public readonly topic: Topic | undefined;
+  public readonly container: ContainerDefinition | undefined;
+  public readonly table: aws_dynamodb.Table;
+
+  private readonly RUNBOOK: string;
 
   constructor(scope: Construct, id: string, props: WatchbotProps) {
     super(scope, id);
+
+    this.RUNBOOK = `https://github.com/mapbox/ecs-watchbot/blob/${pkg.version}/docs/alarms.md`;
 
     this.props = this.mergePropsWithDefaults(id, props);
 
@@ -301,9 +369,9 @@ export class FargateWatchbot extends Resource {
       assignPublicIp: this.props.publicIP,
       securityGroups: this.props.securityGroups,
     }
-    const queueProcessingFargateService = new MapboxQueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
-    this.service = queueProcessingFargateService.service;
-    this.taskDefinition = queueProcessingFargateService.taskDefinition;
+    this.queueProcessingFargateService = new MapboxQueueProcessingFargateService(this, 'Service', queueProcessingFargateServiceProps);
+    this.service = this.queueProcessingFargateService.service;
+    this.taskDefinition = this.queueProcessingFargateService.taskDefinition;
 
     this.container = this.taskDefinition.findContainer(this.props.containerName || '');
     if (this.container) {
@@ -330,6 +398,107 @@ export class FargateWatchbot extends Resource {
       this.topic.grantPublish(this.taskDefinition.taskRole);
       this.container.addEnvironment('WorkTopic', this.topic.topicArn)
     }
+
+    this.monitoring = this.createAlarms();
+
+    if (this.props.reduceModeConfiguration?.enabled) {
+      const table = new aws_dynamodb.Table(this, 'ProgressTable', {
+        tableName: `${this.stack.stackName}-${this.prefixed('-progress')}`.toLowerCase(),
+        readCapacity: this.props.reduceModeConfiguration.readCapacityUnits || 30,
+        writeCapacity: this.props.reduceModeConfiguration.writeCapacityUnits || 30,
+        partitionKey: {
+          name: 'id',
+          type: AttributeType.STRING
+        },
+      });
+      (table.node.defaultChild as CfnTable).overrideLogicalId('ProgressTable')
+      this.table = table;
+      this.container.addEnvironment('ProgressTable', this.table.tableArn);
+    }
+  }
+
+  private createAlarms() {
+    const monitoring = new MonitoringFacade(this, 'Monitoring', {
+      alarmFactoryDefaults: {
+        alarmNamePrefix: this.prefixed(''),
+        actionsEnabled: true,
+        action: new SnsAlarmActionStrategy({ onAlarmTopic: this.props.alarms.action })
+      }
+    });
+
+    const workersErrorsMetric = this.logGroup.addMetricFilter(this.prefixed('WorkerErrorsMetric'), {
+      metricName: `${this.prefixed('WorkerErrors')}-${this.stack.stackName}`,
+      metricNamespace: 'Mapbox/ecs-watchbot',
+      metricValue: '1',
+      filterPattern: FilterPattern.anyTerm('"[failure]"')
+    }).metric({
+      statistic: Stats.SUM,
+    });
+
+    monitoring
+        .addLargeHeader(this.prefixed(this.stack.stackName))
+        .monitorQueueProcessingFargateService({
+          fargateService: this.queueProcessingFargateService,
+          addServiceAlarms: {
+            addMemoryUsageAlarm: {
+              memoryUsage: {
+                runbookLink: `${this.RUNBOOK}#memoryutilization`,
+                maxUsagePercent: this.props.alarms.memoryUtilization?.threshold || 100,
+                period: this.props.alarms.memoryUtilization?.period || Duration.minutes(1),
+                evaluationPeriods: this.props.alarms.memoryUtilization?.evaluationPeriods || 10,
+              }
+            },
+            addCpuUsageAlarm: {
+              cpu: {
+                runbookLink: `${this.RUNBOOK}#CpuUtilization`,
+                maxUsagePercent: this.props.alarms.cpuUtilization?.threshold || 90,
+                period: this.props.alarms.cpuUtilization?.period || Duration.minutes(1),
+                evaluationPeriods: this.props.alarms.cpuUtilization?.evaluationPeriods || 10,
+              }
+            }
+          }
+        }).monitorSqsQueueWithDlq({
+          queue: this.queue,
+          deadLetterQueue: this.deadLetterQueue,
+          addQueueMaxSizeAlarm: {
+            maxSize: {
+              runbookLink: `${this.RUNBOOK}#QueueSize`,
+              maxMessageCount: this.props.alarms.queueSize?.threshold || 40,
+              period: this.props.alarms.queueSize?.period || Duration.minutes(5),
+              evaluationPeriods: this.props.alarms.queueSize?.evaluationPeriods || 24,
+            }
+          },
+          addDeadLetterQueueMaxSizeAlarm: {
+            maxSize: {
+              runbookLink: `${this.RUNBOOK}#DeadLetterQueueSize`,
+              maxMessageCount: this.props.alarms.dlqSize?.threshold || 10,
+              period: this.props.alarms.dlqSize?.period || Duration.minutes(1),
+              evaluationPeriods: this.props.alarms.dlqSize?.evaluationPeriods || 1,
+              datapointsToAlarm: this.props.alarms.dlqSize?.evaluationPeriods || 1, // match evaluationPeriods
+            }
+          }
+        }).monitorCustom({
+          addToAlarmDashboard: true,
+          alarmFriendlyName: `worker-errors-${this.stack.region}`,
+          metricGroups: [{
+            title: 'Worker Errors',
+            metrics: [{
+              alarmFriendlyName: `worker-errors-${this.stack.region}`,
+              metric: workersErrorsMetric,
+              addAlarm: {
+                error: {
+                  threshold: this.props.alarms.workersErrors?.threshold || 10,
+                  evaluationPeriods: this.props.alarms.workersErrors?.evaluationPeriods || 1,
+                  datapointsToAlarm: this.props.alarms.workersErrors?.evaluationPeriods || 1, // match evaluationPeriods
+                  period: this.props.alarms.workersErrors?.period || Duration.minutes(1),
+                  comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+                  runbookLink: `${this.RUNBOOK}#workererrors`,
+                }
+              },
+            }]
+          }]
+        });
+    return monitoring;
   }
 
   private prefixed = (name: string) => `${this.props.prefix}${name}`;
@@ -346,7 +515,7 @@ export class FargateWatchbot extends Resource {
       cluster: Cluster.fromClusterAttributes(this, `${id}Cluster`, {
         clusterName: `fargate-processing-${props.deploymentEnvironment}`,
         vpc: Vpc.fromLookup(this, `${id}VPC`, {
-          vpcId: 'vpc-id'
+          vpcId: 'vpc-id' // TODO update
         })
       }),
 
@@ -366,6 +535,11 @@ export class FargateWatchbot extends Resource {
       fifo: false,
       deadLetterThreshold: 10,
       retentionPeriod: Duration.days(14),
+      reduceModeConfiguration: {
+        enabled: false,
+        writeCapacityUnits: 30,
+        readCapacityUnits: 30,
+      },
     };
 
     return {
