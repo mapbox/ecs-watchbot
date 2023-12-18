@@ -32,7 +32,10 @@ test('[logger] constructor', (assert) => {
     'throws error on invalid message'
   );
 
-  assert.doesNotThrow(() => new Logger({ type: 'watcher', structuredLogging: true }), 'message is not required');
+  assert.doesNotThrow(
+    () => new Logger({ type: 'watcher', structuredLogging: true }),
+    'message is not required'
+  );
 
   const logger = new Logger({ type: 'worker', structuredLogging: true }, message);
 
@@ -51,12 +54,8 @@ test('[logger] factory', (assert) => {
 });
 
 test('[logger] messageReceived', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger({ type: 'watcher', structuredLogging: true }, message);
@@ -66,9 +65,17 @@ test('[logger] messageReceived', (assert) => {
   delete data.pid;
   assert.same(
     data,
-    { v: 0, level: 30, name: 'watcher', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', subject: 'one', message: '1',
-      receives: '3' },
+    {
+      v: 0,
+      level: 30,
+      name: 'watcher',
+      hostname: 'my-hostname',
+      time: '2021-11-09T06:43:12.123Z',
+      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+      subject: 'one',
+      message: '1',
+      receives: '3'
+    },
     'expected message'
   );
 
@@ -79,12 +86,8 @@ test('[logger] messageReceived', (assert) => {
 });
 
 test('[logger] workerSuccess', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger({ type: 'watcher', structuredLogging: true }, message);
@@ -94,9 +97,18 @@ test('[logger] workerSuccess', (assert) => {
   delete data.pid;
   assert.same(
     data,
-    { v: 0, level: 30, name: 'watcher', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', worker_event: 'success',
-      code: 0, duration: 12345, response_duration: 12345 },
+    {
+      v: 0,
+      level: 30,
+      name: 'watcher',
+      hostname: 'my-hostname',
+      time: '2021-11-09T06:43:12.123Z',
+      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+      worker_event: 'success',
+      code: 0,
+      duration: 12345,
+      response_duration: 12345
+    },
     'expected message'
   );
 
@@ -107,24 +119,35 @@ test('[logger] workerSuccess', (assert) => {
 });
 
 test('[logger] workerFailure', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger({ type: 'watcher', structuredLogging: true }, message);
-  logger.workerFailure({ code: 124, signal: 'SIGTERM', duration: 12345, response_duration: 12345 });
+  logger.workerFailure({
+    code: 124,
+    signal: 'SIGTERM',
+    duration: 12345,
+    response_duration: 12345
+  });
 
   const data = JSON.parse(process.stdout.write.args[0][0]);
   delete data.pid;
   assert.same(
     data,
-    { v: 0, level: 30, name: 'watcher', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', worker_event: 'failure', code: 124,
-      signal: 'SIGTERM', duration: 12345, response_duration: 12345 },
+    {
+      v: 0,
+      level: 30,
+      name: 'watcher',
+      hostname: 'my-hostname',
+      time: '2021-11-09T06:43:12.123Z',
+      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+      worker_event: 'failure',
+      code: 124,
+      signal: 'SIGTERM',
+      duration: 12345,
+      response_duration: 12345
+    },
     'expected message'
   );
 
@@ -135,12 +158,8 @@ test('[logger] workerFailure', (assert) => {
 });
 
 test('[logger] workerError', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger({ type: 'watcher', structuredLogging: true }, message);
@@ -150,9 +169,17 @@ test('[logger] workerError', (assert) => {
   delete data.pid;
   assert.same(
     data,
-    { v: 0, level: 50, name: 'watcher', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', worker_event: 'error',
-      msg: 'foo', err: {} },
+    {
+      v: 0,
+      level: 50,
+      name: 'watcher',
+      hostname: 'my-hostname',
+      time: '2021-11-09T06:43:12.123Z',
+      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+      worker_event: 'error',
+      msg: 'foo',
+      err: {}
+    },
     'expected message'
   );
 
@@ -163,12 +190,8 @@ test('[logger] workerError', (assert) => {
 });
 
 test('[logger] queueError', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger({ type: 'watcher', structuredLogging: true });
@@ -178,8 +201,16 @@ test('[logger] queueError', (assert) => {
   delete data.pid;
   assert.same(
     data,
-    { v: 0, level: 50, name: 'watcher', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-      sqs_event: 'error', msg: 'foo', err: {} },
+    {
+      v: 0,
+      level: 50,
+      name: 'watcher',
+      hostname: 'my-hostname',
+      time: '2021-11-09T06:43:12.123Z',
+      sqs_event: 'error',
+      msg: 'foo',
+      err: {}
+    },
     'expected message'
   );
 
@@ -190,12 +221,8 @@ test('[logger] queueError', (assert) => {
 });
 
 test('[logger] log', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   let logger = new Logger({ type: 'worker', structuredLogging: true }, message);
@@ -206,8 +233,15 @@ test('[logger] log', (assert) => {
   process.stdout.write.restore();
   assert.same(
     data,
-    { v: 0, level: 30, name: 'worker', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', msg: 'hello there' },
+    {
+      v: 0,
+      level: 30,
+      name: 'worker',
+      hostname: 'my-hostname',
+      time: '2021-11-09T06:43:12.123Z',
+      watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+      msg: 'hello there'
+    },
     'prefixed with timestamp, type, and message id'
   );
 
@@ -219,8 +253,14 @@ test('[logger] log', (assert) => {
   delete data.pid;
   assert.same(
     data,
-    { v:0, 'level':30, name: 'watcher',  hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-      msg: 'ok then' },
+    {
+      v: 0,
+      level: 30,
+      name: 'watcher',
+      hostname: 'my-hostname',
+      time: '2021-11-09T06:43:12.123Z',
+      msg: 'ok then'
+    },
     'prefixed with timestamp, and type'
   );
 
@@ -231,12 +271,8 @@ test('[logger] log', (assert) => {
 });
 
 test('[logger] stream', async (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger({ type: 'worker', structuredLogging: true }, message);
@@ -252,15 +288,29 @@ test('[logger] stream', async (assert) => {
       process.stdout.write.restore();
       assert.same(
         first,
-        { v: 0, level: 30, name: 'worker', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', msg: 'hello there' },
+        {
+          v: 0,
+          level: 30,
+          name: 'worker',
+          hostname: 'my-hostname',
+          time: '2021-11-09T06:43:12.123Z',
+          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+          msg: 'hello there'
+        },
         'prefixed first line with timestamp, type, and message id'
       );
 
       assert.same(
         second,
-        { v: 0, level: 30, name: 'worker', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', msg: 'how are you' },
+        {
+          v: 0,
+          level: 30,
+          name: 'worker',
+          hostname: 'my-hostname',
+          time: '2021-11-09T06:43:12.123Z',
+          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+          msg: 'how are you'
+        },
         'splits on newline, prefixed second line with timestamp, type, and message id'
       );
 
@@ -272,12 +322,8 @@ test('[logger] stream', async (assert) => {
 });
 
 test('[logger] stream with JSON output', async (assert) => {
-  sinon
-    .stub(Date.prototype, 'toISOString')
-    .returns('2021-11-09T06:43:12.123Z');
-  sinon
-    .stub(os, 'hostname')
-    .returns('my-hostname');
+  sinon.stub(Date.prototype, 'toISOString').returns('2021-11-09T06:43:12.123Z');
+  sinon.stub(os, 'hostname').returns('my-hostname');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger({ type: 'worker', structuredLogging: true }, message);
@@ -293,15 +339,30 @@ test('[logger] stream with JSON output', async (assert) => {
       process.stdout.write.restore();
       assert.same(
         first,
-        { v: 0, level: 30, name: 'worker', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', id: 123, content: 'asdf' },
+        {
+          v: 0,
+          level: 30,
+          name: 'worker',
+          hostname: 'my-hostname',
+          time: '2021-11-09T06:43:12.123Z',
+          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+          id: 123,
+          content: 'asdf'
+        },
         'prefixed first line with timestamp, type, and message id, JSON output merged'
       );
 
       assert.same(
         second,
-        { v: 0, level: 30, name: 'worker', hostname: 'my-hostname', time: '2021-11-09T06:43:12.123Z',
-          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46', msg: 'how are you' },
+        {
+          v: 0,
+          level: 30,
+          name: 'worker',
+          hostname: 'my-hostname',
+          time: '2021-11-09T06:43:12.123Z',
+          watchbot_sqs_message_id: '895ab607-3767-4bbb-bd45-2a3b341cbc46',
+          msg: 'how are you'
+        },
         'splits on newline, prefixed second line with timestamp, type, and message id, msg property'
       );
 

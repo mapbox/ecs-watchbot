@@ -42,19 +42,11 @@ const Resources = {
               {
                 Effect: 'Allow',
                 Action: 'logs:*',
-                Resource: [
-                  cf.getAtt('BundlerLogs', 'Arn'),
-                  cf.getAtt('AlpineBundlerLogs', 'Arn')
-                ]
+                Resource: [cf.getAtt('BundlerLogs', 'Arn'), cf.getAtt('AlpineBundlerLogs', 'Arn')]
               },
               {
                 Effect: 'Allow',
-                Action: [
-                  's3:ListBucket',
-                  's3:GetObject',
-                  's3:PutObject',
-                  's3:PutObjectAcl'
-                ],
+                Action: ['s3:ListBucket', 's3:GetObject', 's3:PutObject', 's3:PutObjectAcl'],
                 Resource: [
                   cf.sub('arn:${AWS::Partition}:s3:::watchbot-binaries'),
                   cf.sub('arn:${AWS::Partition}:s3:::watchbot-binaries/*')
@@ -62,11 +54,12 @@ const Resources = {
               },
               {
                 Effect: 'Allow',
-                Action: [
-                  'secretsmanager:GetSecretValue'
-                ],
+                Action: ['secretsmanager:GetSecretValue'],
                 Resource: [
-                  cf.arn('secretsmanager', 'secret:general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/*')
+                  cf.arn(
+                    'secretsmanager',
+                    'secret:general/dockerhub/mapboxmachinereadonly/ecs-watchbot-ci/*'
+                  )
                 ]
               }
             ]
@@ -172,11 +165,7 @@ const Resources = {
               },
               {
                 Effect: 'Allow',
-                Action: [
-                  'codebuild:StartBuild',
-                  'codebuild:BatchGetBuilds',
-                  'iam:PassRole'
-                ],
+                Action: ['codebuild:StartBuild', 'codebuild:BatchGetBuilds', 'iam:PassRole'],
                 Resource: '*'
               }
             ]
@@ -226,9 +215,7 @@ const Resources = {
                 Version: '1',
                 Provider: 'GitHub'
               },
-              OutputArtifacts: [
-                { Name: 'Source' }
-              ],
+              OutputArtifacts: [{ Name: 'Source' }],
               Configuration: {
                 Owner: 'mapbox',
                 Repo: 'ecs-watchbot',
@@ -250,9 +237,7 @@ const Resources = {
                 Version: '1',
                 Provider: 'CodeBuild'
               },
-              InputArtifacts: [
-                { Name: 'Source' }
-              ],
+              InputArtifacts: [{ Name: 'Source' }],
               Configuration: {
                 ProjectName: cf.ref('Bundler')
               }
@@ -265,9 +250,7 @@ const Resources = {
                 Version: '1',
                 Provider: 'CodeBuild'
               },
-              InputArtifacts: [
-                { Name: 'Source' }
-              ],
+              InputArtifacts: [{ Name: 'Source' }],
               Configuration: {
                 ProjectName: cf.ref('AlpineBundler')
               }

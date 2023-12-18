@@ -14,11 +14,7 @@ const Logger = require('../lib/logger');
 const stubber = require('./stubber');
 
 test('[worker] constructor', (assert) => {
-  assert.throws(
-    () => new Worker(),
-    /Invalid Message object/,
-    'must provide a message object'
-  );
+  assert.throws(() => new Worker(), /Invalid Message object/, 'must provide a message object');
 
   assert.throws(
     () => new Worker({}),
@@ -33,7 +29,10 @@ test('[worker] constructor', (assert) => {
   );
 
   const message = sinon.createStubInstance(Message);
-  const worker = new Worker(message, { command: 'echo hello world', volumes: ['/tmp'] });
+  const worker = new Worker(message, {
+    command: 'echo hello world',
+    volumes: ['/tmp']
+  });
 
   assert.equal(worker.message, message, 'sets .message');
   assert.equal(worker.command, 'echo hello world', 'sets .command');
@@ -55,7 +54,12 @@ test('[worker] fail', async (assert) => {
   const options = { command: 'echo hello world', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
-  const results = { code: 124, signal: 'SIGTERM', duration: 12345, response_duration: 12345 };
+  const results = {
+    code: 124,
+    signal: 'SIGTERM',
+    duration: 12345,
+    response_duration: 12345
+  };
   await worker.fail(results);
 
   assert.ok(logger.workerFailure.calledWith(results), 'logs worker failure');
@@ -115,14 +119,15 @@ test('[worker] success', async (assert) => {
 });
 
 test.skip('[worker] waitFor, exit 0', async (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
 
   const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.id = '895ab607-3767-4bbb-bd45-2a3b341cbc46';
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
 
   const fakeEnv = new FakeEnv({
     fake: 'environment'
@@ -130,7 +135,6 @@ test.skip('[worker] waitFor, exit 0', async (assert) => {
 
   const options = { command: 'echo ${Message}', volumes: ['/tmp', '/var/tmp'] };
   const worker = new Worker(message, options);
-
 
   sinon.spy(child_process, 'spawn');
   sinon.spy(process.stdout, 'write');
@@ -181,21 +185,25 @@ test.skip('[worker] waitFor, exit 0', async (assert) => {
 });
 
 test.skip('[worker] waitFor, write to /tmp, exit 0', async (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
 
   const logger = stubber(Logger).setup();
   const message = sinon.createStubInstance(Message);
   message.id = '895ab607-3767-4bbb-bd45-2a3b341cbc46';
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
 
   logger.log.restore();
   logger.stream.restore();
   logger.type = 'worker';
   logger.message = message;
 
-  const options = { command: 'echo ${Message} > /tmp/banana.txt && cat /tmp/banana.txt', volumes: ['/tmp'] };
+  const options = {
+    command: 'echo ${Message} > /tmp/banana.txt && cat /tmp/banana.txt',
+    volumes: ['/tmp']
+  };
   const worker = new Worker(message, options);
 
   const fakeEnv = new FakeEnv({
@@ -252,7 +260,10 @@ test.skip('[worker] waitFor, exit 1', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
   const options = { command: 'exit 1', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
@@ -280,7 +291,10 @@ test.skip('[worker] waitFor, exit 3', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
   const options = { command: 'exit 3', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
@@ -308,7 +322,10 @@ test.skip('[worker] waitFor, exit 4', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
   const options = { command: 'exit 4', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
 
@@ -336,15 +353,26 @@ test.skip('[worker] waitFor, child_process.spawn failure', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
   const options = { command: 'echo ${Message}', volumes: ['/tmp'] };
   const worker = new Worker(message, options);
   const err = new Error('foo');
 
   sinon.stub(child_process, 'spawn').callsFake(() => {
     const p = new events.EventEmitter();
-    p.stdout = new stream.Readable({ read: function() { this.push(null); } });
-    p.stderr = new stream.Readable({ read: function() { this.push(null); } });
+    p.stdout = new stream.Readable({
+      read: function () {
+        this.push(null);
+      }
+    });
+    p.stderr = new stream.Readable({
+      read: function () {
+        this.push(null);
+      }
+    });
     setImmediate(() => p.emit('error', err));
     return p;
   });
@@ -368,12 +396,16 @@ test.skip('[worker] waitFor, 0 maxJobDuration 2 second task success', async (ass
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
 
   const options = {
     command: 'sleep 2; exit 0',
     volumes: ['/tmp'],
-    maxJobDuration: 0 };
+    maxJobDuration: 0
+  };
   const worker = new Worker(message, options);
 
   sinon.spy(child_process, 'spawn');
@@ -400,12 +432,16 @@ test.skip('[worker] waitFor, 2 second task completes', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
 
   const options = {
     command: 'sleep 2; exit 0',
     volumes: ['/tmp'],
-    maxJobDuration: 3 };
+    maxJobDuration: 3
+  };
   const worker = new Worker(message, options);
 
   sinon.spy(child_process, 'spawn');
@@ -432,12 +468,16 @@ test.skip('[worker] waitFor, timeout error', async (assert) => {
   logger.log.restore();
   logger.stream.restore();
   const message = sinon.createStubInstance(Message);
-  message.env = { Message: 'banana', SentTimestamp: '2019-02-09T21:57:55.000Z' };
+  message.env = {
+    Message: 'banana',
+    SentTimestamp: '2019-02-09T21:57:55.000Z'
+  };
 
   const options = {
     command: 'while true; do echo ${Message}; sleep 2; done;',
     volumes: ['/tmp'],
-    maxJobDuration: 3 };
+    maxJobDuration: 3
+  };
   const worker = new Worker(message, options);
 
   sinon.spy(child_process, 'spawn');

@@ -2,7 +2,11 @@
 
 const test = require('tape');
 const { mockClient } = require('aws-sdk-client-mock');
-const { SQSClient, DeleteMessageCommand, ChangeMessageVisibilityCommand } = require('@aws-sdk/client-sqs');
+const {
+  SQSClient,
+  DeleteMessageCommand,
+  ChangeMessageVisibilityCommand
+} = require('@aws-sdk/client-sqs');
 const sqsMock = mockClient(SQSClient);
 const Message = require('../lib/message');
 const Logger = require('../lib/logger');
@@ -21,7 +25,6 @@ const sqsMessage = {
 };
 
 test('[message] constructor', (assert) => {
-
   assert.throws(
     () => new Message({ MessageId: 'a' }),
     /Invalid SQS message object/,
@@ -71,7 +74,6 @@ test('[message] constructor', (assert) => {
 });
 
 test('[message] constructor with SQS FIFO non-JSON message', (assert) => {
-
   const sqsFifoMessage = Object.assign({}, sqsMessage, {
     Body: 'fake-message-body'
   });
@@ -93,7 +95,6 @@ test('[message] constructor with SQS FIFO non-JSON message', (assert) => {
 });
 
 test('[message] constructor with SQS FIFO JSON message', (assert) => {
-
   const sqsFifoMessage = Object.assign({}, sqsMessage, {
     Body: '{ "a": 1, "b": 2 }'
   });
@@ -142,11 +143,19 @@ test('[message] retry', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
-    ReceiptHandle: 'a',
-    VisibilityTimeout: 8
-  }, true).length, 1, 'returns message to queue with backoff on visibility timeout');
+  assert.equal(
+    sqsMock.commandCalls(
+      ChangeMessageVisibilityCommand,
+      {
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
+        ReceiptHandle: 'a',
+        VisibilityTimeout: 8
+      },
+      true
+    ).length,
+    1,
+    'returns message to queue with backoff on visibility timeout'
+  );
 
   sqsMock.reset();
   assert.end();
@@ -209,10 +218,18 @@ test('[message] complete', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(sqsMock.commandCalls(DeleteMessageCommand, {
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
-    ReceiptHandle: 'a'
-  }, true).length, 1, 'removed message from queue');
+  assert.equal(
+    sqsMock.commandCalls(
+      DeleteMessageCommand,
+      {
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
+        ReceiptHandle: 'a'
+      },
+      true
+    ).length,
+    1,
+    'removed message from queue'
+  );
 
   sqsMock.reset();
   assert.end();
@@ -249,11 +266,19 @@ test('[message] heartbeat', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(sqsMock.commandCalls(ChangeMessageVisibilityCommand, {
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
-    ReceiptHandle: 'a',
-    VisibilityTimeout: 180
-  }, true).length, 1, 'heartbeat sets message visibilityTimeout to 3 minutes');
+  assert.equal(
+    sqsMock.commandCalls(
+      ChangeMessageVisibilityCommand,
+      {
+        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
+        ReceiptHandle: 'a',
+        VisibilityTimeout: 180
+      },
+      true
+    ).length,
+    1,
+    'heartbeat sets message visibilityTimeout to 3 minutes'
+  );
 
   sqsMock.reset();
   assert.end();

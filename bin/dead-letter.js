@@ -3,7 +3,7 @@
 
 /* eslint-disable no-console */
 
-const { CloudFormation } = require('@aws-sdk/client-cloudformation')
+const { CloudFormation } = require('@aws-sdk/client-cloudformation');
 const { SQS } = require('@aws-sdk/client-sqs');
 const inquirer = require('inquirer');
 const stream = require('stream');
@@ -14,21 +14,24 @@ const meow = require('meow');
 const split = require('binary-split');
 
 const main = async () => {
-  const cli = meow({
-    help: `
+  const cli = meow(
+    {
+      help: `
       USAGE: watchbot-dead-letter [OPTIONS]
       Options:
         -h, --help          show this help message
         -s, --stack-name    the full name of a watchbot stack
         -r, --region        the region of the stack (default us-east-1)
     `,
-    description: 'Helper utilities for interacting with watchbot dead letter queues'
-  }, {
-    flags: {
-      stackName: { alias: 's' },
-      region: { alias: 'r', default: 'us-east-1' }
+      description: 'Helper utilities for interacting with watchbot dead letter queues'
+    },
+    {
+      flags: {
+        stackName: { alias: 's' },
+        region: { alias: 'r', default: 'us-east-1' }
+      }
     }
-  });
+  );
   cli.flags.stackName = cli.flags.stackName || cli.flags.s;
   cli.flags.region = cli.flags.region || cli.flags.r || 'us-east-1';
 
@@ -51,35 +54,35 @@ async function findQueues(cfn, options) {
   if (!res.Stacks[0]) {
     throw new Error(`Could not find ${options.stackName} in ${options.region}`);
   }
-  const deadLetterQueues = res.Stacks[0].Outputs
-    .filter((o) => /DeadLetterQueueUrl/.test(o.OutputKey))
-    .map((o) => ({
-      prefix: o.OutputKey.replace('DeadLetterQueueUrl', ''),
-      url: o.OutputValue
-    }));
+  const deadLetterQueues = res.Stacks[0].Outputs.filter((o) =>
+    /DeadLetterQueueUrl/.test(o.OutputKey)
+  ).map((o) => ({
+    prefix: o.OutputKey.replace('DeadLetterQueueUrl', ''),
+    url: o.OutputValue
+  }));
 
-  const workQueues = res.Stacks[0].Outputs
-    .filter((o) => /QueueUrl/.test(o.OutputKey) && !/DeadLetterQueueUrl/.test(o.OutputKey))
-    .map((o) => ({
-      prefix: o.OutputKey.replace('QueueUrl', ''),
-      url: o.OutputValue
-    }));
-  const logGroups = res.Stacks[0].Outputs
-    .filter((o) => /LogGroup/.test(o.OutputKey))
-    .map((o) => ({
-      prefix: o.OutputKey.replace('LogGroup', ''),
-      arn: o.OutputValue
-    }));
+  const workQueues = res.Stacks[0].Outputs.filter(
+    (o) => /QueueUrl/.test(o.OutputKey) && !/DeadLetterQueueUrl/.test(o.OutputKey)
+  ).map((o) => ({
+    prefix: o.OutputKey.replace('QueueUrl', ''),
+    url: o.OutputValue
+  }));
+  const logGroups = res.Stacks[0].Outputs.filter((o) => /LogGroup/.test(o.OutputKey)).map((o) => ({
+    prefix: o.OutputKey.replace('LogGroup', ''),
+    arn: o.OutputValue
+  }));
 
   return { deadLetterQueues, workQueues, logGroups };
 }
 
 async function selectQueue(queues) {
-  if (queues.deadLetterQueues.length === 1) return {
-    deadLetter: queues.deadLetterQueues[0].url,
-    work: queues.workQueues.find((queue) => queue.prefix === queues.deadLetterQueues[0].prefix).url,
-    logs: queues.logGroups.find((group) => group.prefix === queues.deadLetterQueues[0].prefix).arn
-  };
+  if (queues.deadLetterQueues.length === 1)
+    return {
+      deadLetter: queues.deadLetterQueues[0].url,
+      work: queues.workQueues.find((queue) => queue.prefix === queues.deadLetterQueues[0].prefix)
+        .url,
+      logs: queues.logGroups.find((group) => group.prefix === queues.deadLetterQueues[0].prefix).arn
+    };
 
   const answers = await inquirer.prompt({
     type: 'list',
@@ -110,7 +113,6 @@ async function triageSelection(queue) {
     ]
   });
 
-
   return { queue, action: answers.action };
 }
 
@@ -118,11 +120,11 @@ async function purge(sqs, queue) {
   const answers = await inquirer.prompt({
     type: 'confirm',
     name: 'purge',
-    message: 'You are about to remove all jobs from the dead letter queue permanently. Are you sure?'
+    message:
+      'You are about to remove all jobs from the dead letter queue permanently. Are you sure?'
   });
 
-  if (answers.purge)
-    return await sqs.purgeQueue({ QueueUrl: queue.deadLetter });
+  if (answers.purge) return await sqs.purgeQueue({ QueueUrl: queue.deadLetter });
 
   return Promise.resolve();
 }
@@ -132,7 +134,7 @@ async function writeOut(sqs, queue) {
 
   const stringifier = new stream.Transform({
     objectMode: true,
-    transform: function(msg, _, callback) {
+    transform: function (msg, _, callback) {
       let data = msg.body;
       if (msg.subject && msg.message) {
         data = { subject: msg.subject, message: msg.message };
@@ -154,10 +156,7 @@ async function writeOut(sqs, queue) {
       }
     };
 
-    receiver
-      .pipe(stringifier)
-      .on('end', done)
-      .pipe(process.stdout);
+    receiver.pipe(stringifier).on('end', done).pipe(process.stdout);
   });
 }
 
@@ -165,7 +164,8 @@ async function replay(sqs, queue) {
   const answers = await inquirer.prompt({
     type: 'confirm',
     name: 'replayAll',
-    message: 'You are about to return all messages in the dead letter queue to the work queue. Are you sure?'
+    message:
+      'You are about to return all messages in the dead letter queue to the work queue. Are you sure?'
   });
 
   if (!answers.replayAll) return Promise.resolve();
@@ -178,7 +178,7 @@ async function replay(sqs, queue) {
 
   const replayer = new stream.Writable({
     objectMode: true,
-    write: async function(msg, _, callback) {
+    write: async function (msg, _, callback) {
       try {
         await replayOne(sqs, queue.work, msg);
         await deleteOne(sqs, queue.deadLetter, msg);
@@ -190,11 +190,7 @@ async function replay(sqs, queue) {
   });
 
   await new Promise((resolve, reject) => {
-    receiver
-      .on('error', reject)
-      .pipe(replayer)
-      .on('error', reject)
-      .on('finish', resolve);
+    receiver.on('error', reject).pipe(replayer).on('error', reject).on('finish', resolve);
   });
 
   return spinner.stop(true);
@@ -216,9 +212,12 @@ async function triagePrompts(sqs, queue, message) {
     message: 'Would you like to:',
     choices: [
       { name: 'Return this message to the work queue?', value: 'replayOne' },
-      { name: 'Return this message to the dead letter queue?', value: 'returnOne' },
+      {
+        name: 'Return this message to the dead letter queue?',
+        value: 'returnOne'
+      },
       { name: 'Delete this message entirely?', value: 'deleteOne' },
-      { name: 'View this message\'s recent logs?', value: 'logs' },
+      { name: "View this message's recent logs?", value: 'logs' },
       { name: 'Stop individual triage?', value: 'stop' }
     ]
   });
@@ -279,7 +278,6 @@ async function receive(sqs, count, queueUrl) {
   }));
 }
 
-
 async function returnOne(sqs, queueUrl, message) {
   const handle = typeof message === 'string' ? message : message.handle;
   return await sqs.changeMessageVisibility({
@@ -318,7 +316,7 @@ async function deleteOne(sqs, queueUrl, message) {
 function receiveAll(sqs, queueUrl) {
   const messages = [];
   let pending = false;
-  let next = async function() {
+  let next = async function () {
     pending = true;
     const msgs = await receive(sqs, 10, queueUrl);
     if (msgs) {
@@ -331,10 +329,10 @@ function receiveAll(sqs, queueUrl) {
 
   return new stream.Readable({
     objectMode: true,
-    read: async function() {
+    read: async function () {
       let status = true;
       while (status && messages.length) status = this.push(messages.shift());
-      if (messages.length)  return;
+      if (messages.length) return;
       if (!next) return this.push(null);
       if (status && !pending) {
         try {
@@ -355,7 +353,9 @@ async function getLogs(sqs, queue, message) {
 
   return new Promise((resolve, reject) => {
     fetchLogs(queue.logs, message.id, (err, data) => {
-      if (err) { return reject(err); }
+      if (err) {
+        return reject(err);
+      }
       resolve(data);
     });
   }).then(async (data) => {
@@ -367,19 +367,21 @@ async function getLogs(sqs, queue, message) {
 }
 
 function fetchLogs(logGroup, messageId, callback) {
-  const readable = cwlogs.readable({
-    region: logGroup.split(':')[3],
-    group: logGroup.split(':')[6],
-    pattern: messageId,
-    messages: true,
-    start: Date.now() - 6 * 60 * 60 * 1000
-  }).on('error', callback);
+  const readable = cwlogs
+    .readable({
+      region: logGroup.split(':')[3],
+      group: logGroup.split(':')[6],
+      pattern: messageId,
+      messages: true,
+      start: Date.now() - 6 * 60 * 60 * 1000
+    })
+    .on('error', callback);
 
   const writable = new stream.Writable();
   writable.buffer = [];
   writable.buffer.current = 0;
 
-  writable.buffer.add = function(line) {
+  writable.buffer.add = function (line) {
     if (writable.buffer.current + line.length < 50 * 1024) {
       writable.buffer.current += line.length;
       writable.buffer.push(line);
@@ -395,14 +397,16 @@ function fetchLogs(logGroup, messageId, callback) {
     }
   };
 
-  writable._write = function(line, enc, callback) {
+  writable._write = function (line, enc, callback) {
     writable.buffer.add(line.toString());
     callback();
   };
 
-  writable.on('finish', () => {
-    callback(null, writable.buffer.join('\n') + '\n');
-  }).on('error', callback);
+  writable
+    .on('finish', () => {
+      callback(null, writable.buffer.join('\n') + '\n');
+    })
+    .on('error', callback);
 
   readable.pipe(split()).pipe(writable);
 }

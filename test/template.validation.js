@@ -9,13 +9,15 @@ const cf = require('@mapbox/cloudfriend');
 const template = require('../lib/template');
 
 test('[template validation] defaults', async (assert) => {
-  const builtWithDefaults = cf.merge(template({
-    service: 'example',
-    serviceVersion: '1',
-    command: 'echo hello world',
-    cluster: 'processing',
-    notificationEmail: 'hello@mapbox.pagerduty.com'
-  }));
+  const builtWithDefaults = cf.merge(
+    template({
+      service: 'example',
+      serviceVersion: '1',
+      command: 'echo hello world',
+      cluster: 'processing',
+      notificationEmail: 'hello@mapbox.pagerduty.com'
+    })
+  );
 
   const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
   fs.writeFileSync(tmp, JSON.stringify(builtWithDefaults));
@@ -31,37 +33,39 @@ test('[template validation] defaults', async (assert) => {
 });
 
 test('[template validation] options set', async (assert) => {
-  const setsAllOptions = cf.merge(template({
-    service: 'example',
-    serviceVersion: '1',
-    command: 'echo hello world',
-    cluster: 'processing',
-    permissions: [
-      {
-        Effect: 'Allow',
-        Action: 's3:GetObject',
-        Resource: 'arn:aws:s3:::bucket/*'
-      }
-    ],
-    env: {
-      MyKey: 'MyValue'
-    },
-    prefix: 'Soup',
-    family: 'abc-123',
-    maxSize: 90,
-    mounts: '/mnt/data:/data,/ephemeral',
-    reservation: {
-      memory: 512,
-      softMemory: 128,
-      cpu: 4096
-    },
-    privileged: true,
-    messageTimeout: 300,
-    messageRetention: 1096,
-    deadletterThreshold: 50,
-    deadletterAlarm: true,
-    notificationEmail: 'hello@mapbox.pagerduty.com'
-  }));
+  const setsAllOptions = cf.merge(
+    template({
+      service: 'example',
+      serviceVersion: '1',
+      command: 'echo hello world',
+      cluster: 'processing',
+      permissions: [
+        {
+          Effect: 'Allow',
+          Action: 's3:GetObject',
+          Resource: 'arn:aws:s3:::bucket/*'
+        }
+      ],
+      env: {
+        MyKey: 'MyValue'
+      },
+      prefix: 'Soup',
+      family: 'abc-123',
+      maxSize: 90,
+      mounts: '/mnt/data:/data,/ephemeral',
+      reservation: {
+        memory: 512,
+        softMemory: 128,
+        cpu: 4096
+      },
+      privileged: true,
+      messageTimeout: 300,
+      messageRetention: 1096,
+      deadletterThreshold: 50,
+      deadletterAlarm: true,
+      notificationEmail: 'hello@mapbox.pagerduty.com'
+    })
+  );
 
   const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
   fs.writeFileSync(tmp, JSON.stringify(setsAllOptions));
@@ -77,14 +81,16 @@ test('[template validation] options set', async (assert) => {
 });
 
 test('[template validation] fifo queue', async (assert) => {
-  const fifo = cf.merge(template({
-    service: 'example',
-    serviceVersion: '1',
-    command: 'echo hello world',
-    cluster: 'processing',
-    notificationEmail: 'hello@mapbox.pagerduty.com',
-    fifo: true
-  }));
+  const fifo = cf.merge(
+    template({
+      service: 'example',
+      serviceVersion: '1',
+      command: 'echo hello world',
+      cluster: 'processing',
+      notificationEmail: 'hello@mapbox.pagerduty.com',
+      fifo: true
+    })
+  );
 
   const tmp = path.join(os.tmpdir(), crypto.randomBytes(8).toString('hex'));
   fs.writeFileSync(tmp, JSON.stringify(fifo));
@@ -98,4 +104,3 @@ test('[template validation] fifo queue', async (assert) => {
 
   assert.end();
 });
-
