@@ -71,7 +71,8 @@
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.112.0",
-    "constructs": "^10.0.5"
+    "constructs": "^10.0.5",
+    "@aws-cdk/aws-redshift-alpha": "^2.112.0-alpha.0"
   },
   "eslintConfig": {
     "extends": "@mapbox/eslint-config-mapbox"
