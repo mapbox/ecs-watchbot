@@ -1,3 +1,9 @@
+### 9.0.1
+
+-  Bug fix: TotalMessagesLambda now working as expected; watchbot stacks now scaling down when no tasks in queue
+-  **v9.0.0 binaries removed from S3 given the cost associated with the bug in the v9.0.0 release**
+-  Move from aws-sdk v2 to v3
+
 ### 9.0.0
 
 -  Breaking change: use Node 18 for lambdas and binaries going forward
