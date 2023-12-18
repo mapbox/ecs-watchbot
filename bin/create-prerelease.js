@@ -4,7 +4,7 @@
 
 const cp = require('child_process');
 const util = require('util');
-const AWS = require('aws-sdk');
+const { CodepipelineClient, GetPipelineCommand, UpdatePipelineCommand, StartPipelineExecutionCommand } = require('@aws-sdk/client-codepipeline');
 const exec = util.promisify(cp.exec);
 
 const main = async () => {
@@ -20,10 +20,10 @@ const main = async () => {
   console.log(`Starting pipeline execution with gitsha=${gitsha.stdout}`);
 
   const pipelineName = 'watchbot-pipeline';
-  const cp = new AWS.CodePipeline({ region: 'us-east-1' });
-  const existingConfig = await cp.getPipeline({
+  const cp = new CodepipelineClient({ region: 'us-east-1' });
+  const existingConfig = await cp.send(new GetPipelineCommand({
     name: pipelineName
-  }).promise();
+  }));
 
   // get branch name
   const branch = await exec('git rev-parse --abbrev-ref HEAD');
@@ -32,7 +32,7 @@ const main = async () => {
   // find the Source stage and get the actions
   const sourceAction = existingConfig.pipeline.stages[0].actions[0];
   // Override pipeline with current branch name in order to be used for testing
-  await cp.updatePipeline({
+  await cp.send(new UpdatePipelineCommand({
     pipeline: {
       ...existingConfig.pipeline,
       name: pipelineName,
@@ -50,9 +50,9 @@ const main = async () => {
         ...existingConfig.pipeline.stages.filter((s) => s.name !== 'Source')
       ]
     }
-  }).promise();
+  }));
 
-  await cp.startPipelineExecution({
+  await cp.send(new StartPipelineExecutionCommand({
     name: pipelineName,
     sourceRevisions: [
       {
@@ -61,7 +61,7 @@ const main = async () => {
         revisionValue: gitsha.stdout.split('\n')[0]
       }
     ]
-  }).promise();
+  }));
 };
 
 main();

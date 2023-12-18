@@ -34,6 +34,7 @@
   },
   "homepage": "https://github.com/mapbox/ecs-watchbot#readme",
   "devDependencies": {
+    "@aws-sdk/client-codepipeline": "^3.474.0",
     "@mapbox/eslint-config-mapbox": "^2.0.1",
     "@mapbox/mock-aws-sdk-js": "^1.0.0",
     "@types/jest": "^29.5.5",
@@ -63,7 +64,6 @@
     "@aws-sdk/client-sqs": "^3.414.0",
     "@mapbox/cloudfriend": "^7.1.0",
     "@mapbox/watchbot-progress": "^1.1.7",
-    "aws-sdk": "^2.1518.0",
     "binary-split": "^1.0.5",
     "cdk-monitoring-constructs": "^7.1.0",
     "fs-extra": "^8.1.0",
