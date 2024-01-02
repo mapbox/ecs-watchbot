@@ -1,4 +1,4 @@
-import { aws_dynamodb, Duration, RemovalPolicy, Resource } from 'aws-cdk-lib';
+import { aws_dynamodb, Duration, RemovalPolicy, Resource, Stack } from 'aws-cdk-lib';
 import { ISecurityGroup, SubnetSelection, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
   BaseService,
@@ -265,6 +265,27 @@ export type AlarmProps = {
   period?: Duration;
 };
 
+enum SupportedRegion {
+  UsEast1 = 'us-east-1',
+  UsEast2 = 'us-east-2',
+  ApNortheast1 = 'ap-northeast-1'
+}
+
+const VPC_IDs = {
+  [SupportedRegion.UsEast1]: {
+    production: 'vpc-048f5219a42f46f6a',
+    staging: 'vpc-0df6a0c7af1559f9f'
+  },
+  [SupportedRegion.UsEast2]: {
+    production: 'vpc-0a97415bec55cdb45',
+    staging: 'vpc-0953e25515614814d'
+  },
+  [SupportedRegion.ApNortheast1]: {
+    production: 'vpc-01848e03716cf0fa6',
+    staging: 'vpc-02d9dc87cb2f3bc1a'
+  }
+};
+
 export class FargateWatchbot extends Resource {
   protected readonly props: WatchbotProps;
   public service: BaseService;
@@ -281,9 +302,17 @@ export class FargateWatchbot extends Resource {
   public readonly table: aws_dynamodb.Table;
 
   private readonly RUNBOOK: string;
+  private readonly scope: Construct;
 
   constructor(scope: Construct, id: string, props: WatchbotProps) {
     super(scope, id);
+    this.scope = scope;
+
+    if (!['production', 'staging'].includes(props.deploymentEnvironment)) {
+      throw new Error(
+        `deploymentEnvironment must be one of [staging, production] but received deploymentEnvironment=${props.deploymentEnvironment}`
+      );
+    }
 
     this.RUNBOOK = `https://github.com/mapbox/ecs-watchbot/blob/${pkg.version}/docs/alarms.md`;
 
@@ -523,6 +552,8 @@ export class FargateWatchbot extends Resource {
   private prefixed = (name: string) => `${this.props.prefix}${name}`;
 
   private mergePropsWithDefaults(id: string, props: WatchbotProps): WatchbotProps {
+    const { region } = Stack.of(this.scope);
+
     const prefix = props.prefix ?? 'Watchbot';
     const DEFAULT_PROPS: Partial<WatchbotProps> = {
       prefix,
@@ -534,7 +565,7 @@ export class FargateWatchbot extends Resource {
       cluster: Cluster.fromClusterAttributes(this, `${id}Cluster`, {
         clusterName: `fargate-processing-${props.deploymentEnvironment}`,
         vpc: Vpc.fromLookup(this, `${id}VPC`, {
-          vpcId: 'vpc-id' // TODO update
+          vpcId: VPC_IDs[region][props.deploymentEnvironment]
         })
       }),
 
