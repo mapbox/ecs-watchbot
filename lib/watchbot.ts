@@ -285,6 +285,9 @@ const VPC_IDs: { [key in SupportedRegion]: Record<string, string> } = {
   }
 };
 
+const NETWORKING_STG_ACCOUNT_ID = '553571408602';
+const NETWORKING_PROD_ACCOUNT_ID = '93972345615';
+
 export class FargateWatchbot extends Resource {
   protected readonly props: WatchbotProps;
   public service: BaseService;
@@ -564,7 +567,11 @@ export class FargateWatchbot extends Resource {
       cluster: Cluster.fromClusterAttributes(this, `${id}Cluster`, {
         clusterName: `fargate-processing-${props.deploymentEnvironment}`,
         vpc: Vpc.fromLookup(this, `${id}VPC`, {
-          vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment]
+          vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
+          isDefault: false,
+          region,
+          ownerAccountId: props.deploymentEnvironment === 'staging' ? NETWORKING_STG_ACCOUNT_ID : NETWORKING_PROD_ACCOUNT_ID,
+
         })
       }),
 
