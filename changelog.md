@@ -1,5 +1,5 @@
 ### 10.0.0
-- This library is now distributed as a CDK construct with almost identical functionality. Refer to [UPGRADING_TO_V10](/docs/UPGRADING_TO_V10.md) for migration details.
+- This library is now distributed as a CDK construct with almost identical functionality. Refer to [UPGRADING_TO_V10](/docs/upgrading-to-watchbot10.md) for migration details.
 
 ### 9.0.1
 

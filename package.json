@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "10.0.0-beta.17",
+  "version": "10.0.0-beta.18",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
@@ -14,12 +14,11 @@
   },
   "scripts": {
     "build": "tsc",
-    "pretest": "npm run lint && npm run validate-templates",
+    "pretest": "npm run lint",
     "lint": "eslint bin lib",
     "lint:fix": "prettier --write '**/*.{ts,js}'",
     "test": "docker build -q -t ecs-watchbot -f test/Dockerfile ./ && docker run -t ecs-watchbot npm run test-container",
     "test-container": "BUCKET_NAME=watchbot-binaries tape test/*.test.js && jest test/*.test.ts",
-    "validate-templates": "tape test/template.validation.js",
     "update-jest-snapshots": "jest -u test/*.spec.js",
     "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
     "create:prerelease": "node bin/create-prerelease.js"
