@@ -18,11 +18,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "outDir": "dist",
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "strictPropertyInitialization": false
   },
   "exclude": [
     "node_modules",

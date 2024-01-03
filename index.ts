@@ -1,4 +1,4 @@
-export * from './lib/watchbot';
+export { FargateWatchbot } from './lib/watchbot';
 // const template = require('./lib/template');
 // const progress = require('@mapbox/watchbot-progress').progress;
 //
