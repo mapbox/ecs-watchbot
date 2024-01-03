@@ -570,8 +570,10 @@ export class FargateWatchbot extends Resource {
           vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
           isDefault: false,
           region,
-          ownerAccountId: props.deploymentEnvironment === 'staging' ? NETWORKING_STG_ACCOUNT_ID : NETWORKING_PROD_ACCOUNT_ID,
-
+          ownerAccountId:
+            props.deploymentEnvironment === 'staging'
+              ? NETWORKING_STG_ACCOUNT_ID
+              : NETWORKING_PROD_ACCOUNT_ID
         })
       }),
 

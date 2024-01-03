@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "10.0.0-beta.18",
+  "version": "10.0.0",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
@@ -80,6 +80,7 @@
     "constructs": "^10.0.5"
   },
   "eslintConfig": {
-    "extends": "@mapbox/eslint-config-mapbox"
+    "extends": "@mapbox/eslint-config-mapbox",
+    "ignorePatterns": ["/lib/watchbot.js", "/lib/MapboxQueueProcessingFargateService.js", "bin/cdk.js"]
   }
 }
