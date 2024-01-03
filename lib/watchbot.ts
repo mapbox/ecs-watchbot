@@ -26,7 +26,7 @@ import { ScalingInterval } from 'aws-cdk-lib/aws-applicationautoscaling';
 import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
-} from './QueueProcessingFargateService';
+} from './MapboxQueueProcessingFargateService';
 import { MonitoringFacade, SnsAlarmActionStrategy } from 'cdk-monitoring-constructs';
 import * as path from 'path';
 import { ComparisonOperator, Stats } from 'aws-cdk-lib/aws-cloudwatch';
@@ -98,7 +98,6 @@ export interface WatchbotProps {
    */
   readonly command: string[];
 
-  // TODO this is used to figure out cluster name. Do we actually need this to be required?
   readonly deploymentEnvironment: string;
 
   /**
@@ -271,7 +270,7 @@ enum SupportedRegion {
   ApNortheast1 = 'ap-northeast-1'
 }
 
-const VPC_IDs = {
+const VPC_IDs: { [key in SupportedRegion]: Record<string, string> } = {
   [SupportedRegion.UsEast1]: {
     production: 'vpc-048f5219a42f46f6a',
     staging: 'vpc-0df6a0c7af1559f9f'
@@ -285,6 +284,9 @@ const VPC_IDs = {
     staging: 'vpc-02d9dc87cb2f3bc1a'
   }
 };
+
+const NETWORKING_STG_ACCOUNT_ID = '553571408602';
+const NETWORKING_PROD_ACCOUNT_ID = '93972345615';
 
 export class FargateWatchbot extends Resource {
   protected readonly props: WatchbotProps;
@@ -565,7 +567,13 @@ export class FargateWatchbot extends Resource {
       cluster: Cluster.fromClusterAttributes(this, `${id}Cluster`, {
         clusterName: `fargate-processing-${props.deploymentEnvironment}`,
         vpc: Vpc.fromLookup(this, `${id}VPC`, {
-          vpcId: VPC_IDs[region][props.deploymentEnvironment]
+          vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
+          isDefault: false,
+          region,
+          ownerAccountId:
+            props.deploymentEnvironment === 'staging'
+              ? NETWORKING_STG_ACCOUNT_ID
+              : NETWORKING_PROD_ACCOUNT_ID
         })
       }),
 

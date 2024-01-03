@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "10.0.0-14",
+  "version": "10.0.0",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
@@ -14,19 +14,18 @@
   },
   "scripts": {
     "build": "tsc",
-    "pretest": "npm run lint && npm run validate-templates",
-    "lint": "eslint bin lib test index.js",
+    "pretest": "npm run lint",
+    "lint": "eslint bin lib",
     "lint:fix": "prettier --write '**/*.{ts,js}'",
     "test": "docker build -q -t ecs-watchbot -f test/Dockerfile ./ && docker run -t ecs-watchbot npm run test-container",
     "test-container": "BUCKET_NAME=watchbot-binaries tape test/*.test.js && jest test/*.test.ts",
-    "validate-templates": "tape test/template.validation.js",
     "update-jest-snapshots": "jest -u test/*.spec.js",
     "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
     "create:prerelease": "node bin/create-prerelease.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mapbox/ecs-watchbot.git"
+    "url": "https://github.com/mapbox/ecs-watchbot.git"
   },
   "author": "Mapbox",
   "license": "BSD-2-Clause",
@@ -81,6 +80,7 @@
     "constructs": "^10.0.5"
   },
   "eslintConfig": {
-    "extends": "@mapbox/eslint-config-mapbox"
+    "extends": "@mapbox/eslint-config-mapbox",
+    "ignorePatterns": ["/lib/watchbot.js", "/lib/MapboxQueueProcessingFargateService.js", "bin/cdk.js"]
   }
 }

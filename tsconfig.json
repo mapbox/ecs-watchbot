@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
     "lib": [
-      "es2020",
-      "dom"
+      "es2019"
     ],
+    "module": "CommonJS",
+    "target": "es2019",
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -19,13 +18,13 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "strictPropertyInitialization": false
   },
   "exclude": [
     "node_modules",
-    "cdk.out"
+    "cdk.out",
+    "cdk",
+    "test",
+    "bin"
   ]
 }

@@ -34,11 +34,13 @@ action.
 
 ### Using watchbot-progress
 
+> :rotating_light: These docs are for legacy watchbot. There is currently no docs for this starting Watchbot 10.
+
 `watchbot-progress` is a CLI command that is available to use on a reduce-enabled
 stack. This is one mechanism by which you can report progress to Watchbot as part
 ofthe above messaging flow.
 
-For usage examples and and additional documentation, see [watchbot-progress](https://github.com/mapbox/watchbot-progress).
+For usage examples and additional documentation, see [watchbot-progress](https://github.com/mapbox/watchbot-progress).
 
 Install Watchbot globally as part of your worker's Dockerfile to gain access to the
 CLI command on your workers at runtime:
@@ -55,6 +57,8 @@ Note that by default, workers in reduce-enabled Watchbot stacks will have the `$
 environment variable set automatically. For more information on this command, see
 
 #### Reporting progress in JavaScript
+
+> :rotating_light: These docs are for legacy watchbot. There is currently no docs for this starting Watchbot 10.
 
 A JavaScript module is also available as a mechanism for progress reporting.
 
