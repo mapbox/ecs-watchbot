@@ -1,3 +1,6 @@
+### 10.0.0
+- This library is now distributed as a CDK construct with almost identical functionality. Refer to [UPGRADING_TO_V10](/docs/UPGRADING_TO_V10.md) for migration details.
+
 ### 9.0.1
 
 -  Bug fix: TotalMessagesLambda now working as expected; watchbot stacks now scaling down when no tasks in queue
@@ -207,7 +210,7 @@
 
 ### 4.4.1
 
-- Only expose `./lib/template` through `index.js` so people can run node 6 locally: https://github.com/mapbox/ecs-watchbot/pull/236
+- Only expose `./lib/template` through `index.ts` so people can run node 6 locally: https://github.com/mapbox/ecs-watchbot/pull/236
 
 ### 4.4.0
 

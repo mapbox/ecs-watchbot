@@ -2,8 +2,8 @@
   "name": "@mapbox/watchbot",
   "version": "10.0.0-14",
   "description": "",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "engines": {
     "node": ">=18"
   },
@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc",
     "pretest": "npm run lint && npm run validate-templates",
-    "lint": "eslint bin lib test index.js",
+    "lint": "eslint bin lib",
     "lint:fix": "prettier --write '**/*.{ts,js}'",
     "test": "docker build -q -t ecs-watchbot -f test/Dockerfile ./ && docker run -t ecs-watchbot npm run test-container",
     "test-container": "BUCKET_NAME=watchbot-binaries tape test/*.test.js && jest test/*.test.ts",
@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mapbox/ecs-watchbot.git"
+    "url": "https://github.com/mapbox/ecs-watchbot.git"
   },
   "author": "Mapbox",
   "license": "BSD-2-Clause",

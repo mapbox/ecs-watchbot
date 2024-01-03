@@ -4,3 +4,9 @@
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+/test/
+/tsconfig.json
+/lib/
+/cdk/
+/.github/

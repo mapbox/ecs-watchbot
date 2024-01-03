@@ -7,7 +7,7 @@ import {
 import { cx_api, FeatureFlags } from 'aws-cdk-lib';
 
 /**
- * The properties for the QueueProcessingFargateService service.
+ * The properties for the MapboxQueueProcessingFargateService service.
  */
 export interface MapboxQueueProcessingFargateServiceProps
   extends QueueProcessingFargateServiceProps {
@@ -37,7 +37,7 @@ export interface MapboxQueueProcessingFargateServiceProps
 }
 
 /**
- * Class to create a queue processing Fargate service. This class was adapted from aws-cdk-lib QueueProcessingFargateService class but enhanced with more props that couldn't be achieved by extending the class
+ * Class to create a queue processing Fargate service. This class was adapted from aws-cdk-lib MapboxQueueProcessingFargateService class but enhanced with more props that couldn't be achieved by extending the class
  * @see https://github.com/aws/aws-cdk/blob/v2.109.0/packages/aws-cdk-lib/aws-ecs-patterns/lib/fargate/queue-processing-fargate-service.ts
  */
 export class MapboxQueueProcessingFargateService extends QueueProcessingServiceBase {
