@@ -327,27 +327,25 @@ export class FargateWatchbot extends Resource {
     });
     (this.logGroup.node.defaultChild as CfnLogGroup).overrideLogicalId(this.prefixed('LogGroup'));
 
+    // workaround for a bug when you set fifo = false
+    // https://github.com/aws/aws-cdk/issues/8550
+    const additionalFifoProperties = this.props.fifo? { fifo: true, contentBasedDeduplication: true } : { contentBasedDeduplication: false };
+
     this.deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
-      fifo: this.props.fifo,
-      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}${
-        this.props.fifo ? '.fifo' : ''
-      }`,
+      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
-      contentBasedDeduplication: this.props.fifo
+      ...additionalFifoProperties
     });
 
     this.queue = new Queue(this, 'Queue', {
-      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}${
-        this.props.fifo ? '.fifo' : ''
-      }`,
+      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
-      fifo: this.props.fifo,
-      contentBasedDeduplication: this.props.fifo,
       visibilityTimeout: Duration.seconds(180),
       deadLetterQueue: {
         queue: this.deadLetterQueue,
         maxReceiveCount: this.props.deadLetterThreshold || 10
-      }
+      },
+      ...additionalFifoProperties
     });
 
     this.cluster = this.props.cluster;
@@ -593,7 +591,6 @@ export class FargateWatchbot extends Resource {
           name: 'tmp'
         }
       ],
-
       fifo: false,
       deadLetterThreshold: 10,
       retentionPeriod: Duration.days(14),
