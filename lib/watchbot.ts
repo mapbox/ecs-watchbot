@@ -329,7 +329,7 @@ export class FargateWatchbot extends Resource {
 
     // workaround for a bug when you set fifo = false
     // https://github.com/aws/aws-cdk/issues/8550
-    const additionalFifoProperties = this.props.fifo? { fifo: true, contentBasedDeduplication: true } : { contentBasedDeduplication: false };
+    const additionalFifoProperties = this.props.fifo? { fifo: true, contentBasedDeduplication: true } : {};
 
     this.deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
       queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}`,
