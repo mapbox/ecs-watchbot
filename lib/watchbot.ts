@@ -332,13 +332,13 @@ export class FargateWatchbot extends Resource {
     const additionalFifoProperties = this.props.fifo? { fifo: true, contentBasedDeduplication: true } : {};
 
     this.deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
-      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}`,
+      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}${this.props.fifo ? '.fifo' : ''}`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       ...additionalFifoProperties
     });
 
     this.queue = new Queue(this, 'Queue', {
-      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}`,
+      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}${this.props.fifo ? '.fifo' : ''}`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       visibilityTimeout: Duration.seconds(180),
       deadLetterQueue: {
