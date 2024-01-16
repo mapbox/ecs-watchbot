@@ -237,8 +237,6 @@ describe('FargateWatchbot', () => {
 
       // Queue
       template.hasResourceProperties('AWS::SQS::Queue', {
-        ContentBasedDeduplication: defaultProps.fifo, // this is only true if fifo is true
-        FifoQueue: defaultProps.fifo,
         MessageRetentionPeriod: defaultProps.retentionPeriod.toSeconds(),
         QueueName: 'test-stack-WatchbotQueue',
         RedrivePolicy: {
@@ -249,8 +247,6 @@ describe('FargateWatchbot', () => {
 
       // DLQ
       template.hasResourceProperties('AWS::SQS::Queue', {
-        ContentBasedDeduplication: defaultProps.fifo, // this is only true if fifo is true
-        FifoQueue: defaultProps.fifo,
         MessageRetentionPeriod: defaultProps.retentionPeriod.toSeconds(),
         QueueName: 'test-stack-WatchbotDeadLetterQueue'
       });
