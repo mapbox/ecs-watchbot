@@ -7,13 +7,14 @@ A library to help run a highly-scalable AWS service that performs data processin
 Add these lines to your Dockerfile, to use the latest watchbot for the linux operating system.
 
 ```
-RUN wget https://s3.amazonaws.com/watchbot-binaries/linux/v9.0.1/watchbot -O /usr/local/bin/watchbot
+RUN wget https://s3.amazonaws.com/ecs-watchbot-binaries/linux/v10.0.0/watchbot -O /usr/local/bin/watchbot
 RUN chmod +x /usr/local/bin/watchbot
 ```
 * **os**: You can replace `linux` with other operating systems like `alpine`, `macosx` or, `windows`
-* **tag**: You can replace `v9.0.1`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent than v4.0.0
+* **tag**: You can replace `v10.0.0`  with any [watchbot tag](https://github.com/mapbox/ecs-watchbot/releases) starting from and more recent than v4.0.0
+  * :rotating_light: For any version <= 9, you need to use `https://s3.amazonaws.com/watchbot-binaries/linux/{VERSION}/watchbot` (note the difference in bucket name)
 
-* If you are an existing user of watchbot, take a look at ["Upgrading to Watchbot 4"](https://github.com/mapbox/ecs-watchbot/blob/master/docs/upgrading-to-watchbot4.md), for a complete set of instructions to upgrade your stacks to Watchbot 4.
+* If you are an existing user of watchbot, take a look at ["Upgrading to Watchbot 10"](https://github.com/mapbox/ecs-watchbot/blob/master/docs/upgrading-to-watchbot10.md), for a complete set of instructions to upgrade your stacks to Watchbot 10.
 
 ## Helpful lingo
 
@@ -31,10 +32,6 @@ RUN chmod +x /usr/local/bin/watchbot
 - a docker image representing your task, housed in [an ECR repository](http://docs.aws.amazon.com/AmazonECR/latest/userguide/Repositories.html) and tagged with a git sha or a git tag
 - a CloudFormation template defining any configuration Parameters, Resources, and Outputs that your service needs in order to perform its processing.
 
-**:bulb: Other prerequisites:**
-
-- `cloudformation-kms-production` deployed according to the instructions in [cloudformation-kms](https://github.com/mapbox/cloudformation-kms). Makes encryption of sensitive environment variables that need to be passed to ECS simple using [cfn-config](https://github.com/mapbox/cfn-config).
-
 ## What Watchbot provides:
 
 - a queue that triggers your workers
@@ -42,7 +39,6 @@ RUN chmod +x /usr/local/bin/watchbot
 - [an ECS TaskDefinition](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_defintions.html) for your worker, using the image you provide
 - one or more watcher containers that run continuously on your cluster, polling the queue, running a worker for each message, removing messages from the queue as workers complete, and managing worker failures and retries
 - a script to help you include the resources Watchbot needs to run in your template
-
 
 ## Building a Watchbot service
 
@@ -54,10 +50,11 @@ RUN chmod +x /usr/local/bin/watchbot
 
 ## More documentation
 
-1. [Building a Watchbot template](./docs/building-a-template.md)
-2. [The worker's runtime environment](./docs/worker-runtime-details.md)
-3. [What happens when workers fail?](./docs/worker-retry-cycle.md)
-4. [Logging and metrics](./docs/logging-and-metrics.md)
-5. [Using Watchbot's reduce-mode](./docs/reduce-mode.md)
-6. [Watchbot's command-line utilities](./docs/command-line-utilities.md)
-7. [Watchbot's CloudWatch alarms](./docs/alarms.md)
+1. [Building a Watchbot template](/docs/building-a-legacy-template.md)
+2. [The worker's runtime environment](/docs/worker-runtime-details.md)
+3. [What happens when workers fail?](/docs/worker-retry-cycle.md)
+4. [Logging and metrics](/docs/logging-and-metrics.md)
+5. [Using Watchbot's reduce-mode](/docs/reduce-mode.md)
+6. [Watchbot's command-line utilities](/docs/command-line-utilities.md)
+7. [Watchbot's CloudWatch alarms](/docs/alarms.md)
+8. [Upgrading to Watchbot v10](/docs/upgrading-to-watchbot10.md)

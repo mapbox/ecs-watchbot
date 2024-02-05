@@ -5,3 +5,10 @@ node_modules
 
 # vim!
 *.swp
+
+!jest.config.js
+*.d.ts
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out

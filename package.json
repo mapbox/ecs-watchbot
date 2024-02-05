@@ -1,8 +1,9 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "9.0.1",
+  "version": "10.0.0",
   "description": "",
   "main": "index.js",
+  "types": "index.d.ts",
   "engines": {
     "node": ">=18"
   },
@@ -12,17 +13,19 @@
     "watchbot-dead-letter": "bin/dead-letter.js"
   },
   "scripts": {
-    "pretest": "npm run lint && npm run validate-templates",
-    "lint": "eslint bin lib test index.js",
+    "build": "tsc",
+    "pretest": "npm run lint",
+    "lint": "eslint bin lib",
+    "lint:fix": "prettier --write '**/*.{ts,js}'",
     "test": "docker build -q -t ecs-watchbot -f test/Dockerfile ./ && docker run -t ecs-watchbot npm run test-container",
-    "test-container": "tape test/*.test.js && jest test/*.spec.js",
-    "validate-templates": "tape test/template.validation.js",
+    "test-container": "BUCKET_NAME=watchbot-binaries tape test/*.test.js && jest test/*.test.ts",
     "update-jest-snapshots": "jest -u test/*.spec.js",
-    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html"
+    "coverage": "nyc --reporter html tape test/*.test.js && opener coverage/index.html",
+    "create:prerelease": "node bin/create-prerelease.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mapbox/ecs-watchbot.git"
+    "url": "https://github.com/mapbox/ecs-watchbot.git"
   },
   "author": "Mapbox",
   "license": "BSD-2-Clause",
@@ -31,28 +34,39 @@
   },
   "homepage": "https://github.com/mapbox/ecs-watchbot#readme",
   "devDependencies": {
+    "@aws-sdk/client-codepipeline": "^3.474.0",
     "@mapbox/eslint-config-mapbox": "^2.0.1",
+    "@mapbox/mock-aws-sdk-js": "^1.0.0",
+    "@types/jest": "^29.5.5",
+    "@types/node": "20.7.1",
+    "aws-cdk-lib": "2.112.0",
     "aws-sdk-client-mock": "^3.0.0",
     "cli-spinner": "^0.2.10",
+    "constructs": "^10.0.5",
     "cwlogs": "^1.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-node": "^10.0.0",
     "fake-env": "^1.0.0",
-    "jest": "29.5.0",
+    "jest": "^29.7.0",
     "meow": "^6.0.0",
     "nyc": "^14.1.1",
     "opener": "^1.5.1",
+    "prettier": "^3.1.1",
     "redent": "^3.0.0",
     "sinon": "15.0.2",
-    "tape": "^4.11.0"
+    "tape": "^4.11.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "~5.2.2"
   },
   "dependencies": {
+    "@aws-cdk/aws-redshift-alpha": "^2.112.0-alpha.0",
     "@aws-sdk/client-cloudformation": "^3.414.0",
     "@aws-sdk/client-s3": "^3.414.0",
     "@aws-sdk/client-sqs": "^3.414.0",
     "@mapbox/cloudfriend": "^7.1.0",
     "@mapbox/watchbot-progress": "^1.1.7",
     "binary-split": "^1.0.5",
+    "cdk-monitoring-constructs": "^7.1.0",
     "fs-extra": "^8.1.0",
     "inquirer": "^7.0.0",
     "p-queue": "^6.2.1",
@@ -60,7 +74,13 @@
     "stream-combiner2": "^1.1.1",
     "tree-kill": "^1.2.1"
   },
+  "peerDependencies": {
+    "@aws-cdk/aws-redshift-alpha": "^2.112.0-alpha.0",
+    "aws-cdk-lib": "^2.112.0",
+    "constructs": "^10.0.5"
+  },
   "eslintConfig": {
-    "extends": "@mapbox/eslint-config-mapbox"
+    "extends": "@mapbox/eslint-config-mapbox",
+    "ignorePatterns": ["/lib/watchbot.js", "/lib/MapboxQueueProcessingFargateService.js", "bin/cdk.js"]
   }
 }

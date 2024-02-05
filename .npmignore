@@ -1,0 +1,16 @@
+*.ts
+!*.d.ts
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.json
+
+jest.config.js
+
+/test/
+/tsconfig.json
+/cdk/
+/.github/
+/.idea/
+/coverage/

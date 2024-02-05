@@ -10,12 +10,7 @@ const Message = require('../lib/message');
 const Logger = require('../lib/logger');
 
 test('[messages] constructor', (assert) => {
-
-  assert.throws(
-    () => new Messages(),
-    /Missing options: queueUrl/,
-    'queueUrl is required'
-  );
+  assert.throws(() => new Messages(), /Missing options: queueUrl/, 'queueUrl is required');
 
   // TODO: find a way to test the successful creation of this SQS object.
   // not sure how to do this in aws-sdk-client-mock
@@ -40,7 +35,6 @@ test('[messages] factory', (assert) => {
 });
 
 test('[messages] waitFor polls enpty queue until you stop it', async (assert) => {
-
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
   });
@@ -62,7 +56,11 @@ test('[messages] waitFor polls enpty queue until you stop it', async (assert) =>
   }
 
   assert.pass('polling stopped');
-  assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 2, 'called sqs.receiveMessage twice');
+  assert.equal(
+    sqsMock.commandCalls(ReceiveMessageCommand).length,
+    2,
+    'called sqs.receiveMessage twice'
+  );
 
   sqsMock.reset();
   assert.end();
@@ -84,11 +82,9 @@ test('[messages] waitFor gets message', async (assert) => {
     }
   ];
 
-  sqsMock
-    .on(ReceiveMessageCommand)
-    .resolvesOnce({
-      Messages: msgs
-    });
+  sqsMock.on(ReceiveMessageCommand).resolvesOnce({
+    Messages: msgs
+  });
 
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
@@ -101,19 +97,25 @@ test('[messages] waitFor gets message', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 1, 'resolves after receiving a message');
+  assert.equal(
+    sqsMock.commandCalls(ReceiveMessageCommand).length,
+    1,
+    'resolves after receiving a message'
+  );
   const args = sqsMock.commandCalls(ReceiveMessageCommand)[0].args[0].input;
-  assert.deepEqual(args, {
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
-    AttributeNames: [
-      'SentTimestamp',
-      'ApproximateFirstReceiveTimestamp',
-      'ApproximateReceiveCount'
-    ],
-    WaitTimeSeconds: 20,
-    MaxNumberOfMessages: 1
-  },
-  'called SQS.receiveMessage with expected parameters'
+  assert.deepEqual(
+    args,
+    {
+      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
+      AttributeNames: [
+        'SentTimestamp',
+        'ApproximateFirstReceiveTimestamp',
+        'ApproximateReceiveCount'
+      ],
+      WaitTimeSeconds: 20,
+      MaxNumberOfMessages: 1
+    },
+    'called SQS.receiveMessage with expected parameters'
   );
 
   assert.equal(data.length, 1, 'one message returned');
@@ -156,11 +158,9 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
     }
   ];
 
-  sqsMock
-    .on(ReceiveMessageCommand)
-    .resolvesOnce({
-      Messages: msgs
-    });
+  sqsMock.on(ReceiveMessageCommand).resolvesOnce({
+    Messages: msgs
+  });
 
   const messages = Messages.create({
     queueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake'
@@ -173,19 +173,25 @@ test('[messages] waitFor gets multiple messages', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.equal(sqsMock.commandCalls(ReceiveMessageCommand).length, 1, 'resolves after receiving a message');
+  assert.equal(
+    sqsMock.commandCalls(ReceiveMessageCommand).length,
+    1,
+    'resolves after receiving a message'
+  );
   const args = sqsMock.commandCalls(ReceiveMessageCommand)[0].args[0].input;
-  assert.deepEqual(args, {
-    QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
-    AttributeNames: [
-      'SentTimestamp',
-      'ApproximateFirstReceiveTimestamp',
-      'ApproximateReceiveCount'
-    ],
-    WaitTimeSeconds: 20,
-    MaxNumberOfMessages: 10
-  },
-  'called SQS.receiveMessage with expected parameters'
+  assert.deepEqual(
+    args,
+    {
+      QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/fake',
+      AttributeNames: [
+        'SentTimestamp',
+        'ApproximateFirstReceiveTimestamp',
+        'ApproximateReceiveCount'
+      ],
+      WaitTimeSeconds: 20,
+      MaxNumberOfMessages: 10
+    },
+    'called SQS.receiveMessage with expected parameters'
   );
 
   assert.equal(data.length, 2, 'two messages returned');

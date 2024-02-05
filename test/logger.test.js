@@ -19,11 +19,7 @@ const sqsMessage = {
 const message = new Message(sqsMessage, { queueUrl });
 
 test('[logger] constructor', (assert) => {
-  assert.throws(
-    () => new Logger('pie'),
-    /Invalid logger type/,
-    'throws error on invalid type'
-  );
+  assert.throws(() => new Logger('pie'), /Invalid logger type/, 'throws error on invalid type');
 
   assert.throws(
     () => new Logger('watcher', {}),
@@ -50,9 +46,7 @@ test('[logger] factory', (assert) => {
 });
 
 test('[logger] messageReceived', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher', message);
@@ -71,9 +65,7 @@ test('[logger] messageReceived', (assert) => {
 });
 
 test('[logger] workerSuccess', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher', message);
@@ -92,13 +84,16 @@ test('[logger] workerSuccess', (assert) => {
 });
 
 test('[logger] workerFailure', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher', message);
-  logger.workerFailure({ code: 124, signal: 'SIGTERM', duration: 12345, response_duration: 12345 });
+  logger.workerFailure({
+    code: 124,
+    signal: 'SIGTERM',
+    duration: 12345,
+    response_duration: 12345
+  });
 
   const data = process.stdout.write.args[0][0];
   assert.equal(
@@ -113,9 +108,7 @@ test('[logger] workerFailure', (assert) => {
 });
 
 test('[logger] workerError', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher', message);
@@ -134,9 +127,7 @@ test('[logger] workerError', (assert) => {
 });
 
 test('[logger] queueError', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('watcher');
@@ -155,9 +146,7 @@ test('[logger] queueError', (assert) => {
 });
 
 test('[logger] log', (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
   sinon.spy(process.stdout, 'write');
 
   let logger = new Logger('worker', message);
@@ -188,9 +177,7 @@ test('[logger] log', (assert) => {
 });
 
 test('[logger] stream', async (assert) => {
-  sinon
-    .stub(Date.prototype, 'toGMTString')
-    .returns('Fri, 09 Feb 2018 21:57:55 GMT');
+  sinon.stub(Date.prototype, 'toGMTString').returns('Fri, 09 Feb 2018 21:57:55 GMT');
   sinon.spy(process.stdout, 'write');
 
   const logger = new Logger('worker', message);

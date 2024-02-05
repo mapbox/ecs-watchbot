@@ -1,4 +1,3 @@
-
 'use strict';
 
 const test = require('tape');
@@ -33,11 +32,7 @@ test('[watcher] constructor', (assert) => {
   };
   const watcher = new Watcher(options);
 
-  assert.deepEqual(
-    watcher.workerOptions,
-    options.workerOptions,
-    'sets .workerOptions'
-  );
+  assert.deepEqual(watcher.workerOptions, options.workerOptions, 'sets .workerOptions');
   assert.equal(watcher.queueUrl, options.queueUrl, 'sets .queueUrl');
   assert.ok(watcher.messages instanceof Messages, 'sets .messages');
 
@@ -67,21 +62,17 @@ test('[watcher] listens exactly once', async (assert) => {
 
   await watcher.listen();
 
-  assert.equals(
-    messages.waitFor.callCount, 1,
-    'messages.waitFor is called once.'
-  );
+  assert.equals(messages.waitFor.callCount, 1, 'messages.waitFor is called once.');
   messages.teardown();
   assert.end();
 });
 
 test('[watcher] listen', async (assert) => {
-
   const messages = stubber(Messages).setup();
   const worker = stubber(Worker).setup();
   const workerOptions = {
     command: 'echo hello world',
-    volumes: ['/tmp','/mnt']
+    volumes: ['/tmp', '/mnt']
   };
 
   const watcher = new Watcher({
@@ -110,22 +101,15 @@ test('[watcher] listen', async (assert) => {
     assert.ifError(err, 'failed');
   }
 
-  assert.ok(
-    Worker.create.calledWith(message1, workerOptions),
-    'creates worker for message1'
-  );
+  assert.ok(Worker.create.calledWith(message1, workerOptions), 'creates worker for message1');
 
-  assert.ok(
-    Worker.create.calledWith(message2, workerOptions),
-    'creates worker for message2'
-  );
+  assert.ok(Worker.create.calledWith(message2, workerOptions), 'creates worker for message2');
 
   assert.equal(worker.waitFor.callCount, 2, 'waits for both workers');
 
   messages.teardown();
   worker.teardown();
   assert.end();
-
 });
 
 test('[watcher] factory', (assert) => {

@@ -1,5 +1,7 @@
 ## Scaling
 
+> Watchbot 10 uses native AWS-built scaling which works very similarly to the steps defined below. For more documentation, refer to [ScalingSteps](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#scalingsteps).
+
 The Watchbot 4 service scales on the SQS metrics `ApproximateNumberOfMessagesVisible` and `ApproximateNumberOfMessagesNotVisible`.
 
 ### Scale Up / Scale Out
