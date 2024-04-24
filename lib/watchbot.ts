@@ -562,7 +562,7 @@ export class FargateWatchbot extends Resource {
       readonlyRootFilesystem: true,
       maxJobDuration: Duration.seconds(0),
       family: props.serviceName,
-      cluster: Cluster.fromClusterAttributes(this, `${id}Cluster`, {
+      cluster: props.cluster ?? Cluster.fromClusterAttributes(this, `${id}Cluster`, {
         clusterName: `fargate-processing-${props.deploymentEnvironment}`,
         vpc: Vpc.fromLookup(this, `${id}VPC`, {
           vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
