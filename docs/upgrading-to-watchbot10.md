@@ -5,7 +5,7 @@ Starting Watchbot v10, the watchbot CLI can be installed from `ecs-watchbot-bina
 
 Update your Dockerfile with the following:
 ```
-RUN wget https://s3.amazonaws.com/ecs-watchbot-binaries/linux/v10.0.0/watchbot -O /usr/local/bin/watchbot
+RUN wget https://s3.amazonaws.com/ecs-watchbot-binaries/linux/v10.0.1/watchbot -O /usr/local/bin/watchbot
 RUN chmod +x /usr/local/bin/watchbot
 ```
 
