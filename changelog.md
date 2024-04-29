@@ -1,3 +1,7 @@
+### 10.0.2
+
+-  Fix monitoring resource naming conflicts when used in multiple stacks
+
 ### 10.0.1
 
 -  Add support for providing a custom cluster, enabling usage in default account
