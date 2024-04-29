@@ -27,7 +27,7 @@ import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
 } from './MapboxQueueProcessingFargateService';
-import { MonitoringFacade, SnsAlarmActionStrategy } from 'cdk-monitoring-constructs';
+import { DynamicDashboardFactory, MonitoringFacade, SnsAlarmActionStrategy } from 'cdk-monitoring-constructs';
 import * as path from 'path';
 import { ComparisonOperator, Stats } from 'aws-cdk-lib/aws-cloudwatch';
 import { AttributeType, CfnTable } from 'aws-cdk-lib/aws-dynamodb';
@@ -456,19 +456,28 @@ export class FargateWatchbot extends Resource {
   }
 
   private createAlarms() {
+
+    const factory = new DynamicDashboardFactory(this, "DynamicDashboards", {
+      dashboardNamePrefix: this.stack.stackName,
+      dashboardConfigs: [
+        { name: "watchbot" }
+      ],
+    });
+
     const monitoring = new MonitoringFacade(this, 'Monitoring', {
       alarmFactoryDefaults: {
-        alarmNamePrefix: this.prefixed(''),
+        alarmNamePrefix: `${this.stack.stackName}-${this.prefixed('')}`,
         actionsEnabled: true,
         action: new SnsAlarmActionStrategy({
           onAlarmTopic: this.props.alarms.action
         })
-      }
+      },
+      dashboardFactory: factory
     });
 
     const workersErrorsMetric = this.logGroup
       .addMetricFilter(this.prefixed('WorkerErrorsMetric'), {
-        metricName: `${this.prefixed('WorkerErrors')}-${this.stack.stackName}`,
+        metricName: `${this.stack.stackName}-${this.prefixed('WorkerErrors')}`,
         metricNamespace: 'Mapbox/ecs-watchbot',
         metricValue: '1',
         filterPattern: FilterPattern.anyTerm('"[failure]"')
@@ -478,7 +487,7 @@ export class FargateWatchbot extends Resource {
       });
 
     monitoring
-      .addLargeHeader(this.prefixed(this.stack.stackName))
+      .addLargeHeader(`${this.stack.stackName}-${this.prefixed('')}`)
       .monitorQueueProcessingFargateService({
         fargateService: this.queueProcessingFargateService,
         addServiceAlarms: {
