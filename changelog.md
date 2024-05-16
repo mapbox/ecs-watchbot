@@ -1,3 +1,26 @@
+### 9.1.0
+
+- Merge ScalingLambdaRole and LambdaTotalMessagesRole into the primary WatchbotRole resource to reduce number of distinct IAM roles
+- Add option `autoScalingRole` for using a predefined auto scaling role instead of creating one for the stack. This role should have the following permissions, with the resouce scope being as strict as desired: 
+
+```JSON
+{
+  "Statement": [
+    {
+      "Action": [
+        "application-autoscaling:*",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:PutMetricAlarm",
+        "ecs:UpdateService",
+        "ecs:DescribeServices"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    }
+  ]
+}
+```
+
 ### 9.0.1
 
 -  Bug fix: TotalMessagesLambda now working as expected; watchbot stacks now scaling down when no tasks in queue
