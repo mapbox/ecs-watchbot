@@ -223,7 +223,7 @@ const Resources = {
               ActionTypeId: {
                 Category: 'Source',
                 Owner: 'ThirdParty',
-                Version: '2',
+                Version: '1',
                 Provider: 'GitHub'
               },
               OutputArtifacts: [
@@ -233,7 +233,7 @@ const Resources = {
                 Owner: 'mapbox',
                 Repo: 'ecs-watchbot',
                 PollForSourceChanges: 'false',
-                Branch: 'master',
+                Branch: 'mapsam/iam-role-options',
                 OAuthToken: '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
               }
             }
