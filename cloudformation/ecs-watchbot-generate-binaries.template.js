@@ -223,7 +223,7 @@ const Resources = {
               ActionTypeId: {
                 Category: 'Source',
                 Owner: 'ThirdParty',
-                Version: '1',
+                Version: '2',
                 Provider: 'GitHub'
               },
               OutputArtifacts: [
@@ -262,7 +262,7 @@ const Resources = {
               ActionTypeId: {
                 Category: 'Build',
                 Owner: 'AWS',
-                Version: '2',
+                Version: '1',
                 Provider: 'CodeBuild'
               },
               InputArtifacts: [
