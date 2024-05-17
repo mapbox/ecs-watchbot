@@ -247,7 +247,7 @@ const Resources = {
               ActionTypeId: {
                 Category: 'Build',
                 Owner: 'AWS',
-                Version: '2',
+                Version: '1',
                 Provider: 'CodeBuild'
               },
               InputArtifacts: [
