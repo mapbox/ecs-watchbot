@@ -233,7 +233,7 @@ const Resources = {
                 Owner: 'mapbox',
                 Repo: 'ecs-watchbot',
                 PollForSourceChanges: 'false',
-                Branch: 'master',
+                Branch: '9.x',
                 OAuthToken: '{{resolve:secretsmanager:code-pipeline-helper/access-token}}'
               }
             }

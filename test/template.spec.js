@@ -214,4 +214,28 @@ test('[template]', () => {
   }));
 
   expect(fifoMaxSize).toMatchSnapshot('fifoMaxSize');
+
+  const builtWithAutoscalingRole = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com',
+    capacity: 'FARGATE',
+    autoscalingRoleArn: 'arn:autoscaling:role/abcd'
+  }));
+
+  expect(builtWithAutoscalingRole).toMatchSnapshot('autoscalingRoleArn');
+
+  const builtWithAutoscalingRoleImport = cf.merge(template({
+    service: 'example',
+    serviceVersion: '1',
+    command: 'echo hello world',
+    cluster: 'processing',
+    notificationEmail: 'hello@mapbox.pagerduty.com',
+    capacity: 'FARGATE',
+    autoscalingRoleArn: cf.importValue('my-role-arn')
+  }));
+
+  expect(builtWithAutoscalingRoleImport).toMatchSnapshot('autoscalingRoleArnImport');
 });

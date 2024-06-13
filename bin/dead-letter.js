@@ -3,7 +3,7 @@
 
 /* eslint-disable no-console */
 
-const { CloudFormation } = require('@aws-sdk/client-cloudformation')
+const { CloudFormation } = require('@aws-sdk/client-cloudformation');
 const { SQS } = require('@aws-sdk/client-sqs');
 const inquirer = require('inquirer');
 const stream = require('stream');

@@ -99,6 +99,7 @@ When creating your watchbot stacks with the `watchbot.template()` method, you no
 **placementConstraints** | ECS service [placement constraints](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ecs-service-placementconstraint.html). This value is ignored for `capacity` values other than `'EC2'`. | Object[]/Ref | No | false
 **placementStrategies** | ECS service [placement strategies](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ecs-service-placementstrategy.html). This value is ignored for `capacity` values other than `'EC2'`. | Object[]/Ref | No | false
 **structuredLogging** | Whether to emit logs in JSON format or not | Boolean | No | `false`
+**autoscalingRoleArn** | A custom autoscaling role to use instead of building a distinct role for the stack | String/Ref | No | If not provided, an autoscaling role will be built with the permissions described in [Custom Autoscaling Role](#custom-autoscaling-role)
 
 ### writableFilesystem mode explained
 
@@ -136,4 +137,26 @@ var outputs = {
 };
 
 cloudfriend.merge(myTemplate, watcher, outputs);
+```
+
+### Custom Autoscaling Role
+
+You can provide a custom autoscaling role for your service. If you do not provide a custom role, a role with the following permissions will be created, which can only be assumed by the `application-autoscaling.amazonaws.com` principal.
+
+```JSON
+{
+  "Statement": [
+    {
+      "Action": [
+        "application-autoscaling:*",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:PutMetricAlarm",
+        "ecs:UpdateService",
+        "ecs:DescribeServices"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    }
+  ]
+}
 ```
