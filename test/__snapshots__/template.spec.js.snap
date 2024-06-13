@@ -89,7 +89,7 @@ exports[`[template]: all-properties 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1",
+    "EcsWatchbotVersion": "9.1.0",
   },
   "Outputs": {
     "ClusterArn": {
@@ -127,7 +127,7 @@ exports[`[template]: all-properties 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -286,119 +286,6 @@ exports[`[template]: all-properties 1`] = `
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "SoupLambdaScalingRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupLambdaTotalMessagesRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                {
-                  "Action": [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "SoupQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "SoupLogGroup": {
       "Properties": {
@@ -625,7 +512,7 @@ exports[`[template]: all-properties 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -699,6 +586,7 @@ exports[`[template]: all-properties 1`] = `
               "Principal": {
                 "Service": [
                   "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com",
                 ],
               },
             },
@@ -768,6 +656,60 @@ exports[`[template]: all-properties 1`] = `
                     "Ref": "AWS::StackName",
                   },
                   "-default-worker",
+                ],
+              ],
+            },
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                {
+                  "Action": [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                {
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-lambda-scaling",
                 ],
               ],
             },
@@ -945,7 +887,7 @@ exports[`[template]: all-properties 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaScalingRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -1386,7 +1328,7 @@ exports[`[template]: all-properties 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaTotalMessagesRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -1457,7 +1399,7 @@ exports[`[template]: all-properties 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -1613,7 +1555,7 @@ exports[`[template]: all-properties-CPU 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1",
+    "EcsWatchbotVersion": "9.1.0",
   },
   "Outputs": {
     "ClusterArn": {
@@ -1651,7 +1593,7 @@ exports[`[template]: all-properties-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -1810,119 +1752,6 @@ exports[`[template]: all-properties-CPU 1`] = `
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "SoupLambdaScalingRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupLambdaTotalMessagesRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                {
-                  "Action": [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "SoupQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "SoupLogGroup": {
       "Properties": {
@@ -2149,7 +1978,7 @@ exports[`[template]: all-properties-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -2223,6 +2052,7 @@ exports[`[template]: all-properties-CPU 1`] = `
               "Principal": {
                 "Service": [
                   "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com",
                 ],
               },
             },
@@ -2292,6 +2122,60 @@ exports[`[template]: all-properties-CPU 1`] = `
                     "Ref": "AWS::StackName",
                   },
                   "-default-worker",
+                ],
+              ],
+            },
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                {
+                  "Action": [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                {
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-lambda-scaling",
                 ],
               ],
             },
@@ -2469,7 +2353,7 @@ exports[`[template]: all-properties-CPU 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaScalingRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -2906,7 +2790,7 @@ exports[`[template]: all-properties-CPU 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaTotalMessagesRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -2977,7 +2861,7 @@ exports[`[template]: all-properties-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -3133,7 +3017,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1",
+    "EcsWatchbotVersion": "9.1.0",
   },
   "Outputs": {
     "ClusterArn": {
@@ -3171,7 +3055,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -3330,119 +3214,6 @@ exports[`[template]: all-properties-low-CPU 1`] = `
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "SoupLambdaScalingRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupLambdaTotalMessagesRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                {
-                  "Action": [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "SoupQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "SoupLogGroup": {
       "Properties": {
@@ -3669,7 +3440,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -3743,6 +3514,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
               "Principal": {
                 "Service": [
                   "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com",
                 ],
               },
             },
@@ -3812,6 +3584,60 @@ exports[`[template]: all-properties-low-CPU 1`] = `
                     "Ref": "AWS::StackName",
                   },
                   "-default-worker",
+                ],
+              ],
+            },
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                {
+                  "Action": [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                {
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-lambda-scaling",
                 ],
               ],
             },
@@ -3989,7 +3815,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaScalingRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -4438,7 +4264,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaTotalMessagesRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -4509,7 +4335,7 @@ exports[`[template]: all-properties-low-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -4665,7 +4491,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1",
+    "EcsWatchbotVersion": "9.1.0",
   },
   "Outputs": {
     "ClusterArn": {
@@ -4703,7 +4529,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -4862,119 +4688,6 @@ exports[`[template]: all-properties-no-CPU 1`] = `
         },
       },
       "Type": "AWS::SQS::Queue",
-    },
-    "SoupLambdaScalingRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SoupLambdaTotalMessagesRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                {
-                  "Action": [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "SoupQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
     "SoupLogGroup": {
       "Properties": {
@@ -5201,7 +4914,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -5275,6 +4988,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
               "Principal": {
                 "Service": [
                   "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com",
                 ],
               },
             },
@@ -5344,6 +5058,60 @@ exports[`[template]: all-properties-no-CPU 1`] = `
                     "Ref": "AWS::StackName",
                   },
                   "-default-worker",
+                ],
+              ],
+            },
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                {
+                  "Action": [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                {
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "SoupQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-lambda-scaling",
                 ],
               ],
             },
@@ -5521,7 +5289,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaScalingRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -5970,7 +5738,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "SoupLambdaTotalMessagesRole",
+            "SoupRole",
             "Arn",
           ],
         },
@@ -6041,7 +5809,7 @@ exports[`[template]: all-properties-no-CPU 1`] = `
             "Ref": "SoupNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -6197,7 +5965,7 @@ exports[`[template]: defaults 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1",
+    "EcsWatchbotVersion": "9.1.0",
   },
   "Outputs": {
     "ClusterArn": {
@@ -6235,7 +6003,7 @@ exports[`[template]: defaults 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -6395,119 +6163,6 @@ exports[`[template]: defaults 1`] = `
       },
       "Type": "AWS::SQS::Queue",
     },
-    "WatchbotLambdaScalingRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "WatchbotLambdaTotalMessagesRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                {
-                  "Action": [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "WatchbotQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "WatchbotLogGroup": {
       "Properties": {
         "LogGroupName": {
@@ -6659,7 +6314,7 @@ exports[`[template]: defaults 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -6733,6 +6388,7 @@ exports[`[template]: defaults 1`] = `
               "Principal": {
                 "Service": [
                   "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com",
                 ],
               },
             },
@@ -6802,6 +6458,60 @@ exports[`[template]: defaults 1`] = `
                     "Ref": "AWS::StackName",
                   },
                   "-default-worker",
+                ],
+              ],
+            },
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                {
+                  "Action": [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                {
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-lambda-scaling",
                 ],
               ],
             },
@@ -6957,7 +6667,7 @@ exports[`[template]: defaults 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "WatchbotLambdaScalingRole",
+            "WatchbotRole",
             "Arn",
           ],
         },
@@ -7384,7 +7094,7 @@ exports[`[template]: defaults 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "WatchbotLambdaTotalMessagesRole",
+            "WatchbotRole",
             "Arn",
           ],
         },
@@ -7455,7 +7165,7 @@ exports[`[template]: defaults 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -7735,7 +7445,7 @@ exports[`[template]: fifo 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1",
+    "EcsWatchbotVersion": "9.1.0",
   },
   "Outputs": {
     "ClusterArn": {
@@ -7773,7 +7483,7 @@ exports[`[template]: fifo 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -7936,119 +7646,6 @@ exports[`[template]: fifo 1`] = `
       },
       "Type": "AWS::SQS::Queue",
     },
-    "WatchbotLambdaScalingRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "WatchbotLambdaTotalMessagesRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                {
-                  "Action": [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "WatchbotQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "WatchbotLogGroup": {
       "Properties": {
         "LogGroupName": {
@@ -8164,7 +7761,7 @@ exports[`[template]: fifo 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -8238,6 +7835,7 @@ exports[`[template]: fifo 1`] = `
               "Principal": {
                 "Service": [
                   "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com",
                 ],
               },
             },
@@ -8300,6 +7898,60 @@ exports[`[template]: fifo 1`] = `
                     "Ref": "AWS::StackName",
                   },
                   "-default-worker",
+                ],
+              ],
+            },
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                {
+                  "Action": [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                {
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-lambda-scaling",
                 ],
               ],
             },
@@ -8455,7 +8107,7 @@ exports[`[template]: fifo 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "WatchbotLambdaScalingRole",
+            "WatchbotRole",
             "Arn",
           ],
         },
@@ -8864,7 +8516,7 @@ exports[`[template]: fifo 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "WatchbotLambdaTotalMessagesRole",
+            "WatchbotRole",
             "Arn",
           ],
         },
@@ -8935,7 +8587,7 @@ exports[`[template]: fifo 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -9091,7 +8743,7 @@ exports[`[template]: fifoMaxSize 1`] = `
     },
   },
   "Metadata": {
-    "EcsWatchbotVersion": "9.0.1",
+    "EcsWatchbotVersion": "9.1.0",
   },
   "Outputs": {
     "ClusterArn": {
@@ -9129,7 +8781,7 @@ exports[`[template]: fifoMaxSize 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#memoryutilization",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#memoryutilization",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -9292,119 +8944,6 @@ exports[`[template]: fifoMaxSize 1`] = `
       },
       "Type": "AWS::SQS::Queue",
     },
-    "WatchbotLambdaScalingRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "CustomcfnScalingLambdaLogs",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "WatchbotLambdaTotalMessagesRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole",
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": [
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:",
-                        {
-                          "Ref": "AWS::Partition",
-                        },
-                        ":logs:*:*:*",
-                      ],
-                    ],
-                  },
-                },
-                {
-                  "Action": [
-                    "cloudwatch:PutMetricData",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "sqs:GetQueueAttributes",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::GetAtt": [
-                      "WatchbotQueue",
-                      "Arn",
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "LambdaTotalMessagesMetric",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "WatchbotLogGroup": {
       "Properties": {
         "LogGroupName": {
@@ -9520,7 +9059,7 @@ exports[`[template]: fifoMaxSize 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#queuesize",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#queuesize",
         "AlarmName": {
           "Fn::Join": [
             "-",
@@ -9594,6 +9133,7 @@ exports[`[template]: fifoMaxSize 1`] = `
               "Principal": {
                 "Service": [
                   "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com",
                 ],
               },
             },
@@ -9656,6 +9196,60 @@ exports[`[template]: fifoMaxSize 1`] = `
                     "Ref": "AWS::StackName",
                   },
                   "-default-worker",
+                ],
+              ],
+            },
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":logs:*:*:*",
+                      ],
+                    ],
+                  },
+                },
+                {
+                  "Action": [
+                    "cloudwatch:PutMetricData",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                {
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "WatchbotQueue",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName",
+                  },
+                  "-lambda-scaling",
                 ],
               ],
             },
@@ -9811,7 +9405,7 @@ exports[`[template]: fifoMaxSize 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "WatchbotLambdaScalingRole",
+            "WatchbotRole",
             "Arn",
           ],
         },
@@ -10220,7 +9814,7 @@ exports[`[template]: fifoMaxSize 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "WatchbotLambdaTotalMessagesRole",
+            "WatchbotRole",
             "Arn",
           ],
         },
@@ -10291,7 +9885,7 @@ exports[`[template]: fifoMaxSize 1`] = `
             "Ref": "WatchbotNotificationTopic",
           },
         ],
-        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.0.1/docs/alarms.md#workererrors",
+        "AlarmDescription": "https://github.com/mapbox/ecs-watchbot/blob/v9.1.0/docs/alarms.md#workererrors",
         "AlarmName": {
           "Fn::Join": [
             "-",
