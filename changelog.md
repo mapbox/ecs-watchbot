@@ -1,3 +1,7 @@
+### 10.1.0
+- Expose `LinuxParameters` in the props to allow users to override the value in the container definition
+- Add a cloudformation output for the watchbot SNS topic
+
 ### 10.0.2
 
 -  Fix monitoring resource naming conflicts when used in multiple stacks
