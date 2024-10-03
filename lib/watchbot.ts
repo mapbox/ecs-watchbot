@@ -1,4 +1,4 @@
-import { aws_dynamodb, Duration, RemovalPolicy, Resource, Stack } from 'aws-cdk-lib';
+import { aws_dynamodb, CfnOutput, Duration, RemovalPolicy, Resource, Stack } from 'aws-cdk-lib';
 import { ISecurityGroup, SubnetSelection, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
   BaseService,
@@ -7,6 +7,7 @@ import {
   ContainerImage,
   HealthCheck,
   ICluster,
+  LinuxParametersProps,
   LogDrivers,
   MountPoint,
   PropagatedTagSource,
@@ -27,7 +28,11 @@ import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
 } from './MapboxQueueProcessingFargateService';
-import { DynamicDashboardFactory, MonitoringFacade, SnsAlarmActionStrategy } from 'cdk-monitoring-constructs';
+import {
+  DynamicDashboardFactory,
+  MonitoringFacade,
+  SnsAlarmActionStrategy
+} from 'cdk-monitoring-constructs';
 import * as path from 'path';
 import { ComparisonOperator, Stats } from 'aws-cdk-lib/aws-cloudwatch';
 import { AttributeType, CfnTable } from 'aws-cdk-lib/aws-dynamodb';
@@ -228,6 +233,12 @@ export interface WatchbotProps {
      */
     writeCapacityUnits?: number;
   };
+
+  /**
+   * Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
+   * @default undefined
+   */
+  readonly linuxParameters?: LinuxParametersProps;
 }
 
 export type WatchbotAlarms = {
@@ -329,16 +340,22 @@ export class FargateWatchbot extends Resource {
 
     // workaround for a bug when you set fifo = false
     // https://github.com/aws/aws-cdk/issues/8550
-    const additionalFifoProperties = this.props.fifo? { fifo: true, contentBasedDeduplication: true } : {};
+    const additionalFifoProperties = this.props.fifo
+      ? { fifo: true, contentBasedDeduplication: true }
+      : {};
 
     this.deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
-      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}${this.props.fifo ? '.fifo' : ''}`,
+      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}${
+        this.props.fifo ? '.fifo' : ''
+      }`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       ...additionalFifoProperties
     });
 
     this.queue = new Queue(this, 'Queue', {
-      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}${this.props.fifo ? '.fifo' : ''}`,
+      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}${
+        this.props.fifo ? '.fifo' : ''
+      }`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       visibilityTimeout: Duration.seconds(180),
       deadLetterQueue: {
@@ -385,6 +402,7 @@ export class FargateWatchbot extends Resource {
         logGroup: this.logGroup
       }),
       healthCheck: this.props.healthCheck,
+      linuxParameters: this.props.linuxParameters,
 
       queue: this.queue,
 
@@ -401,6 +419,7 @@ export class FargateWatchbot extends Resource {
       assignPublicIp: this.props.publicIP,
       securityGroups: this.props.securityGroups
     };
+
     this.queueProcessingFargateService = new MapboxQueueProcessingFargateService(
       this,
       'Service',
@@ -436,6 +455,11 @@ export class FargateWatchbot extends Resource {
       this.topic.grantPublish(this.taskDefinition.taskRole);
       this.container.addEnvironment('WorkTopic', this.topic.topicArn);
     }
+    new CfnOutput(this, 'TopicOutput', {
+      value: this.topic?.topicArn || '',
+      exportName: `${this.props.serviceName}-topic`,
+      description: `SNS topic to send messages to in order to invoke the ${this.props.serviceName} watchbot pipeline`
+    });
 
     this.monitoring = this.createAlarms();
 
@@ -456,12 +480,9 @@ export class FargateWatchbot extends Resource {
   }
 
   private createAlarms() {
-
-    const factory = new DynamicDashboardFactory(this, "DynamicDashboards", {
+    const factory = new DynamicDashboardFactory(this, 'DynamicDashboards', {
       dashboardNamePrefix: this.stack.stackName,
-      dashboardConfigs: [
-        { name: "watchbot" }
-      ],
+      dashboardConfigs: [{ name: 'watchbot' }]
     });
 
     const monitoring = new MonitoringFacade(this, 'Monitoring', {
@@ -571,18 +592,20 @@ export class FargateWatchbot extends Resource {
       readonlyRootFilesystem: true,
       maxJobDuration: Duration.seconds(0),
       family: props.serviceName,
-      cluster: props.cluster ?? Cluster.fromClusterAttributes(this, `${id}Cluster`, {
-        clusterName: `fargate-processing-${props.deploymentEnvironment}`,
-        vpc: Vpc.fromLookup(this, `${id}VPC`, {
-          vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
-          isDefault: false,
-          region,
-          ownerAccountId:
-            props.deploymentEnvironment === 'staging'
-              ? NETWORKING_STG_ACCOUNT_ID
-              : NETWORKING_PROD_ACCOUNT_ID
-        })
-      }),
+      cluster:
+        props.cluster ??
+        Cluster.fromClusterAttributes(this, `${id}Cluster`, {
+          clusterName: `fargate-processing-${props.deploymentEnvironment}`,
+          vpc: Vpc.fromLookup(this, `${id}VPC`, {
+            vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
+            isDefault: false,
+            region,
+            ownerAccountId:
+              props.deploymentEnvironment === 'staging'
+                ? NETWORKING_STG_ACCOUNT_ID
+                : NETWORKING_PROD_ACCOUNT_ID
+          })
+        }),
 
       publicIP: false,
       privileged: false,
