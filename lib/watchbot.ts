@@ -467,8 +467,8 @@ export class FargateWatchbot extends Resource {
     }
     new CfnOutput(this, 'TopicOutput', {
       value: this.topic?.topicArn || '',
-      exportName: `${this.props.serviceName}-topic`,
-      description: `SNS topic to send messages to in order to invoke the ${this.props.serviceName} watchbot pipeline`
+      exportName: `${this.props.stackName}-topic`,
+      description: `SNS topic to send messages to in order to invoke the ${this.props.stackName} watchbot pipeline`
     });
 
     this.monitoring = this.createAlarms();
