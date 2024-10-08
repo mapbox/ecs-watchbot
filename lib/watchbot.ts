@@ -380,9 +380,7 @@ export class FargateWatchbot extends Resource {
 
       // Task Definition props
       cpu: this.props.cpu,
-      ephemeralStorageGiB: {
-        sizeInGiB: this.props.ephemeralStorageGiB,
-      },
+      ephemeralStorageGiB: this.props.ephemeralStorageGiB,
       memoryLimitMiB: this.props.memoryLimitMiB,
       family: this.props.family,
       runtimePlatform: this.props.runtimePlatform,
@@ -467,8 +465,8 @@ export class FargateWatchbot extends Resource {
     }
     new CfnOutput(this, 'TopicOutput', {
       value: this.topic?.topicArn || '',
-      exportName: `${this.props.stackName}-topic`,
-      description: `SNS topic to send messages to in order to invoke the ${this.props.stackName} watchbot pipeline`
+      exportName: `${this.stack.stackName}-topic`,
+      description: `SNS topic to send messages to in order to invoke the ${this.stack.stackName} watchbot pipeline`
     });
 
     this.monitoring = this.createAlarms();
