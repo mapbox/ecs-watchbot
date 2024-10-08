@@ -72,6 +72,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
     this.taskDefinition = new FargateTaskDefinition(this, 'QueueProcessingTaskDef', {
       memoryLimitMiB: props.memoryLimitMiB || 512,
       cpu: props.cpu || 256,
+      ephemeralStorageGib : props.ephemeralStorageGiB || 20,
       family: props.family,
       runtimePlatform: props.runtimePlatform,
       volumes: props.volumes

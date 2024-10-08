@@ -111,6 +111,13 @@ export interface WatchbotProps {
   readonly serviceVersion: string;
 
   /**
+   * The size of the ephemeral storage disk to make available to the container in GB.
+   * @default 20
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.CfnTaskDefinition.EphemeralStorageProperty.html
+   */
+  readonly ephemeralStorageGiB?: number;
+
+  /**
    * The name of a family that the task definition is registered to.
    * @default uses serviceName
    * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#family
@@ -373,6 +380,9 @@ export class FargateWatchbot extends Resource {
 
       // Task Definition props
       cpu: this.props.cpu,
+      ephemeralStorageGiB: {
+        sizeInGiB: this.props.ephemeralStorageGiB,
+      },
       memoryLimitMiB: this.props.memoryLimitMiB,
       family: this.props.family,
       runtimePlatform: this.props.runtimePlatform,
