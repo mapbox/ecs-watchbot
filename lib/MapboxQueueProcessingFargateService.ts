@@ -10,6 +10,7 @@ import {
   QueueProcessingFargateServiceProps,
   QueueProcessingServiceBase
 } from 'aws-cdk-lib/aws-ecs-patterns';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { cx_api, FeatureFlags } from 'aws-cdk-lib';
 
 /**
@@ -67,6 +68,11 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
    * The Fargate task definition in this construct.
    */
   public readonly taskDefinition: FargateTaskDefinition;
+
+  /**
+   * A lambda to calculate the total messages (visible and not visible) in the SQS queue as a cloudwatch metric
+   */
+  readonly totalMessagesLambda?: lambda.Function;
 
   /**
    * Constructs a new instance of the QueueProcessingFargateService class.
@@ -129,5 +135,37 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
 
     this.configureAutoscalingForService(this.service);
     this.grantPermissionsToService(this.service);
+
+    this.totalMessagesLambda = new lambda.Function(this, 'MyFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: new lambda.InlineCode(`
+        const { SQS } = require('@aws-sdk/client-sqs');
+        const { CloudWatch } = require('@aws-sdk/client-cloudwatch');
+        exports.handler = function(event, context, callback) {
+          const sqs = new SQS({ region: process.env.AWS_DEFAULT_REGION });
+          const cw = new CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+
+          return sqs.getQueueAttributes({
+            QueueUrl: ${this.sqsQueue.queueUrl},
+            AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
+          })
+            .then((attrs) => {
+              return cw.putMetricData({
+                Namespace: 'Mapbox/ecs-watchbot',
+                MetricData: [{
+                  MetricName: 'TotalMessages',
+                  Dimensions: [{ Name: 'QueueName', Value: ${this.sqsQueue.queueName} }],
+                  Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
+                          Number(attrs.Attributes.ApproximateNumberOfMessages)
+                }]
+              })
+            })
+            .then((metric) => callback(null, metric))
+            .catch((err) => callback(err));
+        }
+      `)
+      })
+    }
   }
 }
