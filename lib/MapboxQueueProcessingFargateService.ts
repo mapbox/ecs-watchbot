@@ -11,7 +11,10 @@ import {
   QueueProcessingServiceBase
 } from 'aws-cdk-lib/aws-ecs-patterns';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { cx_api, FeatureFlags } from 'aws-cdk-lib';
+import { cx_api, FeatureFlags, CustomResource } from 'aws-cdk-lib';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 /**
  * The properties for the MapboxQueueProcessingFargateService service.
@@ -53,6 +56,12 @@ export interface MapboxQueueProcessingFargateServiceProps
    * @default undefined
    */
   readonly ephemeralStorageGiB?: number;
+
+  /**
+   * max number of ECS tasks
+   * @default 1
+   */
+  readonly maxScalingCapacity?: number;
 }
 
 /**
@@ -73,6 +82,11 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
    * A lambda to calculate the total messages (visible and not visible) in the SQS queue as a cloudwatch metric
    */
   readonly totalMessagesLambda?: lambda.Function;
+
+  /**
+   * A lambda to scale the service based on the maxScalingCapacity property
+   */
+  readonly scalingLambda?: lambda.Function;
 
   /**
    * Constructs a new instance of the QueueProcessingFargateService class.
@@ -136,7 +150,27 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
     this.configureAutoscalingForService(this.service);
     this.grantPermissionsToService(this.service);
 
-    this.totalMessagesLambda = new lambda.Function(this, 'LambdaFunction', {
+    this.scalingLambda = new lambda.Function(this, 'ScalingLambda', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: new lambda.InlineCode(`
+        const response = require('./cfn-response');
+        exports.handler = function(event,context){
+          const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxScalingCapacity) / 10, 100), 1));
+          response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
+        }
+      `)
+    })
+
+    new CustomResource(this, 'CustomScalingResource', {
+      resourceType: 'Custom::MyCustomResourceType',
+      serviceToken: this.scalingLambda.functionArn,
+      properties: {
+        maxScalingCapacity: props.maxScalingCapacity
+      }
+    });
+
+    this.totalMessagesLambda = new lambda.Function(this, 'TotalMessagesLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: new lambda.InlineCode(`
@@ -166,5 +200,17 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
         }
       `)
     })
+
+    const rule = new events.Rule(this, 'TotalMessagesRule', {
+      description: 'Update TotalMessages metric every minute',
+      schedule: events.Schedule.cron({ minute: '0/1'}) // run every minute
+    });
+
+    const principal = new iam.ServicePrincipal('events.amazonaws.com');
+
+    this.totalMessagesLambda.grantInvoke(principal);
+
+    rule.addTarget(new targets.LambdaFunction(this.totalMessagesLambda));
+
   }
 }
