@@ -136,7 +136,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
     this.configureAutoscalingForService(this.service);
     this.grantPermissionsToService(this.service);
 
-    this.totalMessagesLambda = new lambda.Function(this, 'MyFunction', {
+    this.totalMessagesLambda = new lambda.Function(this, 'LambdaFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: new lambda.InlineCode(`
@@ -165,7 +165,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
             .catch((err) => callback(err));
         }
       `)
-      })
-    }
+    })
   }
 }
