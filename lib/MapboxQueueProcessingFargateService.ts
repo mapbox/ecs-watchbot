@@ -11,7 +11,7 @@ import {
   QueueProcessingServiceBase
 } from 'aws-cdk-lib/aws-ecs-patterns';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { cx_api, FeatureFlags, CustomResource } from 'aws-cdk-lib';
+import { cx_api, FeatureFlags } from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -149,26 +149,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
 
     this.configureAutoscalingForService(this.service);
     this.grantPermissionsToService(this.service);
-
-    this.scalingLambda = new lambda.Function(this, 'ScalingLambda', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: new lambda.InlineCode(`
-        const response = require('./cfn-response');
-        exports.handler = function(event,context){
-          const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxScalingCapacity) / 10, 100), 1));
-          response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
-        }
-      `)
-    })
-
-    new CustomResource(this, 'CustomScalingResource', {
-      resourceType: 'Custom::MyCustomResourceType',
-      serviceToken: this.scalingLambda.functionArn,
-      properties: {
-        maxScalingCapacity: props.maxScalingCapacity
-      }
-    });
 
     this.totalMessagesLambda = new lambda.Function(this, 'TotalMessagesLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
