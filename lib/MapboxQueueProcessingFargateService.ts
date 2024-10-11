@@ -188,7 +188,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       resources: ['*']
     }))
     this.totalMessagesLambda.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['cloudwatch:PutMetricData'],
+      actions: ['sqs:GetQueueAttributes'],
       resources: [this.sqsQueue.queueArn]
     }))
 
