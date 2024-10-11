@@ -220,7 +220,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
     scaling.scaleOnMetric('TotalMessagesScaling', {
       metric: this.totalMessagesMetric,
       scalingSteps: [
-        { lower: -2, upper: -1, change: -100 }, // this is a bogus param - we require two for autoscaling
+        { lower: -3, upper: -2, change: -100 }, // this is a bogus param - we require two for autoscaling
         { lower: -1, upper: 0, change: -100 },
       ],
       evaluationPeriods: 3
