@@ -230,7 +230,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       metric: this.visibleMessagesMetric,
       scalingSteps: [
         { lower: 1, upper: 1, change: 1 },
-        { lower: 10, upper: 10, change: 5 },  // test - let's add 5 tasks if there are > 10 messages
+        { lower: 10, upper: 1000000000, change: 5 },  // test - let's add 5 tasks if there are > 10 messages
       ],
       evaluationPeriods: 3
     })
