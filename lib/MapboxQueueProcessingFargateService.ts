@@ -85,6 +85,11 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
   readonly totalMessagesMetric: cloudwatch.Metric;
 
   /**
+   * A metric to track the total messages visible- created by default by SQS
+   */
+  readonly visibleMessagesMetric: cloudwatch.Metric;
+
+  /**
    * Constructs a new instance of the QueueProcessingFargateService class.
    */
   constructor(scope: Construct, id: string, props: MapboxQueueProcessingFargateServiceProps) {
@@ -145,13 +150,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
 
     this.grantPermissionsToService(this.service);
 
-    this.totalMessagesMetric = new cloudwatch.Metric({
-      namespace: 'Mapbox/ecs-watchbot',
-      metricName: 'TotalMessages',
-      dimensionsMap: { QueueName: this.sqsQueue.queueName },
-      period: Duration.minutes(1),
-    });
-
     this.totalMessagesLambda = new lambda.Function(this, 'TotalMessagesLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
@@ -199,6 +197,21 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
 
     rule.addTarget(new targets.LambdaFunction(this.totalMessagesLambda));
 
+    this.totalMessagesMetric = new cloudwatch.Metric({
+      namespace: 'Mapbox/ecs-watchbot',
+      metricName: 'TotalMessages',
+      dimensionsMap: { QueueName: this.sqsQueue.queueName },
+      period: Duration.minutes(1),
+    });
+
+    this.visibleMessagesMetric = new cloudwatch.Metric({
+      namespace: 'SQS/Queue Metrics',
+      metricName: 'ApproximateNumberOfMessagesVisible',
+      dimensionsMap: { QueueName: this.sqsQueue.queueName },
+      period: Duration.minutes(1),
+    });
+
+
     const scaling = this.service.autoScaleTaskCount({
       minCapacity: props.minScalingCapacity,
       maxCapacity: props.maxScalingCapacity || 1
@@ -208,7 +221,14 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       metric: this.totalMessagesMetric,
       scalingSteps: [
         { upper: 0, change: -100 },
-        { lower: 1, change: +1 },
+      ],
+      evaluationPeriods: 3
+    })
+
+    scaling.scaleOnMetric('VisibleMessagesScaling', {
+      metric: this.visibleMessagesMetric,
+      scalingSteps: [
+        { lower: 1, change: 1 },
       ],
       evaluationPeriods: 3
     })
