@@ -182,13 +182,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
         }
       `)
     })
-    const totalMessagesLambdaRole = new iam.Role(this, 'TotalMessagesLambdaRole', {
-      assumedBy: new iam.ServicePrincipal('events.amazonaws.com').withConditions(
-        { 'StringEquals': { 'aws:SourceAccount': '211125758554' } },
-      )
-    });
 
-    this.totalMessagesLambda.grantInvoke(totalMessagesLambdaRole);
     this.totalMessagesLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ['cloudwatch:PutMetricData'],
       resources: ['*']
