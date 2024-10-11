@@ -163,7 +163,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
           const cw = new CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
 
           return sqs.getQueueAttributes({
-            QueueUrl: ${this.sqsQueue.queueUrl},
+            QueueUrl: '${this.sqsQueue.queueUrl}',
             AttributeNames: ['ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessages']
           })
             .then((attrs) => {
@@ -171,7 +171,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
                 Namespace: 'Mapbox/ecs-watchbot',
                 MetricData: [{
                   MetricName: 'TotalMessages',
-                  Dimensions: [{ Name: 'QueueName', Value: $ }],
+                  Dimensions: [{ Name: 'QueueName', Value: '${this.sqsQueue.queueName}'}],
                   Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
                           Number(attrs.Attributes.ApproximateNumberOfMessages)
                 }]
