@@ -182,16 +182,26 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
         }
       `)
     })
+    const totalMessagesLambdaRole = new iam.Role(this, 'TotalMessagesLambdaRole', {
+      assumedBy: new iam.ServicePrincipal('events.amazonaws.com').withConditions(
+        { 'StringEquals': { 'aws:SourceAccount': '211125758554' } },
+      )
+    });
+
+    this.totalMessagesLambda.grantInvoke(totalMessagesLambdaRole);
+    this.totalMessagesLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['cloudwatch:PutMetricData'],
+      resources: ['*']
+    }))
+    this.totalMessagesLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['cloudwatch:PutMetricData'],
+      resources: [this.sqsQueue.queueArn]
+    }))
 
     const rule = new events.Rule(this, 'TotalMessagesRule', {
       description: 'Update TotalMessages metric every minute',
       schedule: events.Schedule.cron({ minute: '0/1'}) // run every minute
     });
-
-    const principal = new iam.ServicePrincipal('events.amazonaws.com').withConditions(
-      { 'StringEquals': { 'aws:SourceAccount': '211125758554' } }
-    );
-    this.totalMessagesLambda.grantInvoke(principal);
 
     rule.addTarget(new targets.LambdaFunction(this.totalMessagesLambda));
 
