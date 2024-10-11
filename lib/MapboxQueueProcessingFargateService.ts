@@ -11,10 +11,11 @@ import {
   QueueProcessingServiceBase
 } from 'aws-cdk-lib/aws-ecs-patterns';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { cx_api, FeatureFlags } from 'aws-cdk-lib';
+import { cx_api, FeatureFlags, Duration } from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 
 /**
  * The properties for the MapboxQueueProcessingFargateService service.
@@ -57,11 +58,6 @@ export interface MapboxQueueProcessingFargateServiceProps
    */
   readonly ephemeralStorageGiB?: number;
 
-  /**
-   * max number of ECS tasks
-   * @default 1
-   */
-  readonly maxScalingCapacity?: number;
 }
 
 /**
@@ -81,12 +77,12 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
   /**
    * A lambda to calculate the total messages (visible and not visible) in the SQS queue as a cloudwatch metric
    */
-  readonly totalMessagesLambda?: lambda.Function;
+  readonly totalMessagesLambda: lambda.Function;
 
   /**
-   * A lambda to scale the service based on the maxScalingCapacity property
+   * A metric to track the total messages visible and not visible
    */
-  readonly scalingLambda?: lambda.Function;
+  readonly totalMessagesMetric: cloudwatch.Metric;
 
   /**
    * Constructs a new instance of the QueueProcessingFargateService class.
@@ -147,8 +143,14 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       enableExecuteCommand: props.enableExecuteCommand
     });
 
-    this.configureAutoscalingForService(this.service);
     this.grantPermissionsToService(this.service);
+
+    this.totalMessagesMetric = new cloudwatch.Metric({
+      namespace: 'Mapbox/ecs-watchbot',
+      metricName: 'TotalMessages',
+      dimensionsMap: { QueueName: this.sqsQueue.queueName },
+      period: Duration.minutes(1),
+    });
 
     this.totalMessagesLambda = new lambda.Function(this, 'TotalMessagesLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -169,7 +171,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
                 Namespace: 'Mapbox/ecs-watchbot',
                 MetricData: [{
                   MetricName: 'TotalMessages',
-                  Dimensions: [{ Name: 'QueueName', Value: ${this.sqsQueue.queueName} }],
+                  Dimensions: [{ Name: 'QueueName', Value: $ }],
                   Value: Number(attrs.Attributes.ApproximateNumberOfMessagesNotVisible) +
                           Number(attrs.Attributes.ApproximateNumberOfMessages)
                 }]
@@ -191,6 +193,20 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
     this.totalMessagesLambda.grantInvoke(principal);
 
     rule.addTarget(new targets.LambdaFunction(this.totalMessagesLambda));
+
+    const scaling = this.service.autoScaleTaskCount({
+      minCapacity: props.minScalingCapacity,
+      maxCapacity: props.maxScalingCapacity || 1
+    });
+
+    scaling.scaleOnMetric('TotalMessagesScaling', {
+      metric: this.totalMessagesMetric,
+      scalingSteps: [
+        { upper: 0, change: -100 },
+        { lower: 1, change: +1 },
+      ],
+      evaluationPeriods: 3
+    })
 
   }
 }
