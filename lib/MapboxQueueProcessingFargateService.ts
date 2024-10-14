@@ -289,7 +289,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       alarmName: 'WatchbotScaleUp',
       alarmDescription: 'Scale up due to visible messages in queue',
       evaluationPeriods: 1,
-      threshold: 0,
+      threshold: 1,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_UPPER_THRESHOLD,
       metric: this.visibleMessagesMetric
     });
@@ -313,7 +313,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       alarmName: 'WatchbotScaleDown',
       alarmDescription: 'Scale down due to total messages in queue',
       evaluationPeriods: 1,
-      threshold: 0,
+      threshold: 1,
       comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
       metric: this.totalMessagesMetric
     });
