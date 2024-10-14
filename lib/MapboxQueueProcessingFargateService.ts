@@ -100,7 +100,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
    */
   readonly scaleDown : appscaling.CfnScalingPolicy;
 
-
   /**
    * A metric to track the total messages visible and not visible
    */
@@ -110,6 +109,16 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
    * A metric to track the total messages visible- created by default by SQS
    */
   readonly visibleMessagesMetric: cloudwatch.Metric;
+
+  /**
+   * An alarm to track visible messages and scale up as necessary
+   */
+  readonly scaleUpTrigger: cloudwatch.Alarm;
+
+  /**
+   * An alarm to track total messages and scale up as necessary
+   */
+  readonly scaleDownTrigger: cloudwatch.Alarm;
 
   /**
    * Constructs a new instance of the QueueProcessingFargateService class.
@@ -223,7 +232,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       namespace: 'Mapbox/ecs-watchbot',
       metricName: 'TotalMessages',
       dimensionsMap: { QueueName: this.sqsQueue.queueName },
-      period: Duration.minutes(1),
+      period: Duration.minutes(600),
     });
 
     const scalingTarget = new appscaling.ScalableTarget(this, 'WatchbotScalingTarget', {
@@ -253,6 +262,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       },
     });
 
+
     this.scaleUp = new appscaling.CfnScalingPolicy(this, 'WatchbotScaleUp', {
       policyName: 'watchbot-scale-up',
       policyType: 'StepScaling',
@@ -262,10 +272,26 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
         cooldown: 300,
         metricAggregationType: 'Average',
         stepAdjustments: [{
-          scalingAdjustment: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 1,
+          scalingAdjustment: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 0,
           metricIntervalLowerBound: 0,
         }],
       },
+    });
+
+    this.visibleMessagesMetric = new cloudwatch.Metric({
+      namespace: 'Mapbox/ecs-watchbot',
+      metricName: 'VisibleMessages',
+      dimensionsMap: { QueueName: this.sqsQueue.queueName },
+      period: Duration.minutes(300),
+    });
+
+    this.scaleUpTrigger = new cloudwatch.Alarm(this, 'ScaleUpTrigger', {
+      alarmName: 'WatchbotScaleUp',
+      alarmDescription: 'Scale up due to visible messages in queue',
+      evaluationPeriods: 1,
+      threshold: 0,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_UPPER_THRESHOLD,
+      metric: this.visibleMessagesMetric
     });
 
     this.scaleDown = new appscaling.CfnScalingPolicy(this, 'WatchbotScaleDown', {
@@ -281,6 +307,15 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
           metricIntervalLowerBound: 0,
         }],
       },
+    });
+
+    this.scaleDownTrigger = new cloudwatch.Alarm(this, 'ScaleDownTrigger', {
+      alarmName: 'WatchbotScaleDown',
+      alarmDescription: 'Scale down due to total messages in queue',
+      evaluationPeriods: 1,
+      threshold: 0,
+      comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
+      metric: this.totalMessagesMetric
     });
   }
 }
