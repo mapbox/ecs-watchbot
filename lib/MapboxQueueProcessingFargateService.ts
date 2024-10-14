@@ -262,7 +262,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
         cooldown: 300,
         metricAggregationType: 'Average',
         stepAdjustments: [{
-          scalingAdjustment: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')),
+          scalingAdjustment: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 1,
           metricIntervalLowerBound: 0,
         }],
       },
