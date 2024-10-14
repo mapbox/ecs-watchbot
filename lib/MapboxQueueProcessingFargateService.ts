@@ -11,7 +11,7 @@ import {
   QueueProcessingServiceBase
 } from 'aws-cdk-lib/aws-ecs-patterns';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { cx_api, FeatureFlags, Duration, CustomResource } from 'aws-cdk-lib';
+import { cx_api, FeatureFlags, Duration } from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -79,16 +79,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
    * A lambda to calculate the total messages (visible and not visible) in the SQS queue as a cloudwatch metric
    */
   readonly totalMessagesLambda: lambda.Function;
-
-  /**
-   * A lambda to trigger a scaling action
-   */
-  readonly scalingLambda: lambda.Function;
-
-  /**
-   * A custom resource used during the scaling process (?)
-   */
-  readonly customScalingResource: CustomResource;
 
   /**
    * A metric to track the total messages visible and not visible
@@ -223,25 +213,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       resourceId: `service/${this.cluster.clusterName}/${this.service.serviceName}`
     });
 
-    this.scalingLambda = new lambda.Function(this, 'ScalingLambda', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: new lambda.InlineCode(`
-        const response = require('./cfn-response');
-        exports.handler = function(event,context){
-          const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
-          response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
-        }
-      `)
-    });
-
-    this.customScalingResource = new CustomResource(this, 'WatchbotScalingResource', {
-      serviceToken: this.scalingLambda.functionArn,
-      properties: {
-        maxSize: props.maxScalingCapacity || 1
-      },
-    });
-
     scalingTarget.scaleOnMetric('TotalMessagesScaling', {
       metric: this.totalMessagesMetric,
       scalingSteps: [
@@ -263,8 +234,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       metric: this.visibleMessagesMetric,
       scalingSteps: [
         { lower: 0, upper: 1, change: 0 },
-        { lower: 1, change: 2 }
-        // { lower: 1, change: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 0 },
+        { lower: 1, change: Math.round(Math.max(Math.min(props.maxScalingCapacity || 1 / 10, 100), 1)) }
       ],
       evaluationPeriods: 3
     })
