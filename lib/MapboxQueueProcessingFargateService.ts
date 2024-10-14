@@ -202,7 +202,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       namespace: 'Mapbox/ecs-watchbot',
       metricName: 'TotalMessages',
       dimensionsMap: { QueueName: this.sqsQueue.queueName },
-      period: Duration.minutes(1),
+      period: Duration.minutes(10),
     });
 
     const scalingTarget = new appscaling.ScalableTarget(this, 'WatchbotScalingTarget', {
@@ -227,7 +227,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       namespace: 'AWS/SQS',
       metricName: 'ApproximateNumberOfMessagesVisible',
       dimensionsMap: { QueueName: this.sqsQueue.queueName },
-      period: Duration.minutes(1),
+      period: Duration.minutes(5),
     });
 
     scalingTarget.scaleOnMetric('VisibleMessagesScaling', {
