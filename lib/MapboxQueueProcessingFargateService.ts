@@ -91,16 +91,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
   readonly customScalingResource: CustomResource;
 
   /**
-   * custom scale up policy to attach to our service
-   */
-  readonly scaleUp : appscaling.CfnScalingPolicy;
-
-  /**
-   * custom scale down policy to attach to our service
-   */
-  readonly scaleDown : appscaling.CfnScalingPolicy;
-
-  /**
    * A metric to track the total messages visible and not visible
    */
   readonly totalMessagesMetric: cloudwatch.Metric;
@@ -109,16 +99,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
    * A metric to track the total messages visible- created by default by SQS
    */
   readonly visibleMessagesMetric: cloudwatch.Metric;
-
-  /**
-   * An alarm to track visible messages and scale up as necessary
-   */
-  readonly scaleUpTrigger: cloudwatch.Alarm;
-
-  /**
-   * An alarm to track total messages and scale up as necessary
-   */
-  readonly scaleDownTrigger: cloudwatch.Alarm;
 
   /**
    * Constructs a new instance of the QueueProcessingFargateService class.
@@ -262,22 +242,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       },
     });
 
-
-    // this.scaleUp = new appscaling.CfnScalingPolicy(this, 'WatchbotScaleUp', {
-    //   policyName: 'watchbot-scale-up',
-    //   policyType: 'StepScaling',
-    //   scalingTargetId: scalingTarget.scalableTargetId,
-    //   stepScalingPolicyConfiguration: {
-    //     adjustmentType: 'ChangeInCapacity',
-    //     cooldown: 300,
-    //     metricAggregationType: 'Average',
-    //     stepAdjustments: [{
-    //       scalingAdjustment: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 0,
-    //       metricIntervalLowerBound: 0,
-    //     }],
-    //   },
-    // });
-
     scalingTarget.scaleOnMetric('TotalMessagesScaling', {
       metric: this.totalMessagesMetric,
       scalingSteps: [
@@ -299,40 +263,10 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       metric: this.visibleMessagesMetric,
       scalingSteps: [
         { lower: 0, upper: 1, change: 0 },
-        { lower: 1, change: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 0 },
+        { lower: 1, change: 2 }
+        // { lower: 1, change: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 0 },
       ],
       evaluationPeriods: 3
     })
-
-    // this.scaleUpTrigger = new cloudwatch.Alarm(this, 'ScaleUpTrigger', {
-    //   alarmName: 'WatchbotScaleUp',
-    //   alarmDescription: 'Scale up due to visible messages in queue',
-    //   evaluationPeriods: 1,
-    //   threshold: 0,
-    //   metric: this.visibleMessagesMetric
-    // });
-
-    // this.scaleDown = new appscaling.CfnScalingPolicy(this, 'WatchbotScaleDown', {
-    //   policyName: 'watchbot-scale-down',
-    //   policyType: 'StepScaling',
-    //   scalingTargetId: scalingTarget.scalableTargetId,
-    //   stepScalingPolicyConfiguration: {
-    //     adjustmentType: 'PercentChangeInCapacity',
-    //     cooldown: 300,
-    //     metricAggregationType: 'Average',
-    //     stepAdjustments: [{
-    //       scalingAdjustment: -100,
-    //       metricIntervalLowerBound: 0,
-    //     }],
-    //   },
-    // });
-
-    // this.scaleDownTrigger = new cloudwatch.Alarm(this, 'ScaleDownTrigger', {
-    //   alarmName: 'WatchbotScaleDown',
-    //   alarmDescription: 'Scale down due to total messages in queue',
-    //   evaluationPeriods: 1,
-    //   threshold: 1,
-    //   metric: this.totalMessagesMetric
-    // });
   }
 }
