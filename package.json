@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/watchbot",
-  "version": "10.1.1-18",
+  "version": "10.1.1-19",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",

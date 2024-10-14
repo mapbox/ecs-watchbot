@@ -234,7 +234,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       resourceId: this.cluster.clusterName
     });
 
-    this.scalingLambda = new lambda.Function(this, 'TotalMessagesLambda', {
+    this.scalingLambda = new lambda.Function(this, 'ScalingLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: new lambda.InlineCode(`
