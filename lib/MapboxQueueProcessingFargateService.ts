@@ -11,7 +11,7 @@ import {
   QueueProcessingServiceBase
 } from 'aws-cdk-lib/aws-ecs-patterns';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { cx_api, FeatureFlags, Duration, CustomResource } from 'aws-cdk-lib';
+import { cx_api, FeatureFlags, Duration } from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -81,26 +81,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
   readonly totalMessagesLambda: lambda.Function;
 
   /**
-   * A lambda to trigger a scaling action
-   */
-  readonly scalingLambda: lambda.Function;
-
-  /**
-   * A custom resource used during the scaling process (?)
-   */
-  readonly customScalingResource: CustomResource;
-
-  /**
-   * custom scale up policy to attach to our service
-   */
-  readonly scaleUp : appscaling.CfnScalingPolicy;
-
-  /**
-   * custom scale down policy to attach to our service
-   */
-  readonly scaleDown : appscaling.CfnScalingPolicy;
-
-  /**
    * A metric to track the total messages visible and not visible
    */
   readonly totalMessagesMetric: cloudwatch.Metric;
@@ -109,16 +89,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
    * A metric to track the total messages visible- created by default by SQS
    */
   readonly visibleMessagesMetric: cloudwatch.Metric;
-
-  /**
-   * An alarm to track visible messages and scale up as necessary
-   */
-  readonly scaleUpTrigger: cloudwatch.Alarm;
-
-  /**
-   * An alarm to track total messages and scale up as necessary
-   */
-  readonly scaleDownTrigger: cloudwatch.Alarm;
 
   /**
    * Constructs a new instance of the QueueProcessingFargateService class.
@@ -232,7 +202,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       namespace: 'Mapbox/ecs-watchbot',
       metricName: 'TotalMessages',
       dimensionsMap: { QueueName: this.sqsQueue.queueName },
-      period: Duration.minutes(600),
+      period: Duration.minutes(10),
     });
 
     const scalingTarget = new appscaling.ScalableTarget(this, 'WatchbotScalingTarget', {
@@ -243,77 +213,30 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       resourceId: `service/${this.cluster.clusterName}/${this.service.serviceName}`
     });
 
-    this.scalingLambda = new lambda.Function(this, 'ScalingLambda', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: new lambda.InlineCode(`
-        const response = require('./cfn-response');
-        exports.handler = function(event,context){
-          const result = Math.round(Math.max(Math.min(parseInt(event.ResourceProperties.maxSize) / 10, 100), 1));
-          response.send(event, context, response.SUCCESS, { ScalingAdjustment: result });
-        }
-      `)
-    });
-
-    this.customScalingResource = new CustomResource(this, 'WatchbotScalingResource', {
-      serviceToken: this.scalingLambda.functionArn,
-      properties: {
-        maxSize: props.maxScalingCapacity || 1
-      },
-    });
-
-
-    this.scaleUp = new appscaling.CfnScalingPolicy(this, 'WatchbotScaleUp', {
-      policyName: 'watchbot-scale-up',
-      policyType: 'StepScaling',
-      scalingTargetId: scalingTarget.scalableTargetId,
-      stepScalingPolicyConfiguration: {
-        adjustmentType: 'ChangeInCapacity',
-        cooldown: 300,
-        metricAggregationType: 'Average',
-        stepAdjustments: [{
-          scalingAdjustment: parseInt(this.customScalingResource.getAttString('ScalingAdjustment')) || 0,
-          metricIntervalLowerBound: 0,
-        }],
-      },
-    });
+    scalingTarget.scaleOnMetric('TotalMessagesScaling', {
+      metric: this.totalMessagesMetric,
+      scalingSteps: [
+        { lower: 0, upper: 0, change: -100 },
+        { lower: 1, change: 0 } // this is a bogus param - we require two for autoscaling
+      ],
+      evaluationPeriods: 3,
+      adjustmentType: appscaling.AdjustmentType.PERCENT_CHANGE_IN_CAPACITY
+    })
 
     this.visibleMessagesMetric = new cloudwatch.Metric({
-      namespace: 'Mapbox/ecs-watchbot',
-      metricName: 'VisibleMessages',
+      namespace: 'AWS/SQS',
+      metricName: 'ApproximateNumberOfMessagesVisible',
       dimensionsMap: { QueueName: this.sqsQueue.queueName },
-      period: Duration.minutes(300),
+      period: Duration.minutes(5),
     });
 
-    this.scaleUpTrigger = new cloudwatch.Alarm(this, 'ScaleUpTrigger', {
-      alarmName: 'WatchbotScaleUp',
-      alarmDescription: 'Scale up due to visible messages in queue',
-      evaluationPeriods: 1,
-      threshold: 0,
-      metric: this.visibleMessagesMetric
-    });
-
-    this.scaleDown = new appscaling.CfnScalingPolicy(this, 'WatchbotScaleDown', {
-      policyName: 'watchbot-scale-down',
-      policyType: 'StepScaling',
-      scalingTargetId: scalingTarget.scalableTargetId,
-      stepScalingPolicyConfiguration: {
-        adjustmentType: 'PercentChangeInCapacity',
-        cooldown: 300,
-        metricAggregationType: 'Average',
-        stepAdjustments: [{
-          scalingAdjustment: -100,
-          metricIntervalLowerBound: 0,
-        }],
-      },
-    });
-
-    this.scaleDownTrigger = new cloudwatch.Alarm(this, 'ScaleDownTrigger', {
-      alarmName: 'WatchbotScaleDown',
-      alarmDescription: 'Scale down due to total messages in queue',
-      evaluationPeriods: 1,
-      threshold: 1,
-      metric: this.totalMessagesMetric
-    });
+    scalingTarget.scaleOnMetric('VisibleMessagesScaling', {
+      metric: this.visibleMessagesMetric,
+      scalingSteps: [
+        { lower: 0, upper: 1, change: 0 },
+        { lower: 1, change: Math.round(Math.max(Math.min(props.maxScalingCapacity || 1 / 10, 100), 1)) }
+      ],
+      evaluationPeriods: 3
+    })
   }
 }
