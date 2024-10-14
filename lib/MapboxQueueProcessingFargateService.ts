@@ -231,7 +231,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       scalableDimension: 'ecs:service:DesiredCount',
       minCapacity: props.minScalingCapacity || 0,
       maxCapacity: props.maxScalingCapacity || 1,
-      resourceId: this.cluster.clusterName
+      resourceId: `service/${this.cluster.clusterName}/${this.service.serviceName}`
     });
 
     this.scalingLambda = new lambda.Function(this, 'ScalingLambda', {
