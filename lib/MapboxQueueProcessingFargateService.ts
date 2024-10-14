@@ -253,8 +253,8 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
     })
 
     this.visibleMessagesMetric = new cloudwatch.Metric({
-      namespace: 'Mapbox/ecs-watchbot',
-      metricName: 'VisibleMessages',
+      namespace: 'AWS/SQS',
+      metricName: 'ApproximateNumberOfMessagesVisible',
       dimensionsMap: { QueueName: this.sqsQueue.queueName },
       period: Duration.minutes(1),
     });
