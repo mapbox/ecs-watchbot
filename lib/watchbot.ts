@@ -7,7 +7,6 @@ import {
   ContainerImage,
   HealthCheck,
   ICluster,
-  LinuxParametersProps,
   LogDrivers,
   MountPoint,
   PropagatedTagSource,
@@ -241,11 +240,6 @@ export interface WatchbotProps {
     writeCapacityUnits?: number;
   };
 
-  /**
-   * Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
-   * @default undefined
-   */
-  readonly linuxParameters?: LinuxParametersProps;
 }
 
 export type WatchbotAlarms = {
@@ -410,7 +404,6 @@ export class FargateWatchbot extends Resource {
         logGroup: this.logGroup
       }),
       healthCheck: this.props.healthCheck,
-      linuxParameters: this.props.linuxParameters,
 
       queue: this.queue,
 

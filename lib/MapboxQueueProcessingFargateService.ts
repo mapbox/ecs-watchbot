@@ -2,8 +2,6 @@ import { Construct } from 'constructs';
 import {
   FargateService,
   FargateTaskDefinition,
-  LinuxParameters,
-  LinuxParametersProps,
   Volume
 } from 'aws-cdk-lib/aws-ecs';
 import {
@@ -48,10 +46,10 @@ export interface MapboxQueueProcessingFargateServiceProps
   readonly volumes?: Volume[];
 
   /**
-   * Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
+   * Size of disk to attach to the fargate container
    * @default undefined
    */
-  readonly linuxParameters?: LinuxParametersProps;
+  readonly ephemeralStorageGiB?: number;
 
 }
 
@@ -112,9 +110,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       privileged: props.privileged,
       memoryReservationMiB: props.memoryReservationMiB,
       readonlyRootFilesystem: props.readonlyRootFilesystem,
-      linuxParameters: props.linuxParameters
-        ? new LinuxParameters(this, 'LinuxParameters', props.linuxParameters)
-        : undefined
     });
 
     // The desiredCount should be removed from the fargate service when the feature flag is removed.
