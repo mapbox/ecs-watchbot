@@ -1,5 +1,6 @@
 import { Construct } from 'constructs';
 import {
+  ContainerImage,
   FargateService,
   FargateTaskDefinition,
   Volume
@@ -20,7 +21,7 @@ import * as appscaling from 'aws-cdk-lib/aws-applicationautoscaling';
  * The properties for the MapboxQueueProcessingFargateService service.
  */
 export interface MapboxQueueProcessingFargateServiceProps
-  extends QueueProcessingFargateServiceProps {
+  extends Omit<QueueProcessingFargateServiceProps, 'image'>{
   /**
    * Specifies whether the container is marked as privileged. When this parameter is true, the container is given elevated privileges on the host container instance (similar to the root user).
    * @default false
@@ -46,10 +47,9 @@ export interface MapboxQueueProcessingFargateServiceProps
   readonly volumes?: Volume[];
 
   /**
-   * Size of disk to attach to the fargate container
-   * @default undefined
+   * The ECS image to use here. We're overriding the default image property because it can be undefined
    */
-  readonly ephemeralStorageGiB?: number;
+  readonly image: ContainerImage;
 
 }
 
