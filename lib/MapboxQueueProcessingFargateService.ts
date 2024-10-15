@@ -53,12 +53,6 @@ export interface MapboxQueueProcessingFargateServiceProps
    */
   readonly linuxParameters?: LinuxParametersProps;
 
-  /**
-   * Size of disk to attach to the fargate container
-   * @default undefined
-   */
-  readonly ephemeralStorageGiB?: number;
-
 }
 
 /**
@@ -100,7 +94,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
     this.taskDefinition = new FargateTaskDefinition(this, 'QueueProcessingTaskDef', {
       memoryLimitMiB: props.memoryLimitMiB || 512,
       cpu: props.cpu || 256,
-      ephemeralStorageGiB: props.ephemeralStorageGiB || 20,
+      ephemeralStorageGiB: props.ephemeralStorageGiB,
       family: props.family,
       runtimePlatform: props.runtimePlatform,
       volumes: props.volumes
@@ -219,7 +213,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
         { lower: 0, upper: 0, change: -100 },
         { lower: 1, change: 0 } // this is a bogus param - we require two for autoscaling
       ],
-      evaluationPeriods: 3,
+      evaluationPeriods: 1,
       adjustmentType: appscaling.AdjustmentType.PERCENT_CHANGE_IN_CAPACITY
     })
 
@@ -236,7 +230,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
         { lower: 0, upper: 1, change: 0 },
         { lower: 1, change: Math.round(Math.max(Math.min(props.maxScalingCapacity || 1 / 10, 100), 1)) }
       ],
-      evaluationPeriods: 3
+      evaluationPeriods: 1
     })
   }
 }
