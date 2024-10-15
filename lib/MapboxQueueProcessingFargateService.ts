@@ -223,7 +223,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       metric: this.visibleMessagesMetric,
       scalingSteps: [
         { lower: 0, upper: 1, change: 0 },
-        { lower: 1, change: Math.round(Math.max(Math.min(props.maxScalingCapacity || 1 / 10, 100), 1)) }
+        { lower: 1, change: Math.round(Math.max(Math.min((props.maxScalingCapacity || 1) / 10, 100), 1)) }
       ],
       evaluationPeriods: 1
     })
