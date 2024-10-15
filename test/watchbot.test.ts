@@ -185,7 +185,7 @@ describe('FargateWatchbot', () => {
         PolicyType: 'StepScaling',
         StepScalingPolicyConfiguration: {
           AdjustmentType: 'ChangeInCapacity',
-          MetricAggregationType: 'Average',
+          MetricAggregationType: 'Maximum',
           StepAdjustments: [
             {
               MetricIntervalLowerBound: 0,
@@ -209,7 +209,7 @@ describe('FargateWatchbot', () => {
         MetricName: 'ApproximateNumberOfMessagesVisible',
         Namespace: 'AWS/SQS',
         Period: 300,
-        Statistic: 'Average',
+        Statistic: 'Maximum',
         Threshold: 1
       });
 
