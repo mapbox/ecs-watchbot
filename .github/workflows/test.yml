@@ -17,7 +17,8 @@ jobs:
         options: --privileged
 
     steps:
-      - uses: actions/checkout@v4
-      - id: action-node-setup
-        uses: mapbox/gha@action-node-setup-v1
+      - name: npm install
+        run: npm install
 
+      - name: run tests
+        run: npm run test
