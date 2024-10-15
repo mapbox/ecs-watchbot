@@ -169,28 +169,27 @@ describe('FargateWatchbot', () => {
 
     it('creates scaling resources', () => {
       template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalingPolicy', {
-        PolicyType: 'TargetTrackingScaling',
-        TargetTrackingScalingPolicyConfiguration: {
-          PredefinedMetricSpecification: {
-            PredefinedMetricType: 'ECSServiceAverageCPUUtilization'
-          },
-          TargetValue: 50
+        PolicyType: 'StepScaling',
+        StepScalingPolicyConfiguration: {
+          AdjustmentType: 'PercentChangeInCapacity',
+          MetricAggregationType: 'Average',
+          StepAdjustments: [
+            {
+              MetricIntervalUpperBound: 0,
+              ScalingAdjustment: -100,
+            }
+          ]
         }
       });
       template.hasResourceProperties('AWS::ApplicationAutoScaling::ScalingPolicy', {
         PolicyType: 'StepScaling',
         StepScalingPolicyConfiguration: {
           AdjustmentType: 'ChangeInCapacity',
-          MetricAggregationType: 'Maximum',
+          MetricAggregationType: 'Average',
           StepAdjustments: [
             {
               MetricIntervalLowerBound: 0,
-              MetricIntervalUpperBound: 400,
               ScalingAdjustment: 1
-            },
-            {
-              MetricIntervalLowerBound: 400,
-              ScalingAdjustment: 5
             }
           ]
         }
@@ -210,8 +209,8 @@ describe('FargateWatchbot', () => {
         MetricName: 'ApproximateNumberOfMessagesVisible',
         Namespace: 'AWS/SQS',
         Period: 300,
-        Statistic: 'Maximum',
-        Threshold: 100
+        Statistic: 'Average',
+        Threshold: 1
       });
 
       template.hasResourceProperties('AWS::CloudWatch::Alarm', {
@@ -224,10 +223,10 @@ describe('FargateWatchbot', () => {
           }
         ],
         EvaluationPeriods: 1,
-        MetricName: 'ApproximateNumberOfMessagesVisible',
-        Namespace: 'AWS/SQS',
-        Period: 300,
-        Statistic: 'Maximum',
+        MetricName: 'TotalMessages',
+        Namespace: "Mapbox/ecs-watchbot",
+        Period: 600,
+        Statistic: 'Average',
         Threshold: 0
       });
     });
