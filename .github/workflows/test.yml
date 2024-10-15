@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: checkout reop and npm install
         uses: actions/checkout@v4
+
+      - name: npm install
         run: npm install
 
       - name: run tests
