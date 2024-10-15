@@ -17,8 +17,10 @@ jobs:
         options: --privileged
 
     steps:
-      - name: npm install
+      - name: checkout reop and npm install
+        uses: actions/checkout@v4
         run: npm install
 
       - name: run tests
         run: npm run test
+
