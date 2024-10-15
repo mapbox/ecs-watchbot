@@ -1,0 +1,23 @@
+name: ecs-watchbot test
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+
+    steps:
+      - uses: actions/checkout@v4
+      - id: action-node-setup
+        uses: mapbox/gha@action-node-setup-v1
+
