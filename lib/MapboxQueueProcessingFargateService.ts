@@ -78,11 +78,6 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
   readonly totalMessagesMetric: cloudwatch.Metric;
 
   /**
-   * A metric to track the total messages visible- created by default by SQS
-   */
-  readonly visibleMessagesMetric: cloudwatch.Metric;
-
-  /**
    * Constructs a new instance of the QueueProcessingFargateService class.
    */
   constructor(scope: Construct, id: string, props: MapboxQueueProcessingFargateServiceProps) {
@@ -212,15 +207,8 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
       adjustmentType: appscaling.AdjustmentType.PERCENT_CHANGE_IN_CAPACITY
     })
 
-    this.visibleMessagesMetric = new cloudwatch.Metric({
-      namespace: 'AWS/SQS',
-      metricName: 'ApproximateNumberOfMessagesVisible',
-      dimensionsMap: { QueueName: this.sqsQueue.queueName },
-      period: Duration.minutes(5),
-    });
-
     scalingTarget.scaleOnMetric('VisibleMessagesScaling', {
-      metric: this.visibleMessagesMetric,
+      metric: this.sqsQueue.metricApproximateNumberOfMessagesVisible(),
       scalingSteps: [
         { lower: 0, upper: 1, change: 0 },
         { lower: 1, change: Math.round(Math.max(Math.min((props.maxScalingCapacity || 1) / 10, 100), 1)) }
