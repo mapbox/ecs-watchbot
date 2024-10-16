@@ -494,7 +494,7 @@ export class FargateWatchbot extends Resource {
           onAlarmTopic: this.props.alarms.action
         })
       },
-      // dashboardFactory: factory
+      dashboardFactory: factory
     });
 
     const workersErrorsMetric = this.logGroup
