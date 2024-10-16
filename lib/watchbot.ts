@@ -211,6 +211,12 @@ export interface WatchbotProps {
    */
   readonly minScalingCapacity?: number;
 
+  /**
+   * The amount of time between scale up events for the service
+   * @default 5
+   */
+  readonly scaleUpAlarmIntervalMinutes?: number;
+
   readonly alarms: WatchbotAlarms;
 
   /**
@@ -407,6 +413,7 @@ export class FargateWatchbot extends Resource {
       // scaling props
       maxScalingCapacity: this.props.maxScalingCapacity,
       minScalingCapacity: this.props.minScalingCapacity,
+      scaleUpAlarmIntervalMinutes: this.props.scaleUpAlarmIntervalMinutes || 5,
 
       // network config props
       taskSubnets: this.props.subnets,
