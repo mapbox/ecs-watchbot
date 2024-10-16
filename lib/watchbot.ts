@@ -45,12 +45,6 @@ export interface WatchbotProps {
   readonly containerName?: string;
 
   /**
-   * The intervals for scaling based on the SQS queue's ApproximateNumberOfMessagesVisible metric.
-   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#scalingsteps
-   */
-  readonly scalingSteps?: ScalingInterval[];
-
-  /**
    * The runtime platform of the task definition.
    * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#runtimeplatform
    */
