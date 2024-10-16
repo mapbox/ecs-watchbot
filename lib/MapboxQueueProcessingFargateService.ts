@@ -55,7 +55,7 @@ export interface MapboxQueueProcessingFargateServiceProps
    * The period between scale up events
    * @default Duration.minutes(5)
    */
-  readonly scaleUpAlarmIntervalMinutes: Duration;
+  readonly scaleUpAlarmInterval: Duration;
 
 }
 
@@ -215,7 +215,7 @@ export class MapboxQueueProcessingFargateService extends QueueProcessingServiceB
 
     scalingTarget.scaleOnMetric('VisibleMessagesScaling', {
       metric: this.sqsQueue.metricApproximateNumberOfMessagesVisible({
-        period: props.scaleUpAlarmIntervalMinutes
+        period: props.scaleUpAlarmInterval
       }),
       scalingSteps: [
         { lower: 0, upper: 1, change: 0 },

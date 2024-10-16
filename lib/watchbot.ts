@@ -215,7 +215,7 @@ export interface WatchbotProps {
    * The amount of time between scale up events for the service
    * @default Duration.minutes(5)
    */
-  readonly scaleUpAlarmIntervalMinutes?: Duration;
+  readonly scaleUpAlarmInterval?: Duration;
 
   readonly alarms: WatchbotAlarms;
 
@@ -413,7 +413,7 @@ export class FargateWatchbot extends Resource {
       // scaling props
       maxScalingCapacity: this.props.maxScalingCapacity,
       minScalingCapacity: this.props.minScalingCapacity,
-      scaleUpAlarmIntervalMinutes: this.props.scaleUpAlarmIntervalMinutes || Duration.minutes(5),
+      scaleUpAlarmInterval: this.props.scaleUpAlarmInterval || Duration.minutes(5),
 
       // network config props
       taskSubnets: this.props.subnets,
@@ -494,7 +494,7 @@ export class FargateWatchbot extends Resource {
           onAlarmTopic: this.props.alarms.action
         })
       },
-      dashboardFactory: factory
+      // dashboardFactory: factory
     });
 
     const workersErrorsMetric = this.logGroup
