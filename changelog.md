@@ -1,3 +1,9 @@
+### 10.1.0
+- Port watchbot scaling logic from 9.x to scale down based on total message (visible and not visible)
+- Expose ephemeralStorageGiB param to customize disk size up to 200 GB (default 20 GB)
+- Bump aws-cdk-lib and cdk-monitoring-constructs to update type definitions
+- Add a cloudformation output for the watchbot SNS topic
+
 ### 10.0.2
 
 -  Fix monitoring resource naming conflicts when used in multiple stacks

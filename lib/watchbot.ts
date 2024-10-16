@@ -1,4 +1,4 @@
-import { aws_dynamodb, Duration, RemovalPolicy, Resource, Stack } from 'aws-cdk-lib';
+import { aws_dynamodb, CfnOutput, Duration, RemovalPolicy, Resource, Stack } from 'aws-cdk-lib';
 import { ISecurityGroup, SubnetSelection, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
   BaseService,
@@ -27,7 +27,11 @@ import {
   MapboxQueueProcessingFargateService,
   MapboxQueueProcessingFargateServiceProps
 } from './MapboxQueueProcessingFargateService';
-import { DynamicDashboardFactory, MonitoringFacade, SnsAlarmActionStrategy } from 'cdk-monitoring-constructs';
+import {
+  DynamicDashboardFactory,
+  MonitoringFacade,
+  SnsAlarmActionStrategy
+} from 'cdk-monitoring-constructs';
 import * as path from 'path';
 import { ComparisonOperator, Stats } from 'aws-cdk-lib/aws-cloudwatch';
 import { AttributeType, CfnTable } from 'aws-cdk-lib/aws-dynamodb';
@@ -39,12 +43,6 @@ export interface WatchbotProps {
    * @default {prefix}-${stackName}
    */
   readonly containerName?: string;
-
-  /**
-   * The intervals for scaling based on the SQS queue's ApproximateNumberOfMessagesVisible metric.
-   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs_patterns.QueueProcessingFargateService.html#scalingsteps
-   */
-  readonly scalingSteps?: ScalingInterval[];
 
   /**
    * The runtime platform of the task definition.
@@ -104,6 +102,13 @@ export interface WatchbotProps {
    * The version of your image to deploy. This should reference a specific image in ECR.
    */
   readonly serviceVersion: string;
+
+  /**
+   * The size of the ephemeral storage disk to make available to the container in GB.
+   * @default 20
+   * @see https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ecs.CfnTaskDefinition.EphemeralStorageProperty.html
+   */
+  readonly ephemeralStorageGiB?: number;
 
   /**
    * The name of a family that the task definition is registered to.
@@ -206,6 +211,12 @@ export interface WatchbotProps {
    */
   readonly minScalingCapacity?: number;
 
+  /**
+   * The amount of time between scale up events for the service
+   * @default Duration.minutes(5)
+   */
+  readonly scaleUpAlarmInterval?: Duration;
+
   readonly alarms: WatchbotAlarms;
 
   /**
@@ -228,6 +239,7 @@ export interface WatchbotProps {
      */
     writeCapacityUnits?: number;
   };
+
 }
 
 export type WatchbotAlarms = {
@@ -329,16 +341,22 @@ export class FargateWatchbot extends Resource {
 
     // workaround for a bug when you set fifo = false
     // https://github.com/aws/aws-cdk/issues/8550
-    const additionalFifoProperties = this.props.fifo? { fifo: true, contentBasedDeduplication: true } : {};
+    const additionalFifoProperties = this.props.fifo
+      ? { fifo: true, contentBasedDeduplication: true }
+      : {};
 
     this.deadLetterQueue = new Queue(this, 'DeadLetterQueue', {
-      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}${this.props.fifo ? '.fifo' : ''}`,
+      queueName: `${this.stack.stackName}-${this.prefixed('DeadLetterQueue')}${
+        this.props.fifo ? '.fifo' : ''
+      }`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       ...additionalFifoProperties
     });
 
     this.queue = new Queue(this, 'Queue', {
-      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}${this.props.fifo ? '.fifo' : ''}`,
+      queueName: `${this.stack.stackName}-${this.prefixed('Queue')}${
+        this.props.fifo ? '.fifo' : ''
+      }`,
       retentionPeriod: this.props.retentionPeriod || Duration.days(14),
       visibilityTimeout: Duration.seconds(180),
       deadLetterQueue: {
@@ -356,6 +374,7 @@ export class FargateWatchbot extends Resource {
 
       // Task Definition props
       cpu: this.props.cpu,
+      ephemeralStorageGiB: this.props.ephemeralStorageGiB,
       memoryLimitMiB: this.props.memoryLimitMiB,
       family: this.props.family,
       runtimePlatform: this.props.runtimePlatform,
@@ -392,15 +411,16 @@ export class FargateWatchbot extends Resource {
       propagateTags: PropagatedTagSource.TASK_DEFINITION,
 
       // scaling props
-      scalingSteps: this.props.scalingSteps,
       maxScalingCapacity: this.props.maxScalingCapacity,
       minScalingCapacity: this.props.minScalingCapacity,
+      scaleUpAlarmInterval: this.props.scaleUpAlarmInterval || Duration.minutes(5),
 
       // network config props
       taskSubnets: this.props.subnets,
       assignPublicIp: this.props.publicIP,
       securityGroups: this.props.securityGroups
     };
+
     this.queueProcessingFargateService = new MapboxQueueProcessingFargateService(
       this,
       'Service',
@@ -436,6 +456,11 @@ export class FargateWatchbot extends Resource {
       this.topic.grantPublish(this.taskDefinition.taskRole);
       this.container.addEnvironment('WorkTopic', this.topic.topicArn);
     }
+    new CfnOutput(this, 'TopicOutput', {
+      value: this.topic?.topicArn || '',
+      exportName: `${this.stack.stackName}-topic`,
+      description: `SNS topic to send messages to in order to invoke the ${this.stack.stackName} watchbot pipeline`
+    });
 
     this.monitoring = this.createAlarms();
 
@@ -456,17 +481,14 @@ export class FargateWatchbot extends Resource {
   }
 
   private createAlarms() {
-
-    const factory = new DynamicDashboardFactory(this, "DynamicDashboards", {
+    const factory = new DynamicDashboardFactory(this, 'DynamicDashboards', {
       dashboardNamePrefix: this.stack.stackName,
-      dashboardConfigs: [
-        { name: "watchbot" }
-      ],
+      dashboardConfigs: [{ name: 'watchbot' }]
     });
 
     const monitoring = new MonitoringFacade(this, 'Monitoring', {
       alarmFactoryDefaults: {
-        alarmNamePrefix: `${this.stack.stackName}-${this.prefixed('')}`,
+        alarmNamePrefix: this.prefixed(''),
         actionsEnabled: true,
         action: new SnsAlarmActionStrategy({
           onAlarmTopic: this.props.alarms.action
@@ -571,18 +593,20 @@ export class FargateWatchbot extends Resource {
       readonlyRootFilesystem: true,
       maxJobDuration: Duration.seconds(0),
       family: props.serviceName,
-      cluster: props.cluster ?? Cluster.fromClusterAttributes(this, `${id}Cluster`, {
-        clusterName: `fargate-processing-${props.deploymentEnvironment}`,
-        vpc: Vpc.fromLookup(this, `${id}VPC`, {
-          vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
-          isDefault: false,
-          region,
-          ownerAccountId:
-            props.deploymentEnvironment === 'staging'
-              ? NETWORKING_STG_ACCOUNT_ID
-              : NETWORKING_PROD_ACCOUNT_ID
-        })
-      }),
+      cluster:
+        props.cluster ??
+        Cluster.fromClusterAttributes(this, `${id}Cluster`, {
+          clusterName: `fargate-processing-${props.deploymentEnvironment}`,
+          vpc: Vpc.fromLookup(this, `${id}VPC`, {
+            vpcId: VPC_IDs[region as SupportedRegion][props.deploymentEnvironment],
+            isDefault: false,
+            region,
+            ownerAccountId:
+              props.deploymentEnvironment === 'staging'
+                ? NETWORKING_STG_ACCOUNT_ID
+                : NETWORKING_PROD_ACCOUNT_ID
+          })
+        }),
 
       publicIP: false,
       privileged: false,

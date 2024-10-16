@@ -1,0 +1,28 @@
+name: ecs-watchbot test
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+
+    steps:
+      - name: checkout reop and npm install
+        uses: actions/checkout@v4
+
+      - name: npm install
+        run: npm install
+
+      - name: run tests
+        run: npm run test
+
