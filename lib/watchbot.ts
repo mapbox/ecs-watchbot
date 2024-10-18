@@ -554,12 +554,13 @@ export class FargateWatchbot extends Resource {
       })
       .monitorCustom({
         addToAlarmDashboard: true,
+        alarmFriendlyName: `worker-errors-${this.stack.region}`,
         metricGroups: [
           {
             title: 'Worker Errors',
             metrics: [
               {
-                alarmFriendlyName: 'worker-errors',
+                alarmFriendlyName: `worker-errors-${this.stack.region}`,
                 metric: workersErrorsMetric,
                 addAlarm: {
                   error: {
