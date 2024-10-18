@@ -488,7 +488,7 @@ export class FargateWatchbot extends Resource {
 
     const monitoring = new MonitoringFacade(this, 'Monitoring', {
       alarmFactoryDefaults: {
-        alarmNamePrefix: this.prefixed(''),
+        alarmNamePrefix: this.stack.stackName,
         actionsEnabled: true,
         action: new SnsAlarmActionStrategy({
           onAlarmTopic: this.props.alarms.action

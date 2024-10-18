@@ -1,3 +1,6 @@
+### 10.1.2
+- Attach stack name to CPU, Memory and Worker errors alarms
+
 ### 10.1.0
 - Port watchbot scaling logic from 9.x to scale down based on total message (visible and not visible)
 - Expose ephemeralStorageGiB param to customize disk size up to 200 GB (default 20 GB)
